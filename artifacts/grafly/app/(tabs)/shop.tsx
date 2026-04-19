@@ -2,28 +2,29 @@ import React, { useState } from "react";
 import {
   View,
   Text,
-  FlatList,
+  ScrollView,
   TouchableOpacity,
-  Modal,
   Platform,
-  Alert,
+  Modal,
 } from "react-native";
 import Animated, {
   FadeIn,
   useSharedValue,
   useAnimatedStyle,
   withSpring,
+  withSequence,
 } from "react-native-reanimated";
 import { Ionicons } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import * as Haptics from "expo-haptics";
 import { useColors } from "@/hooks/useColors";
 import { useGame } from "@/context/GameContext";
+import { GraflyMascot } from "@/components/GraflyMascot";
 
 interface ShopItem {
   id: string;
   name: string;
-  description: string;
+  subtitle: string;
   icon: string;
   iconColor: string;
   cost: number;
@@ -31,137 +32,72 @@ interface ShopItem {
 }
 
 const SHOP_ITEMS: ShopItem[] = [
-  {
-    id: "streak-shield",
-    name: "Streak Shield",
-    description: "Protects your streak for one missed day. Max 3.",
-    icon: "shield-checkmark",
-    iconColor: "#00A4FA",
-    cost: 50,
-    type: "shield",
-  },
-  {
-    id: "energy-refill",
-    name: "Energy Refill",
-    description: "Restore all 5 hearts instantly.",
-    icon: "heart",
-    iconColor: "#FF4757",
-    cost: 100,
-    type: "refill",
-  },
-  {
-    id: "xp-booster",
-    name: "XP Booster 2x",
-    description: "Double your XP earnings for 24 hours.",
-    icon: "flash",
-    iconColor: "#E3ED43",
-    cost: 200,
-    type: "booster",
-  },
-  {
-    id: "avatar-blue",
-    name: "Blue Frame",
-    description: "Exclusive blue avatar frame for your profile.",
-    icon: "person-circle",
-    iconColor: "#00A4FA",
-    cost: 150,
-    type: "cosmetic",
-  },
-  {
-    id: "avatar-gold",
-    name: "Gold Frame",
-    description: "Premium gold avatar frame — rare and sought after.",
-    icon: "person-circle",
-    iconColor: "#FFB800",
-    cost: 300,
-    type: "cosmetic",
-  },
-  {
-    id: "avatar-pink",
-    name: "Pink Frame",
-    description: "Vibrant pink frame for standout profiles.",
-    icon: "person-circle",
-    iconColor: "#FF7BD0",
-    cost: 250,
-    type: "cosmetic",
-  },
+  { id: "streak-shield", name: "Streak Shield", subtitle: "Protect a missed day", icon: "shield-checkmark", iconColor: "#00A4FA", cost: 50, type: "shield" },
+  { id: "energy-refill", name: "Heart Refill", subtitle: "Restore all 5 hearts", icon: "heart", iconColor: "#FF4757", cost: 100, type: "refill" },
+  { id: "xp-booster", name: "XP Booster", subtitle: "Double XP for 24 hours", icon: "flash", iconColor: "#E3ED43", cost: 200, type: "booster" },
+  { id: "avatar-blue", name: "Blue Frame", subtitle: "Avatar frame", icon: "person-circle", iconColor: "#00A4FA", cost: 150, type: "cosmetic" },
+  { id: "avatar-gold", name: "Gold Frame", subtitle: "Rare avatar frame", icon: "person-circle", iconColor: "#FFB800", cost: 300, type: "cosmetic" },
+  { id: "avatar-pink", name: "Pink Frame", subtitle: "Exclusive avatar frame", icon: "person-circle", iconColor: "#FF7BD0", cost: 400, type: "cosmetic" },
 ];
 
-function ItemCard({ item, onPress }: { item: ShopItem; onPress: () => void }) {
+function ShopCard({ item, onBuy }: { item: ShopItem; onBuy: (item: ShopItem) => void }) {
   const colors = useColors();
   const { state } = useGame();
   const scale = useSharedValue(1);
+  const anim = useAnimatedStyle(() => ({ transform: [{ scale: scale.value }] }));
+
+  const owned = state.xpBoosterActive && item.type === "booster";
   const canAfford = state.coins >= item.cost;
 
-  const animStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: scale.value }],
-  }));
+  function handlePress() {
+    scale.value = withSequence(
+      withSpring(0.95, { damping: 8 }),
+      withSpring(1, { damping: 12 })
+    );
+    onBuy(item);
+  }
 
   return (
-    <Animated.View style={animStyle}>
+    <Animated.View style={[{
+      backgroundColor: colors.card, borderRadius: colors.radius,
+      padding: 18, marginBottom: 12,
+      flexDirection: "row", alignItems: "center", gap: 16,
+      borderWidth: owned ? 2 : 1,
+      borderColor: owned ? item.iconColor : colors.border,
+    }, anim]}>
+      <View style={{
+        width: 52, height: 52, borderRadius: 16,
+        backgroundColor: item.iconColor + "20",
+        alignItems: "center", justifyContent: "center",
+      }}>
+        <Ionicons name={item.icon as any} size={26} color={item.iconColor} />
+      </View>
+      <View style={{ flex: 1 }}>
+        <Text style={{ fontSize: 16, fontFamily: "Nunito_800ExtraBold", color: colors.foreground, marginBottom: 2 }}>
+          {item.name}
+        </Text>
+        <Text style={{ fontSize: 12, fontFamily: "Nunito_600SemiBold", color: colors.mutedForeground }}>
+          {item.subtitle}
+        </Text>
+      </View>
       <TouchableOpacity
+        onPress={handlePress}
+        activeOpacity={0.8}
+        disabled={owned || !canAfford}
         style={{
-          backgroundColor: colors.card,
-          borderRadius: colors.radius,
-          padding: 18,
-          marginBottom: 12,
-          borderWidth: 1.5,
-          borderColor: canAfford ? colors.border : colors.border + "50",
-          opacity: canAfford ? 1 : 0.6,
+          flexDirection: "row", alignItems: "center", gap: 5,
+          backgroundColor: owned ? colors.success + "20" : canAfford ? colors.accent : colors.muted,
+          borderRadius: 100,
+          paddingHorizontal: 14, paddingVertical: 8,
         }}
-        onPress={() => {
-          scale.value = withSpring(0.97, { damping: 10 }, () => {
-            scale.value = withSpring(1);
-          });
-          onPress();
-        }}
-        activeOpacity={0.85}
       >
-        <View style={{ flexDirection: "row", alignItems: "flex-start", gap: 14 }}>
-          <View style={{
-            width: 52,
-            height: 52,
-            borderRadius: 16,
-            backgroundColor: item.iconColor + "20",
-            alignItems: "center",
-            justifyContent: "center",
-          }}>
-            <Ionicons name={item.icon as any} size={26} color={item.iconColor} />
-          </View>
-          <View style={{ flex: 1 }}>
-            <Text style={{ fontSize: 16, fontFamily: "Nunito_800ExtraBold", color: colors.foreground, marginBottom: 4 }}>
-              {item.name}
-            </Text>
-            <Text style={{ fontSize: 13, fontFamily: "Nunito_600SemiBold", color: colors.mutedForeground, lineHeight: 18, marginBottom: 12 }}>
-              {item.description}
-            </Text>
-            <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
-              <View style={{ flexDirection: "row", alignItems: "center", gap: 5 }}>
-                <Ionicons name="ellipse" size={13} color="#FFB800" />
-                <Text style={{ fontSize: 17, fontFamily: "Nunito_800ExtraBold", color: colors.foreground }}>
-                  {item.cost}
-                </Text>
-                <Text style={{ fontSize: 13, fontFamily: "Nunito_600SemiBold", color: colors.mutedForeground }}>
-                  coins
-                </Text>
-              </View>
-              <View style={{
-                backgroundColor: canAfford ? colors.primary : colors.muted,
-                borderRadius: 100,
-                paddingHorizontal: 14,
-                paddingVertical: 6,
-              }}>
-                <Text style={{
-                  fontSize: 13,
-                  fontFamily: "Nunito_800ExtraBold",
-                  color: canAfford ? colors.primaryForeground : colors.mutedForeground,
-                }}>
-                  {canAfford ? "Buy" : "Not enough"}
-                </Text>
-              </View>
-            </View>
-          </View>
-        </View>
+        {!owned && <Ionicons name="ellipse" size={12} color={canAfford ? colors.accentForeground : colors.mutedForeground} />}
+        <Text style={{
+          fontSize: 14, fontFamily: "Nunito_800ExtraBold",
+          color: owned ? colors.success : canAfford ? colors.accentForeground : colors.mutedForeground,
+        }}>
+          {owned ? "Active" : item.cost}
+        </Text>
       </TouchableOpacity>
     </Animated.View>
   );
@@ -170,201 +106,108 @@ function ItemCard({ item, onPress }: { item: ShopItem; onPress: () => void }) {
 export default function ShopScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
-  const { state, purchaseShield, purchaseBooster, refillHearts, addCoins } = useGame();
-
-  const [confirmItem, setConfirmItem] = useState<ShopItem | null>(null);
+  const { state, purchaseShield, refillHearts, purchaseBooster } = useGame();
+  const [toast, setToast] = useState<string | null>(null);
+  const [mascotState, setMascotState] = useState<"idle" | "celebrate" | "oops">("idle");
 
   const paddingTop = insets.top + (Platform.OS === "web" ? 67 : 0);
   const paddingBottom = insets.bottom + (Platform.OS === "web" ? 34 : 100);
 
-  function handlePurchase(item: ShopItem) {
+  function showToast(msg: string) {
+    setToast(msg);
+    setTimeout(() => setToast(null), 2500);
+  }
+
+  function handleBuy(item: ShopItem) {
+    if (Platform.OS !== "web") Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     let success = false;
-    let message = "";
-
-    switch (item.type) {
-      case "shield":
-        if (state.streakShields >= 3) {
-          Alert.alert("Max Shields", "You already have 3 streak shields.");
-          return;
-        }
-        success = purchaseShield();
-        message = "Streak Shield activated!";
-        break;
-      case "refill":
-        success = refillHearts();
-        message = "Hearts restored to full!";
-        break;
-      case "booster":
-        success = purchaseBooster();
-        message = "XP Booster active for 24 hours!";
-        break;
-      case "cosmetic":
-        if (state.coins < item.cost) {
-          success = false;
-        } else {
-          addCoins(-item.cost);
-          success = true;
-          message = `${item.name} unlocked!`;
-        }
-        break;
+    if (item.type === "shield") success = purchaseShield();
+    else if (item.type === "refill") success = refillHearts();
+    else if (item.type === "booster") success = purchaseBooster();
+    else {
+      if (state.coins >= item.cost) {
+        success = true;
+        showToast(`${item.name} equipped!`);
+      }
     }
 
-    if (!success) {
-      Alert.alert("Not Enough Coins", `You need ${item.cost} coins to buy this item.`);
-    } else {
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-      Alert.alert("Purchased!", message);
+    if (item.type !== "cosmetic") {
+      if (success) {
+        setMascotState("celebrate");
+        showToast(`${item.name} purchased!`);
+      } else {
+        setMascotState("oops");
+        showToast("Not enough coins");
+      }
+      setTimeout(() => setMascotState("idle"), 2000);
     }
-    setConfirmItem(null);
   }
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.background }}>
-      {/* Header */}
-      <View style={{
-        paddingTop: paddingTop + 12,
-        paddingHorizontal: 20,
-        paddingBottom: 16,
-        flexDirection: "row",
-        alignItems: "center",
-        justifyContent: "space-between",
-      }}>
-        <View>
-          <Text style={{ fontSize: 28, fontFamily: "Nunito_800ExtraBold", color: colors.foreground }}>
-            Shop
-          </Text>
-          <Text style={{ fontSize: 14, fontFamily: "Nunito_600SemiBold", color: colors.mutedForeground }}>
-            Spend coins, boost your learning
-          </Text>
-        </View>
-        <View style={{
-          flexDirection: "row",
-          alignItems: "center",
-          gap: 6,
-          backgroundColor: colors.card,
-          borderRadius: 100,
-          paddingHorizontal: 14,
-          paddingVertical: 8,
-        }}>
-          <Ionicons name="ellipse" size={14} color="#FFB800" />
-          <Text style={{ fontSize: 17, fontFamily: "Nunito_800ExtraBold", color: colors.foreground }}>
-            {state.coins}
-          </Text>
-        </View>
-      </View>
-
-      {/* Pro banner */}
-      {!state.isPro && (
-        <Animated.View entering={FadeIn} style={{ paddingHorizontal: 20, marginBottom: 16 }}>
-          <TouchableOpacity
-            style={{
-              backgroundColor: colors.pink + "15",
-              borderRadius: colors.radius,
-              padding: 16,
-              flexDirection: "row",
-              alignItems: "center",
-              gap: 12,
-              borderWidth: 1.5,
-              borderColor: colors.pink + "50",
-            }}
-            onPress={() => {}}
-            activeOpacity={0.85}
-          >
-            <Ionicons name="star" size={24} color={colors.pink} />
-            <View style={{ flex: 1 }}>
-              <Text style={{ fontSize: 15, fontFamily: "Nunito_800ExtraBold", color: colors.foreground }}>
-                Unlock Grafly Pro
+      <ScrollView
+        contentContainerStyle={{ paddingTop: paddingTop + 12, paddingHorizontal: 20, paddingBottom }}
+        showsVerticalScrollIndicator={false}
+      >
+        {/* Header with mascot */}
+        <Animated.View entering={FadeIn} style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
+          <View>
+            <Text style={{ fontSize: 26, fontFamily: "Nunito_800ExtraBold", color: colors.foreground }}>Shop</Text>
+            <View style={{ flexDirection: "row", alignItems: "center", gap: 6, marginTop: 4 }}>
+              <Ionicons name="ellipse" size={14} color={colors.warning} />
+              <Text style={{ fontSize: 16, fontFamily: "Nunito_800ExtraBold", color: colors.foreground }}>
+                {state.coins}
               </Text>
               <Text style={{ fontSize: 13, fontFamily: "Nunito_600SemiBold", color: colors.mutedForeground }}>
-                Unlimited critiques + extra shields from $4.99/mo
+                coins
               </Text>
             </View>
-            <Ionicons name="chevron-forward" size={18} color={colors.pink} />
-          </TouchableOpacity>
+          </View>
+          <GraflyMascot state={mascotState} size={90} />
+        </Animated.View>
+
+        {/* Power-ups */}
+        <Animated.View entering={FadeIn.delay(80)}>
+          <Text style={{ fontSize: 14, fontFamily: "Nunito_600SemiBold", color: colors.mutedForeground, marginBottom: 10, letterSpacing: 1 }}>
+            POWER UPS
+          </Text>
+          {SHOP_ITEMS.filter((i) => i.type !== "cosmetic").map((item) => (
+            <ShopCard key={item.id} item={item} onBuy={handleBuy} />
+          ))}
+        </Animated.View>
+
+        {/* Cosmetics */}
+        <Animated.View entering={FadeIn.delay(160)}>
+          <Text style={{ fontSize: 14, fontFamily: "Nunito_600SemiBold", color: colors.mutedForeground, marginBottom: 10, marginTop: 8, letterSpacing: 1 }}>
+            AVATAR FRAMES
+          </Text>
+          {SHOP_ITEMS.filter((i) => i.type === "cosmetic").map((item) => (
+            <ShopCard key={item.id} item={item} onBuy={handleBuy} />
+          ))}
+        </Animated.View>
+      </ScrollView>
+
+      {/* Toast */}
+      {toast && (
+        <Animated.View
+          entering={FadeIn}
+          style={{
+            position: "absolute",
+            bottom: 120,
+            alignSelf: "center",
+            backgroundColor: colors.card,
+            borderRadius: 100,
+            paddingHorizontal: 20,
+            paddingVertical: 12,
+            borderWidth: 1,
+            borderColor: colors.border,
+          }}
+        >
+          <Text style={{ fontSize: 15, fontFamily: "Nunito_800ExtraBold", color: colors.foreground }}>
+            {toast}
+          </Text>
         </Animated.View>
       )}
-
-      <FlatList
-        data={SHOP_ITEMS}
-        keyExtractor={(item) => item.id}
-        contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: paddingBottom }}
-        renderItem={({ item }) => (
-          <ItemCard item={item} onPress={() => setConfirmItem(item)} />
-        )}
-        showsVerticalScrollIndicator={false}
-      />
-
-      {/* Confirm Modal */}
-      <Modal
-        visible={!!confirmItem}
-        animationType="slide"
-        transparent
-        onRequestClose={() => setConfirmItem(null)}
-      >
-        <TouchableOpacity style={{ flex: 1 }} activeOpacity={1} onPress={() => setConfirmItem(null)} />
-        {confirmItem && (
-          <View style={{
-            backgroundColor: colors.card,
-            borderTopLeftRadius: 28,
-            borderTopRightRadius: 28,
-            padding: 28,
-            paddingBottom: insets.bottom + 20,
-          }}>
-            <View style={{ width: 40, height: 4, backgroundColor: colors.border, borderRadius: 2, alignSelf: "center", marginBottom: 24 }} />
-            <View style={{ alignItems: "center", marginBottom: 24 }}>
-              <View style={{
-                width: 72,
-                height: 72,
-                borderRadius: 22,
-                backgroundColor: confirmItem.iconColor + "20",
-                alignItems: "center",
-                justifyContent: "center",
-                marginBottom: 16,
-              }}>
-                <Ionicons name={confirmItem.icon as any} size={34} color={confirmItem.iconColor} />
-              </View>
-              <Text style={{ fontSize: 20, fontFamily: "Nunito_800ExtraBold", color: colors.foreground, marginBottom: 6 }}>
-                {confirmItem.name}
-              </Text>
-              <Text style={{ fontSize: 14, fontFamily: "Nunito_600SemiBold", color: colors.mutedForeground, textAlign: "center", lineHeight: 20 }}>
-                {confirmItem.description}
-              </Text>
-            </View>
-
-            <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 6, marginBottom: 24 }}>
-              <Ionicons name="ellipse" size={16} color="#FFB800" />
-              <Text style={{ fontSize: 24, fontFamily: "Nunito_800ExtraBold", color: colors.foreground }}>
-                {confirmItem.cost} coins
-              </Text>
-            </View>
-
-            <TouchableOpacity
-              style={{
-                backgroundColor: state.coins >= confirmItem.cost ? colors.primary : colors.muted,
-                borderRadius: colors.radius,
-                paddingVertical: 18,
-                alignItems: "center",
-                marginBottom: 10,
-              }}
-              onPress={() => handlePurchase(confirmItem)}
-              activeOpacity={0.85}
-            >
-              <Text style={{
-                fontSize: 17,
-                fontFamily: "Nunito_800ExtraBold",
-                color: state.coins >= confirmItem.cost ? colors.primaryForeground : colors.mutedForeground,
-              }}>
-                Confirm Purchase
-              </Text>
-            </TouchableOpacity>
-            <TouchableOpacity onPress={() => setConfirmItem(null)} style={{ paddingVertical: 12, alignItems: "center" }}>
-              <Text style={{ fontSize: 15, fontFamily: "Nunito_600SemiBold", color: colors.mutedForeground }}>
-                Cancel
-              </Text>
-            </TouchableOpacity>
-          </View>
-        )}
-      </Modal>
     </View>
   );
 }

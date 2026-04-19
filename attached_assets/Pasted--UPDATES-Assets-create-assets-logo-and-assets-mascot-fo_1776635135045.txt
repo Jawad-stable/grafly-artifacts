@@ -1,0 +1,18 @@
+
+UPDATES
+
+Assets: create assets/logo/ and assets/mascot/ folders. Export all paths from src/constants/assets.ts. Build a GraflyMascot component at src/components/GraflyMascot.tsx with a state prop (idle, celebrate, think, oops, correct, wrong). All mascot usage goes through this component only. Logo goes in splash, auth screens, and home top bar.
+
+Colors: replace the entire previous color palette. Primary background: #21263F. Primary text and surfaces: #DEE0ED. Accent blue: #00A4FA. Accent yellow-green: #E3ED43. Accent pink: #FF7BD0. Store all values in src/constants/theme.ts. No component hardcodes any color directly.
+
+Greeting: replace any static greeting with a time-based one using the device clock. Before 12pm show "Good morning, [first name]". 12pm to 5pm show "Good afternoon, [first name]". After 5pm show "Good evening, [first name]". First name comes from the Supabase user profile.
+
+Text rules: all display text must be short. Never use hyphens or dashes inside UI strings. Split compound labels into a primary label and a smaller secondary label on the line below. This applies to every screen, card, badge, and toast in the app.
+
+Streak: the streak flame and counter must be locked in position on the home screen at all times. Place it inside a fixed absolutely positioned container in the top bar. No passive floating animation on the streak element whatsoever. Use a fixed-width container for the counter so the layout never shifts when the digit count changes.
+
+Bottom nav: icon-only tabs, no visible labels. Active tab shows accent blue icon inside a soft floating pill. Inactive tabs at 40% opacity. On press, spring scale animation (1 to 1.2 to 1) with color shift. Tab bar uses expo-blur frosted glass background, floating above the bottom edge with a shadow, not flush to the screen.
+
+Skill tree layout: nodes follow a winding S or Z path, alternating left, center, right as the user scrolls down. Connect nodes with smooth SVG curves via react-native-svg, not straight lines. At the top of the skill tree, replace the course selector pills with a horizontally swipeable row of floating rectangle cards. Each card has a course icon and name. Selected card elevates with a withSpring animation and shows an accent blue border.
+
+Game types: implement six question types as separate reusable components. MultipleChoice: tap to select, color feedback, spring confirm button. SpotTheDifference: two side-by-side designs, user taps the error area, correct tap glows accent blue, wrong tap shakes accent pink. DragToMatch: two columns, drag terms to matching visuals, spring snap on correct, shake and return on wrong. TapTheElement: display a UI screenshot, user taps the element described in the prompt, correct highlights, wrong shakes. ArrangeInOrder: draggable cards the user sorts into correct sequence, spring physics throughout. FillInTheBlank: sentence with a missing term, three tappable chip options, correct chip scales into the blank, wrong chip shakes. Never repeat the same type twice in a row within a lesson.

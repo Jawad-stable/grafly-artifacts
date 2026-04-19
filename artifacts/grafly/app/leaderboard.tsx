@@ -169,7 +169,7 @@ export default function LeaderboardScreen() {
                 {/* 1st place */}
                 {top3[0] && (
                   <View style={{ alignItems: "center", flex: 1.2 }}>
-                    <Ionicons name="crown" size={22} color={PODIUM_COLORS[0]} style={{ marginBottom: 4 }} />
+                    <Ionicons name="trophy" size={22} color={PODIUM_COLORS[0]} style={{ marginBottom: 4 }} />
                     <View style={{
                       width: 64,
                       height: 64,

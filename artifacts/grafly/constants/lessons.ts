@@ -1,4 +1,17 @@
-export type QuestionType = "multiple_choice" | "true_false" | "image_id";
+export type QuestionType =
+  | "multiple_choice"
+  | "true_false"
+  | "image_id"
+  | "spot_the_difference"
+  | "tap_the_element"
+  | "arrange_in_order"
+  | "drag_to_match"
+  | "fill_in_blank";
+
+export interface MatchPair {
+  left: string;
+  right: string;
+}
 
 export interface Question {
   id: string;
@@ -9,6 +22,11 @@ export interface Question {
   correctBool?: boolean;
   explanation: string;
   difficulty: 1 | 2 | 3 | 4 | 5;
+  correctOrder?: number[];
+  pairs?: MatchPair[];
+  blanks?: string[];
+  acceptedAnswers?: string[];
+  template?: string;
 }
 
 export interface Lesson {

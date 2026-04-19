@@ -1,8 +1,7 @@
-import React, { useState, useRef } from "react";
+import React, { useState } from "react";
 import {
   View,
   Text,
-  StyleSheet,
   TextInput,
   TouchableOpacity,
   ScrollView,
@@ -15,12 +14,8 @@ import Animated, {
   withSpring,
   withTiming,
   withSequence,
-  withRepeat,
-  runOnJS,
   FadeIn,
-  FadeOut,
   SlideInRight,
-  SlideOutLeft,
 } from "react-native-reanimated";
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
@@ -30,10 +25,44 @@ import { useColors } from "@/hooks/useColors";
 import { useGame } from "@/context/GameContext";
 import type { PlacementLevel } from "@/context/GameContext";
 import { PLACEMENT_QUESTIONS } from "@/constants/lessons";
+import { GraflyMascot } from "@/components/GraflyMascot";
+import type { MascotState } from "@/constants/assets";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
-
 type Step = "welcome" | "setup" | "placement" | "results";
+
+function getPlacementLevel(score: number, total: number): PlacementLevel {
+  const pct = score / total;
+  if (pct >= 0.9) return "expert";
+  if (pct >= 0.75) return "advanced";
+  if (pct >= 0.55) return "intermediate";
+  if (pct >= 0.35) return "beginner";
+  return "novice";
+}
+
+const LEVEL_LABELS: Record<PlacementLevel, string> = {
+  novice: "Novice Designer",
+  beginner: "Beginner Designer",
+  intermediate: "Intermediate Designer",
+  advanced: "Advanced Designer",
+  expert: "Expert Designer",
+};
+
+const LEVEL_COLORS: Record<PlacementLevel, string> = {
+  novice: "#8A90B0",
+  beginner: "#00A4FA",
+  intermediate: "#22DD88",
+  advanced: "#E3ED43",
+  expert: "#FF7BD0",
+};
+
+const LEVEL_DESC: Record<PlacementLevel, string> = {
+  novice: "Every expert was once a beginner. Your journey starts now.",
+  beginner: "You have the foundations. Let us build on them.",
+  intermediate: "Solid knowledge. Time to go deeper.",
+  advanced: "Impressive! You will move fast through the early levels.",
+  expert: "You already think like a designer. Let us refine your craft.",
+};
 
 export default function OnboardingScreen() {
   const colors = useColors();
@@ -47,67 +76,19 @@ export default function OnboardingScreen() {
   const [answerSelected, setAnswerSelected] = useState<number | boolean | null>(null);
   const [showFeedback, setShowFeedback] = useState(false);
   const [placementResult, setPlacementResult] = useState<PlacementLevel>("novice");
+  const [mascotState, setMascotState] = useState<MascotState>("idle");
 
-  const logoScale = useSharedValue(0.8);
-  const logoOpacity = useSharedValue(0);
   const progressWidth = useSharedValue(0);
-  const feedbackScale = useSharedValue(1);
-
-  React.useEffect(() => {
-    logoScale.value = withSpring(1, { damping: 12, stiffness: 100 });
-    logoOpacity.value = withTiming(1, { duration: 600 });
-  }, []);
 
   React.useEffect(() => {
     if (step === "placement") {
-      progressWidth.value = withTiming(
-        ((currentQ + 1) / PLACEMENT_QUESTIONS.length) * 100,
-        { duration: 400 }
-      );
+      progressWidth.value = withTiming(((currentQ + 1) / PLACEMENT_QUESTIONS.length) * 100, { duration: 400 });
     }
   }, [currentQ, step]);
-
-  const logoAnimStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: logoScale.value }],
-    opacity: logoOpacity.value,
-  }));
 
   const progressAnimStyle = useAnimatedStyle(() => ({
     width: `${progressWidth.value}%` as any,
   }));
-
-  function getPlacementLevel(score: number, total: number): PlacementLevel {
-    const pct = score / total;
-    if (pct >= 0.9) return "expert";
-    if (pct >= 0.75) return "advanced";
-    if (pct >= 0.55) return "intermediate";
-    if (pct >= 0.35) return "beginner";
-    return "novice";
-  }
-
-  const LEVEL_LABELS: Record<PlacementLevel, string> = {
-    novice: "Novice Designer",
-    beginner: "Beginner Designer",
-    intermediate: "Intermediate Designer",
-    advanced: "Advanced Designer",
-    expert: "Expert Designer",
-  };
-
-  const LEVEL_COLORS: Record<PlacementLevel, string> = {
-    novice: "#7A7A9A",
-    beginner: "#00A4FA",
-    intermediate: "#22DD88",
-    advanced: "#E3ED43",
-    expert: "#FF7BD0",
-  };
-
-  const LEVEL_DESC: Record<PlacementLevel, string> = {
-    novice: "Every expert was once a beginner. Your journey starts now.",
-    beginner: "You have the foundations. Let's build on them.",
-    intermediate: "Solid knowledge — time to go deeper.",
-    advanced: "Impressive! You'll move fast through the early levels.",
-    expert: "You already think like a designer. Let's refine your craft.",
-  };
 
   function handleAnswer(answer: number | boolean) {
     if (showFeedback) return;
@@ -115,25 +96,23 @@ export default function OnboardingScreen() {
     setShowFeedback(true);
 
     const q = PLACEMENT_QUESTIONS[currentQ];
-    const correct =
-      q.type === "true_false"
-        ? answer === q.correctBool
-        : answer === q.correctIndex;
-
-    if (correct) setScore((s) => s + 1);
-
-    feedbackScale.value = withSequence(
-      withSpring(1.05, { damping: 8 }),
-      withSpring(1, { damping: 12 })
-    );
+    const correct = q.type === "true_false" ? answer === q.correctBool : answer === q.correctIndex;
+    if (correct) {
+      setScore((s) => s + 1);
+      setMascotState("correct");
+    } else {
+      setMascotState("wrong");
+    }
 
     setTimeout(() => {
       const nextQ = currentQ + 1;
+      setMascotState("think");
       if (nextQ >= PLACEMENT_QUESTIONS.length) {
         const finalScore = correct ? score + 1 : score;
         const level = getPlacementLevel(finalScore, PLACEMENT_QUESTIONS.length);
         setPlacementResult(level);
         setStep("results");
+        setMascotState("celebrate");
       } else {
         setCurrentQ(nextQ);
         setAnswerSelected(null);
@@ -147,219 +126,46 @@ export default function OnboardingScreen() {
     router.replace("/(tabs)");
   }
 
-  const s = StyleSheet.create({
-    container: {
-      flex: 1,
-      backgroundColor: colors.background,
-    },
-    safe: {
-      flex: 1,
-      paddingTop: insets.top + (Platform.OS === "web" ? 67 : 0),
-      paddingBottom: insets.bottom + (Platform.OS === "web" ? 34 : 0),
-    },
-    center: { flex: 1, alignItems: "center", justifyContent: "center", paddingHorizontal: 28 },
-    logo: {
-      width: 100,
-      height: 100,
-      borderRadius: 28,
-      backgroundColor: colors.primary,
-      alignItems: "center",
-      justifyContent: "center",
-      marginBottom: 28,
-    },
-    logoText: {
-      fontSize: 52,
-      fontFamily: "Nunito_800ExtraBold",
-      color: colors.primaryForeground,
-      lineHeight: 60,
-    },
-    title: {
-      fontSize: 32,
-      fontFamily: "Nunito_800ExtraBold",
-      color: colors.foreground,
-      textAlign: "center",
-      marginBottom: 12,
-    },
-    subtitle: {
-      fontSize: 16,
-      fontFamily: "Nunito_600SemiBold",
-      color: colors.mutedForeground,
-      textAlign: "center",
-      lineHeight: 24,
-      marginBottom: 48,
-    },
-    btn: {
-      backgroundColor: colors.primary,
-      borderRadius: colors.radius,
-      paddingVertical: 18,
-      paddingHorizontal: 48,
-      alignItems: "center",
-      width: "100%",
-    },
-    btnText: {
-      fontSize: 18,
-      fontFamily: "Nunito_800ExtraBold",
-      color: colors.primaryForeground,
-    },
-    btnSecondary: {
-      backgroundColor: "transparent",
-      borderRadius: colors.radius,
-      paddingVertical: 16,
-      paddingHorizontal: 48,
-      alignItems: "center",
-      marginTop: 12,
-    },
-    btnSecondaryText: {
-      fontSize: 16,
-      fontFamily: "Nunito_600SemiBold",
-      color: colors.mutedForeground,
-    },
-    input: {
-      backgroundColor: colors.card,
-      borderRadius: colors.radius,
-      paddingHorizontal: 20,
-      paddingVertical: 18,
-      fontSize: 18,
-      fontFamily: "Nunito_600SemiBold",
-      color: colors.foreground,
-      borderWidth: 2,
-      borderColor: colors.border,
-      width: "100%",
-      marginBottom: 32,
-    },
-    progressBar: {
-      height: 6,
-      backgroundColor: colors.muted,
-      borderRadius: 3,
-      marginHorizontal: 24,
-      marginTop: 24,
-      marginBottom: 8,
-      overflow: "hidden",
-    },
-    progressFill: {
-      height: "100%",
-      backgroundColor: colors.primary,
-      borderRadius: 3,
-    },
-    qCard: {
-      flex: 1,
-      paddingHorizontal: 24,
-      paddingTop: 24,
-    },
-    qNum: {
-      fontSize: 13,
-      fontFamily: "Nunito_600SemiBold",
-      color: colors.mutedForeground,
-      marginBottom: 8,
-      textAlign: "center",
-    },
-    qText: {
-      fontSize: 20,
-      fontFamily: "Nunito_800ExtraBold",
-      color: colors.foreground,
-      textAlign: "center",
-      lineHeight: 28,
-      marginBottom: 32,
-    },
-    option: {
-      backgroundColor: colors.card,
-      borderRadius: colors.radius,
-      paddingVertical: 18,
-      paddingHorizontal: 20,
-      marginBottom: 12,
-      borderWidth: 2,
-      borderColor: colors.border,
-    },
-    optionText: {
-      fontSize: 16,
-      fontFamily: "Nunito_600SemiBold",
-      color: colors.foreground,
-    },
-    tfRow: {
-      flexDirection: "row",
-      gap: 12,
-      marginTop: 16,
-    },
-    tfBtn: {
-      flex: 1,
-      borderRadius: colors.radius,
-      paddingVertical: 24,
-      alignItems: "center",
-      justifyContent: "center",
-      borderWidth: 2,
-    },
-    tfText: {
-      fontSize: 20,
-      fontFamily: "Nunito_800ExtraBold",
-    },
-    levelBadge: {
-      paddingHorizontal: 20,
-      paddingVertical: 8,
-      borderRadius: 100,
-      marginBottom: 20,
-    },
-    levelBadgeText: {
-      fontSize: 14,
-      fontFamily: "Nunito_800ExtraBold",
-      color: "#0F0F14",
-    },
-    statsRow: {
-      flexDirection: "row",
-      gap: 16,
-      marginBottom: 40,
-      width: "100%",
-    },
-    statCard: {
-      flex: 1,
-      backgroundColor: colors.card,
-      borderRadius: colors.radius,
-      padding: 16,
-      alignItems: "center",
-    },
-    statNum: {
-      fontSize: 28,
-      fontFamily: "Nunito_800ExtraBold",
-      color: colors.foreground,
-    },
-    statLabel: {
-      fontSize: 11,
-      fontFamily: "Nunito_600SemiBold",
-      color: colors.mutedForeground,
-      marginTop: 2,
-    },
-  });
+  const padTop = insets.top + (Platform.OS === "web" ? 67 : 0);
+  const padBottom = insets.bottom + (Platform.OS === "web" ? 34 : 0);
 
   if (step === "welcome") {
     return (
-      <LinearGradient
-        colors={[colors.background, colors.secondary + "80"]}
-        style={s.container}
-      >
-        <View style={s.safe}>
-          <View style={s.center}>
-            <Animated.View style={[s.logo, logoAnimStyle]}>
-              <Text style={s.logoText}>G</Text>
-            </Animated.View>
-            <Animated.Text entering={FadeIn.delay(300)} style={s.title}>
+      <LinearGradient colors={[colors.background, colors.secondary]} style={{ flex: 1 }}>
+        <View style={{ flex: 1, paddingTop: padTop, paddingBottom: padBottom }}>
+          <View style={{ flex: 1, alignItems: "center", justifyContent: "center", paddingHorizontal: 28 }}>
+            <GraflyMascot state="celebrate" size={150} float />
+            <Animated.Text entering={FadeIn.delay(300)} style={{
+              fontSize: 32, fontFamily: "Nunito_800ExtraBold",
+              color: colors.foreground, textAlign: "center", marginBottom: 12, marginTop: 20,
+            }}>
               Welcome to Grafly
             </Animated.Text>
-            <Animated.Text entering={FadeIn.delay(500)} style={s.subtitle}>
-              Design education, gamified.{"\n"}Learn real skills — one lesson at a time.
+            <Animated.Text entering={FadeIn.delay(500)} style={{
+              fontSize: 16, fontFamily: "Nunito_600SemiBold",
+              color: colors.mutedForeground, textAlign: "center", lineHeight: 24, marginBottom: 48,
+            }}>
+              Design education, gamified.
+              {"\n"}Learn real skills one lesson at a time.
             </Animated.Text>
             <Animated.View entering={FadeIn.delay(700)} style={{ width: "100%" }}>
               <TouchableOpacity
-                style={s.btn}
+                style={{ backgroundColor: colors.primary, borderRadius: colors.radius, paddingVertical: 18, alignItems: "center", width: "100%" }}
                 onPress={() => setStep("setup")}
                 activeOpacity={0.85}
               >
-                <Text style={s.btnText}>Get Started</Text>
+                <Text style={{ fontSize: 18, fontFamily: "Nunito_800ExtraBold", color: colors.primaryForeground }}>
+                  Get Started
+                </Text>
               </TouchableOpacity>
               <TouchableOpacity
-                style={s.btnSecondary}
-                onPress={() => setStep("placement")}
+                style={{ paddingVertical: 16, alignItems: "center", marginTop: 12 }}
+                onPress={() => { setMascotState("think"); setStep("placement"); }}
                 activeOpacity={0.7}
               >
-                <Text style={s.btnSecondaryText}>Already a designer? Take the placement test</Text>
+                <Text style={{ fontSize: 15, fontFamily: "Nunito_600SemiBold", color: colors.mutedForeground }}>
+                  Already a designer? Skip ahead
+                </Text>
               </TouchableOpacity>
             </Animated.View>
           </View>
@@ -370,21 +176,30 @@ export default function OnboardingScreen() {
 
   if (step === "setup") {
     return (
-      <View style={s.container}>
-        <View style={s.safe}>
-          <Animated.View entering={SlideInRight} style={s.center}>
-            <Ionicons
-              name="person-circle-outline"
-              size={72}
-              color={colors.primary}
-              style={{ marginBottom: 20 }}
-            />
-            <Text style={s.title}>What should we call you?</Text>
-            <Text style={[s.subtitle, { marginBottom: 28 }]}>
-              This is your name in the Grafly community.
+      <View style={{ flex: 1, backgroundColor: colors.background }}>
+        <View style={{ flex: 1, paddingTop: padTop, paddingBottom: padBottom }}>
+          <Animated.View entering={SlideInRight} style={{ flex: 1, alignItems: "center", justifyContent: "center", paddingHorizontal: 28 }}>
+            <GraflyMascot state="think" size={130} />
+            <Text style={{
+              fontSize: 28, fontFamily: "Nunito_800ExtraBold",
+              color: colors.foreground, textAlign: "center", marginBottom: 10, marginTop: 20,
+            }}>
+              What is your name?
+            </Text>
+            <Text style={{
+              fontSize: 15, fontFamily: "Nunito_600SemiBold",
+              color: colors.mutedForeground, textAlign: "center", marginBottom: 28,
+            }}>
+              Your name in the Grafly community
             </Text>
             <TextInput
-              style={s.input}
+              style={{
+                backgroundColor: colors.card, borderRadius: colors.radius,
+                paddingHorizontal: 20, paddingVertical: 18,
+                fontSize: 18, fontFamily: "Nunito_600SemiBold",
+                color: colors.foreground, borderWidth: 2, borderColor: colors.border,
+                width: "100%", marginBottom: 32,
+              }}
               value={username}
               onChangeText={setUsername}
               placeholder="Your name or handle"
@@ -394,13 +209,16 @@ export default function OnboardingScreen() {
               returnKeyType="done"
             />
             <TouchableOpacity
-              style={[s.btn, !username.trim() && { opacity: 0.5 }]}
-              onPress={() => setStep("placement")}
+              style={[{
+                backgroundColor: colors.primary, borderRadius: colors.radius,
+                paddingVertical: 18, alignItems: "center", width: "100%",
+              }, !username.trim() && { opacity: 0.5 }]}
+              onPress={() => { setMascotState("think"); setStep("placement"); }}
               activeOpacity={0.85}
               disabled={!username.trim()}
             >
-              <Text style={s.btnText}>
-                {username.trim() ? `Continue as ${username.trim()}` : "Enter your name to continue"}
+              <Text style={{ fontSize: 18, fontFamily: "Nunito_800ExtraBold", color: colors.primaryForeground }}>
+                {username.trim() ? `Continue as ${username.trim()}` : "Enter your name"}
               </Text>
             </TouchableOpacity>
           </Animated.View>
@@ -411,44 +229,43 @@ export default function OnboardingScreen() {
 
   if (step === "placement") {
     const q = PLACEMENT_QUESTIONS[currentQ];
-
     return (
-      <View style={s.container}>
-        <View style={s.safe}>
-          <View style={s.progressBar}>
-            <Animated.View style={[s.progressFill, progressAnimStyle]} />
+      <View style={{ flex: 1, backgroundColor: colors.background }}>
+        <View style={{ flex: 1, paddingTop: padTop, paddingBottom: padBottom }}>
+          <View style={{ height: 6, backgroundColor: colors.muted, marginHorizontal: 24, marginTop: 20, marginBottom: 8, borderRadius: 3, overflow: "hidden" }}>
+            <Animated.View style={[{ height: "100%", backgroundColor: colors.primary, borderRadius: 3 }, progressAnimStyle]} />
           </View>
-          <Text style={s.qNum}>
-            Placement Test • Question {currentQ + 1}
-          </Text>
-          <ScrollView style={s.qCard} showsVerticalScrollIndicator={false}>
-            <Text style={s.qText}>{q.question}</Text>
+          <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingHorizontal: 24, marginBottom: 12 }}>
+            <Text style={{ fontSize: 13, fontFamily: "Nunito_600SemiBold", color: colors.mutedForeground }}>
+              Question {currentQ + 1} of {PLACEMENT_QUESTIONS.length}
+            </Text>
+            <GraflyMascot state={mascotState} size={52} />
+          </View>
+          <ScrollView style={{ flex: 1, paddingHorizontal: 24 }} showsVerticalScrollIndicator={false}>
+            <Text style={{
+              fontSize: 20, fontFamily: "Nunito_800ExtraBold",
+              color: colors.foreground, textAlign: "center",
+              lineHeight: 28, marginBottom: 28,
+            }}>
+              {q.question}
+            </Text>
 
             {q.type === "multiple_choice" && q.options && (
               <Animated.View entering={FadeIn}>
                 {q.options.map((opt, i) => {
                   let borderColor = colors.border;
                   let bg = colors.card;
-                  if (showFeedback && i === q.correctIndex) {
-                    borderColor = colors.success;
-                    bg = colors.success + "20";
-                  } else if (
-                    showFeedback &&
-                    answerSelected === i &&
-                    i !== q.correctIndex
-                  ) {
-                    borderColor = colors.destructive;
-                    bg = colors.destructive + "20";
-                  }
+                  if (showFeedback && i === q.correctIndex) { borderColor = colors.success; bg = colors.success + "20"; }
+                  else if (showFeedback && answerSelected === i && i !== q.correctIndex) { borderColor = colors.destructive; bg = colors.destructive + "20"; }
                   return (
                     <TouchableOpacity
                       key={i}
-                      style={[s.option, { borderColor, backgroundColor: bg }]}
+                      style={{ backgroundColor: bg, borderRadius: colors.radius, paddingVertical: 18, paddingHorizontal: 20, marginBottom: 12, borderWidth: 2, borderColor }}
                       onPress={() => handleAnswer(i)}
                       activeOpacity={0.8}
                       disabled={showFeedback}
                     >
-                      <Text style={s.optionText}>{opt}</Text>
+                      <Text style={{ fontSize: 16, fontFamily: "Nunito_600SemiBold", color: colors.foreground }}>{opt}</Text>
                     </TouchableOpacity>
                   );
                 })}
@@ -456,33 +273,22 @@ export default function OnboardingScreen() {
             )}
 
             {q.type === "true_false" && (
-              <View style={s.tfRow}>
+              <View style={{ flexDirection: "row", gap: 12, marginTop: 16 }}>
                 {[true, false].map((val) => {
                   let borderColor = colors.border;
                   let bg = colors.card;
                   let textColor = colors.foreground;
-                  if (showFeedback && val === q.correctBool) {
-                    borderColor = colors.success;
-                    bg = colors.success + "20";
-                    textColor = colors.success;
-                  } else if (
-                    showFeedback &&
-                    answerSelected === val &&
-                    val !== q.correctBool
-                  ) {
-                    borderColor = colors.destructive;
-                    bg = colors.destructive + "20";
-                    textColor = colors.destructive;
-                  }
+                  if (showFeedback && val === q.correctBool) { borderColor = colors.success; bg = colors.success + "20"; textColor = colors.success; }
+                  else if (showFeedback && answerSelected === val && val !== q.correctBool) { borderColor = colors.destructive; bg = colors.destructive + "20"; textColor = colors.destructive; }
                   return (
                     <TouchableOpacity
                       key={String(val)}
-                      style={[s.tfBtn, { borderColor, backgroundColor: bg }]}
+                      style={{ flex: 1, borderRadius: colors.radius, paddingVertical: 24, alignItems: "center", justifyContent: "center", borderWidth: 2, borderColor, backgroundColor: bg }}
                       onPress={() => handleAnswer(val)}
                       activeOpacity={0.8}
                       disabled={showFeedback}
                     >
-                      <Text style={[s.tfText, { color: textColor }]}>
+                      <Text style={{ fontSize: 20, fontFamily: "Nunito_800ExtraBold", color: textColor }}>
                         {val ? "True" : "False"}
                       </Text>
                     </TouchableOpacity>
@@ -492,23 +298,8 @@ export default function OnboardingScreen() {
             )}
 
             {showFeedback && (
-              <Animated.View
-                entering={FadeIn}
-                style={{
-                  marginTop: 20,
-                  backgroundColor: colors.card,
-                  borderRadius: colors.radius,
-                  padding: 16,
-                }}
-              >
-                <Text
-                  style={{
-                    fontSize: 14,
-                    fontFamily: "Nunito_600SemiBold",
-                    color: colors.mutedForeground,
-                    lineHeight: 20,
-                  }}
-                >
+              <Animated.View entering={FadeIn} style={{ marginTop: 20, backgroundColor: colors.card, borderRadius: colors.radius, padding: 16 }}>
+                <Text style={{ fontSize: 14, fontFamily: "Nunito_600SemiBold", color: colors.mutedForeground, lineHeight: 20 }}>
                   {q.explanation}
                 </Text>
               </Animated.View>
@@ -523,68 +314,51 @@ export default function OnboardingScreen() {
   if (step === "results") {
     const levelColor = LEVEL_COLORS[placementResult];
     return (
-      <View style={s.container}>
-        <View style={s.safe}>
-          <Animated.View entering={FadeIn} style={s.center}>
-            <View
-              style={{
-                width: 120,
-                height: 120,
-                borderRadius: 60,
-                backgroundColor: levelColor + "20",
-                alignItems: "center",
-                justifyContent: "center",
-                marginBottom: 24,
-                borderWidth: 3,
-                borderColor: levelColor,
-              }}
-            >
-              <Ionicons name="trophy" size={52} color={levelColor} />
-            </View>
-
-            <Text style={s.title}>
-              {username.trim() ? `Nice work, ${username.trim()}!` : "Nice work!"}
+      <View style={{ flex: 1, backgroundColor: colors.background }}>
+        <View style={{ flex: 1, paddingTop: padTop, paddingBottom: padBottom }}>
+          <Animated.View entering={FadeIn} style={{ flex: 1, alignItems: "center", justifyContent: "center", paddingHorizontal: 28 }}>
+            <GraflyMascot state="celebrate" size={150} float />
+            <Text style={{
+              fontSize: 28, fontFamily: "Nunito_800ExtraBold",
+              color: colors.foreground, textAlign: "center", marginBottom: 8, marginTop: 20,
+            }}>
+              {username.trim() ? `Great work, ${username.trim().split(" ")[0]}!` : "Great work!"}
             </Text>
-            <Text style={[s.subtitle, { marginBottom: 24 }]}>
-              Your placement test is complete.
+            <Text style={{ fontSize: 15, fontFamily: "Nunito_600SemiBold", color: colors.mutedForeground, textAlign: "center", marginBottom: 20 }}>
+              Your placement test is complete
             </Text>
 
-            <View style={[s.levelBadge, { backgroundColor: levelColor }]}>
-              <Text style={s.levelBadgeText}>{LEVEL_LABELS[placementResult]}</Text>
+            <View style={{ paddingHorizontal: 20, paddingVertical: 8, borderRadius: 100, marginBottom: 20, backgroundColor: levelColor }}>
+              <Text style={{ fontSize: 14, fontFamily: "Nunito_800ExtraBold", color: "#21263F" }}>
+                {LEVEL_LABELS[placementResult]}
+              </Text>
             </View>
 
-            <View style={s.statsRow}>
-              <View style={s.statCard}>
-                <Text style={s.statNum}>{score}</Text>
-                <Text style={s.statLabel}>CORRECT</Text>
-              </View>
-              <View style={s.statCard}>
-                <Text style={s.statNum}>{PLACEMENT_QUESTIONS.length}</Text>
-                <Text style={s.statLabel}>QUESTIONS</Text>
-              </View>
-              <View style={s.statCard}>
-                <Text style={s.statNum}>
-                  {Math.round((score / PLACEMENT_QUESTIONS.length) * 100)}%
-                </Text>
-                <Text style={s.statLabel}>SCORE</Text>
-              </View>
+            <View style={{ flexDirection: "row", gap: 16, marginBottom: 28, width: "100%" }}>
+              {[
+                { num: score, label: "Correct" },
+                { num: PLACEMENT_QUESTIONS.length, label: "Questions" },
+                { num: `${Math.round((score / PLACEMENT_QUESTIONS.length) * 100)}%`, label: "Score" },
+              ].map((s) => (
+                <View key={s.label} style={{ flex: 1, backgroundColor: colors.card, borderRadius: colors.radius, padding: 16, alignItems: "center" }}>
+                  <Text style={{ fontSize: 28, fontFamily: "Nunito_800ExtraBold", color: colors.foreground }}>{s.num}</Text>
+                  <Text style={{ fontSize: 11, fontFamily: "Nunito_600SemiBold", color: colors.mutedForeground, marginTop: 2 }}>{s.label.toUpperCase()}</Text>
+                </View>
+              ))}
             </View>
 
-            <Text
-              style={[
-                s.subtitle,
-                { color: colors.mutedForeground, marginBottom: 36 },
-              ]}
-            >
+            <Text style={{ fontSize: 15, fontFamily: "Nunito_600SemiBold", color: colors.mutedForeground, textAlign: "center", marginBottom: 32, lineHeight: 22 }}>
               {LEVEL_DESC[placementResult]}
             </Text>
 
             <TouchableOpacity
-              style={s.btn}
+              style={{ backgroundColor: colors.primary, borderRadius: colors.radius, paddingVertical: 18, alignItems: "center", width: "100%" }}
               onPress={handleFinish}
               activeOpacity={0.85}
             >
-              <Text style={s.btnText}>Start Learning</Text>
+              <Text style={{ fontSize: 18, fontFamily: "Nunito_800ExtraBold", color: colors.primaryForeground }}>
+                Start Learning
+              </Text>
             </TouchableOpacity>
           </Animated.View>
         </View>
