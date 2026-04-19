@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useReducer, useEffect, useRef } from "react";
+import React, { createContext, useContext, useReducer, useEffect, useRef, useState } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { supabase } from "@/services/supabase";
 import { useAuth } from "@/context/AuthContext";
@@ -244,6 +244,7 @@ function reducer(state: GameState, action: Action): GameState {
 
 interface GameContextType {
   state: GameState;
+  hydrated: boolean;
   dispatch: React.Dispatch<Action>;
   addXP: (amount: number) => void;
   addCoins: (amount: number) => void;
@@ -268,6 +269,7 @@ const GameContext = createContext<GameContextType | null>(null);
 
 export function GameProvider({ children }: { children: React.ReactNode }) {
   const [state, dispatch] = useReducer(reducer, initialState);
+  const [hydrated, setHydrated] = useState(false);
   const { user } = useAuth();
   const syncTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const initializedRef = useRef(false);
@@ -284,6 +286,7 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
         if (!error && data?.state) {
           dispatch({ type: "RESTORE", state: { ...initialState, ...data.state } });
           initializedRef.current = true;
+          setHydrated(true);
           return;
         }
       }
@@ -296,8 +299,10 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
         } catch (_) {}
       }
       initializedRef.current = true;
+      setHydrated(true);
     }
     initializedRef.current = false;
+    setHydrated(false);
     loadState();
   }, [user?.id]);
 
@@ -379,6 +384,7 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
     <GameContext.Provider
       value={{
         state,
+        hydrated,
         dispatch,
         addXP,
         addCoins,

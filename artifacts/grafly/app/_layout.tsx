@@ -23,13 +23,14 @@ const queryClient = new QueryClient();
 
 function AuthGate({ children }: { children: React.ReactNode }) {
   const { loading } = useAuth();
-  const { state } = useGame();
+  const { state, hydrated } = useGame();
   const segments = useSegments();
 
   const inAuthGroup = segments[0] === "auth";
   const inOnboarding = segments[0] === "onboarding";
 
-  if (loading) return null;
+  // Wait until persisted state has loaded before deciding where to send the user.
+  if (loading || !hydrated) return null;
 
   // Onboarding first — no account required to start playing
   if (!state.onboardingComplete && !inOnboarding && !inAuthGroup) {
