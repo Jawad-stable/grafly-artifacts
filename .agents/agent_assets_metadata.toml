@@ -1,0 +1,8 @@
+uploads = []
+outputs = []
+
+[[generated]]
+id = "ATZdKaC7ZszJ7xsvrBkoH"
+uri = "file://artifacts/grafly/assets/images/icon.png"
+type = "image"
+title = "grafly app icon"
