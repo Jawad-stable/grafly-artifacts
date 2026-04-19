@@ -8,10 +8,10 @@ import {
   Platform,
   Image,
   ActivityIndicator,
-  KeyboardAvoidingView,
   Modal,
   Pressable,
 } from "react-native";
+import { KeyboardAvoidingView } from "react-native-keyboard-controller";
 import Animated, { FadeIn, FadeInUp } from "react-native-reanimated";
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
@@ -51,7 +51,8 @@ export default function CritiqueScreen() {
 
   const paddingTop = insets.top + (Platform.OS === "web" ? 67 : 0);
   const tabBarHeight = 62 + insets.bottom;
-  const paddingBottom = (Platform.OS === "web" ? 34 + insets.bottom : tabBarHeight) + 8;
+  // Composer floats above the tab bar with breathing room
+  const composerLift = Platform.OS === "web" ? insets.bottom + 34 + 16 : tabBarHeight + 12;
 
   function loadNewDesign() {
     setLoadingDesign(true);
@@ -107,8 +108,8 @@ export default function CritiqueScreen() {
   return (
     <View style={{ flex: 1, backgroundColor: colors.background }}>
       <KeyboardAvoidingView
-        behavior={Platform.OS === "ios" ? "padding" : undefined}
-        keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 0}
+        behavior="padding"
+        keyboardVerticalOffset={0}
         style={{ flex: 1 }}
       >
         {/* Header */}
@@ -235,7 +236,7 @@ export default function CritiqueScreen() {
 
         {/* Composer */}
         {limitReached ? (
-          <View style={{ paddingHorizontal: 20, paddingBottom: paddingBottom, paddingTop: 8 }}>
+          <View style={{ paddingHorizontal: 20, paddingBottom: composerLift, paddingTop: 8 }}>
             <TouchableOpacity
               style={{
                 backgroundColor: colors.pink + "20",
@@ -263,7 +264,7 @@ export default function CritiqueScreen() {
               gap: 8,
               paddingHorizontal: 16,
               paddingTop: 8,
-              paddingBottom: paddingBottom,
+              paddingBottom: composerLift,
               backgroundColor: colors.background,
               borderTopWidth: 1,
               borderTopColor: colors.border,
