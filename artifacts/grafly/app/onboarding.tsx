@@ -67,7 +67,7 @@ const LEVEL_DESC: Record<PlacementLevel, string> = {
 export default function OnboardingScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
-  const { completeOnboarding } = useGame();
+  const { state, completeOnboarding, setTheme } = useGame();
 
   const [step, setStep] = useState<Step>("welcome");
   const [username, setUsername] = useState("");
@@ -133,6 +133,43 @@ export default function OnboardingScreen() {
     return (
       <LinearGradient colors={[colors.background, colors.secondary]} style={{ flex: 1 }}>
         <View style={{ flex: 1, paddingTop: padTop, paddingBottom: padBottom }}>
+          <Animated.View
+            entering={FadeIn.delay(100)}
+            style={{ flexDirection: "row", justifyContent: "center", paddingHorizontal: 28, paddingTop: 12 }}
+          >
+            <View style={{
+              flexDirection: "row", backgroundColor: colors.card, borderRadius: 100,
+              padding: 4, borderWidth: 1, borderColor: colors.border,
+            }}>
+              {(["light", "dark"] as const).map((mode) => {
+                const active = state.themeMode === mode;
+                return (
+                  <TouchableOpacity
+                    key={mode}
+                    onPress={() => setTheme(mode)}
+                    activeOpacity={0.85}
+                    style={{
+                      flexDirection: "row", alignItems: "center", gap: 6,
+                      paddingHorizontal: 16, paddingVertical: 8, borderRadius: 100,
+                      backgroundColor: active ? colors.primary : "transparent",
+                    }}
+                  >
+                    <Ionicons
+                      name={mode === "light" ? "sunny" : "moon"}
+                      size={16}
+                      color={active ? colors.primaryForeground : colors.mutedForeground}
+                    />
+                    <Text style={{
+                      fontSize: 13, fontFamily: "Nunito_800ExtraBold",
+                      color: active ? colors.primaryForeground : colors.mutedForeground,
+                    }}>
+                      {mode === "light" ? "Light" : "Dark"}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
+          </Animated.View>
           <View style={{ flex: 1, alignItems: "center", justifyContent: "center", paddingHorizontal: 28 }}>
             <GraflyMascot state="celebrate" size={150} float />
             <Animated.Text entering={FadeIn.delay(300)} style={{

@@ -33,6 +33,7 @@ export interface GameState {
   newLevel: number;
   xpBoosterActive: boolean;
   xpBoosterExpiry: string;
+  themeMode: "light" | "dark";
 }
 
 function getWeekStart(): string {
@@ -88,6 +89,7 @@ type Action =
   | { type: "SET_PRO"; isPro: boolean }
   | { type: "DISMISS_XP_POPUP" }
   | { type: "DISMISS_LEVEL_UP" }
+  | { type: "SET_THEME"; mode: "light" | "dark" }
   | { type: "RESTORE"; state: GameState };
 
 const STORAGE_KEY = "@grafly_v1_state";
@@ -117,6 +119,7 @@ const initialState: GameState = {
   newLevel: 1,
   xpBoosterActive: false,
   xpBoosterExpiry: "",
+  themeMode: "dark",
 };
 
 function reducer(state: GameState, action: Action): GameState {
@@ -205,6 +208,8 @@ function reducer(state: GameState, action: Action): GameState {
       return { ...state, showXPPopup: false, xpPopupAmount: 0 };
     case "DISMISS_LEVEL_UP":
       return { ...state, showLevelUp: false };
+    case "SET_THEME":
+      return { ...state, themeMode: action.mode };
     case "RESTORE":
       return { ...initialState, ...action.state };
     default:
@@ -225,6 +230,7 @@ interface GameContextType {
   purchaseShield: () => boolean;
   purchaseBooster: () => boolean;
   refillHearts: () => boolean;
+  setTheme: (mode: "light" | "dark") => void;
 }
 
 const GameContext = createContext<GameContextType | null>(null);
@@ -292,6 +298,9 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
     return true;
   };
 
+  const setTheme = (mode: "light" | "dark") =>
+    dispatch({ type: "SET_THEME", mode });
+
   const refillHearts = (): boolean => {
     if (state.coins < 100) return false;
     dispatch({ type: "USE_COINS", amount: 100 });
@@ -314,6 +323,7 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
         purchaseShield,
         purchaseBooster,
         refillHearts,
+        setTheme,
       }}
     >
       {children}

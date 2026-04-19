@@ -1,17 +1,15 @@
-import { useColorScheme } from "react-native";
-
 import colors from "@/constants/colors";
+import { useGame } from "@/context/GameContext";
 
 /**
- * Returns the design tokens for the current color scheme.
+ * Returns the design tokens for the user-selected theme.
  *
- * The returned object contains all color tokens for the active palette
- * plus scheme-independent values like `radius`.
- *
- * Both light and dark palettes use the dark-first #21263F theme.
+ * The theme is locked at onboarding via the welcome screen toggle and
+ * persisted in GameState.themeMode. Device color scheme is intentionally
+ * ignored so the chosen theme stays consistent everywhere.
  */
 export function useColors() {
-  const scheme = useColorScheme();
-  const palette = scheme === "dark" ? colors.dark : colors.light;
+  const { state } = useGame();
+  const palette = state.themeMode === "light" ? colors.light : colors.dark;
   return { ...palette, radius: colors.radius };
 }
