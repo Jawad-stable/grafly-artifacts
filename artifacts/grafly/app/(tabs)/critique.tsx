@@ -50,7 +50,8 @@ export default function CritiqueScreen() {
   const userTurnCount = messages.filter((m) => m.role === "user").length;
 
   const paddingTop = insets.top + (Platform.OS === "web" ? 67 : 0);
-  const paddingBottom = insets.bottom + (Platform.OS === "web" ? 34 : 100);
+  const tabBarHeight = 62 + insets.bottom;
+  const paddingBottom = (Platform.OS === "web" ? 34 + insets.bottom : tabBarHeight) + 8;
 
   function loadNewDesign() {
     setLoadingDesign(true);
@@ -139,26 +140,24 @@ export default function CritiqueScreen() {
                 backgroundColor: colors.card,
                 borderRadius: colors.radius,
                 overflow: "hidden",
-                flexDirection: "row",
-                gap: 12,
-                padding: 10,
-                alignItems: "center",
               }}
             >
               <Image
                 source={design.source}
-                style={{ width: 70, height: 70, borderRadius: 12, backgroundColor: colors.muted }}
+                style={{ width: "100%", height: 220, backgroundColor: colors.muted }}
                 resizeMode="cover"
               />
-              <View style={{ flex: 1 }}>
-                <Text style={{ fontSize: 14, fontFamily: "Nunito_800ExtraBold", color: colors.foreground }} numberOfLines={1}>
-                  {design.title}
-                </Text>
-                <Text style={{ fontSize: 12, fontFamily: "Nunito_600SemiBold", color: colors.mutedForeground, marginTop: 2 }} numberOfLines={2}>
-                  Tap to view full size
-                </Text>
+              <View style={{ flexDirection: "row", alignItems: "center", padding: 12, gap: 10 }}>
+                <View style={{ flex: 1 }}>
+                  <Text style={{ fontSize: 15, fontFamily: "Nunito_800ExtraBold", color: colors.foreground }} numberOfLines={1}>
+                    {design.title}
+                  </Text>
+                  <Text style={{ fontSize: 12, fontFamily: "Nunito_600SemiBold", color: colors.mutedForeground, marginTop: 2 }} numberOfLines={1}>
+                    Tap to view full size
+                  </Text>
+                </View>
+                <Ionicons name="expand-outline" size={20} color={colors.mutedForeground} />
               </View>
-              <Ionicons name="expand-outline" size={20} color={colors.mutedForeground} />
             </Pressable>
           </Animated.View>
         )}
