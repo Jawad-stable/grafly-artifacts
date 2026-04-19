@@ -1,0 +1,760 @@
+import React, { useState } from "react";
+import {
+  View,
+  Text,
+  ScrollView,
+  TouchableOpacity,
+  Platform,
+  TextInput,
+} from "react-native";
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withSpring,
+  withSequence,
+  withTiming,
+  FadeIn,
+} from "react-native-reanimated";
+import { Ionicons } from "@expo/vector-icons";
+import { router, useLocalSearchParams } from "expo-router";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import * as Haptics from "expo-haptics";
+import { useColors } from "@/hooks/useColors";
+import { useGame } from "@/context/GameContext";
+import { voiceService } from "@/services/voiceService";
+import { COURSES, findNodeById, type Question, type Lesson } from "@/constants/lessons";
+import { GraflyMascot } from "@/components/GraflyMascot";
+import type { MascotState } from "@/constants/assets";
+
+function MultipleChoice({
+  question, onAnswer, answered, selectedIndex,
+}: {
+  question: Question; onAnswer: (i: number) => void;
+  answered: boolean; selectedIndex: number | null;
+}) {
+  const colors = useColors();
+  if (!question.options) return null;
+  return (
+    <View style={{ gap: 12 }}>
+      {question.options.map((opt, i) => {
+        let borderColor = colors.border;
+        let bg = colors.card;
+        let textColor = colors.foreground;
+        let icon: "checkmark-circle" | "close-circle" | null = null;
+
+        if (answered) {
+          if (i === question.correctIndex) { borderColor = colors.success; bg = colors.success + "18"; textColor = colors.success; icon = "checkmark-circle"; }
+          else if (i === selectedIndex) { borderColor = colors.destructive; bg = colors.destructive + "18"; textColor = colors.destructive; icon = "close-circle"; }
+        }
+
+        return (
+          <TouchableOpacity
+            key={i}
+            style={{ backgroundColor: bg, borderRadius: colors.radius, paddingVertical: 18, paddingHorizontal: 20, borderWidth: 2, borderColor, flexDirection: "row", alignItems: "center", gap: 12 }}
+            onPress={() => !answered && onAnswer(i)}
+            disabled={answered}
+            activeOpacity={0.8}
+          >
+            <View style={{ width: 28, height: 28, borderRadius: 14, borderWidth: 2, borderColor, alignItems: "center", justifyContent: "center", backgroundColor: answered && i === question.correctIndex ? colors.success : "transparent" }}>
+              <Text style={{ fontSize: 13, fontFamily: "Nunito_800ExtraBold", color: answered && i === question.correctIndex ? "#fff" : textColor }}>
+                {["A", "B", "C", "D"][i]}
+              </Text>
+            </View>
+            <Text style={{ flex: 1, fontSize: 16, fontFamily: "Nunito_600SemiBold", color: textColor, lineHeight: 22 }}>{opt}</Text>
+            {icon && <Ionicons name={icon} size={22} color={icon === "checkmark-circle" ? colors.success : colors.destructive} />}
+          </TouchableOpacity>
+        );
+      })}
+    </View>
+  );
+}
+
+function TrueFalse({
+  question, onAnswer, answered, selectedBool,
+}: {
+  question: Question; onAnswer: (v: boolean) => void;
+  answered: boolean; selectedBool: boolean | null;
+}) {
+  const colors = useColors();
+  return (
+    <View style={{ flexDirection: "row", gap: 14 }}>
+      {[true, false].map((val) => {
+        let borderColor = colors.border;
+        let bg = colors.card;
+        let textColor = colors.foreground;
+        if (answered) {
+          if (val === question.correctBool) { borderColor = colors.success; bg = colors.success + "18"; textColor = colors.success; }
+          else if (val === selectedBool) { borderColor = colors.destructive; bg = colors.destructive + "18"; textColor = colors.destructive; }
+        }
+        return (
+          <TouchableOpacity
+            key={String(val)}
+            style={{ flex: 1, backgroundColor: bg, borderRadius: colors.radius, paddingVertical: 28, borderWidth: 2, borderColor, alignItems: "center", justifyContent: "center", gap: 8 }}
+            onPress={() => !answered && onAnswer(val)}
+            disabled={answered}
+            activeOpacity={0.8}
+          >
+            <Ionicons name={val ? "checkmark-circle" : "close-circle"} size={32} color={textColor} />
+            <Text style={{ fontSize: 20, fontFamily: "Nunito_800ExtraBold", color: textColor }}>
+              {val ? "True" : "False"}
+            </Text>
+          </TouchableOpacity>
+        );
+      })}
+    </View>
+  );
+}
+
+function SpotTheDifference({
+  question, onAnswer, answered, selectedIndex,
+}: {
+  question: Question; onAnswer: (i: number) => void;
+  answered: boolean; selectedIndex: number | null;
+}) {
+  const colors = useColors();
+  if (!question.options) return null;
+  return (
+    <View style={{ gap: 12 }}>
+      <Text style={{ fontSize: 13, fontFamily: "Nunito_600SemiBold", color: colors.mutedForeground, textAlign: "center", marginBottom: 4 }}>
+        Tap the odd one out
+      </Text>
+      <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 10, justifyContent: "center" }}>
+        {question.options.map((opt, i) => {
+          let borderColor = colors.border;
+          let bg = colors.card;
+          let textColor = colors.foreground;
+          if (answered) {
+            if (i === question.correctIndex) { borderColor = colors.success; bg = colors.success + "18"; textColor = colors.success; }
+            else if (i === selectedIndex) { borderColor = colors.destructive; bg = colors.destructive + "18"; textColor = colors.destructive; }
+          }
+          return (
+            <TouchableOpacity
+              key={i}
+              style={{ width: "47%", borderRadius: colors.radius, paddingVertical: 22, paddingHorizontal: 16, borderWidth: 2, borderColor, backgroundColor: bg, alignItems: "center" }}
+              onPress={() => !answered && onAnswer(i)}
+              disabled={answered}
+              activeOpacity={0.8}
+            >
+              <Text style={{ fontSize: 15, fontFamily: "Nunito_600SemiBold", color: textColor, textAlign: "center" }}>{opt}</Text>
+            </TouchableOpacity>
+          );
+        })}
+      </View>
+    </View>
+  );
+}
+
+function ArrangeInOrder({
+  question, onAnswer, answered,
+}: {
+  question: Question; onAnswer: (isCorrect: boolean) => void;
+  answered: boolean;
+}) {
+  const colors = useColors();
+  const items = question.options ?? [];
+  const [order, setOrder] = useState<number[]>(items.map((_, i) => i));
+  const [submitted, setSubmitted] = useState(false);
+
+  function moveUp(pos: number) {
+    if (pos === 0 || submitted) return;
+    const newOrder = [...order];
+    [newOrder[pos - 1], newOrder[pos]] = [newOrder[pos], newOrder[pos - 1]];
+    setOrder(newOrder);
+  }
+  function moveDown(pos: number) {
+    if (pos === order.length - 1 || submitted) return;
+    const newOrder = [...order];
+    [newOrder[pos + 1], newOrder[pos]] = [newOrder[pos], newOrder[pos + 1]];
+    setOrder(newOrder);
+  }
+  function submit() {
+    if (submitted) return;
+    setSubmitted(true);
+    const correctOrder = question.correctOrder ?? items.map((_, i) => i);
+    const correct = order.every((val, idx) => val === correctOrder[idx]);
+    onAnswer(correct);
+  }
+
+  return (
+    <View style={{ gap: 10 }}>
+      <Text style={{ fontSize: 13, fontFamily: "Nunito_600SemiBold", color: colors.mutedForeground, textAlign: "center", marginBottom: 4 }}>
+        Arrange in the correct order
+      </Text>
+      {order.map((itemIdx, pos) => (
+        <View key={itemIdx} style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
+          <View style={{ backgroundColor: colors.card, borderRadius: colors.radius, padding: 16, flex: 1, borderWidth: 2, borderColor: colors.border }}>
+            <Text style={{ fontSize: 14, fontFamily: "Nunito_600SemiBold", color: colors.foreground }}>{items[itemIdx]}</Text>
+          </View>
+          <View style={{ gap: 6 }}>
+            <TouchableOpacity onPress={() => moveUp(pos)} disabled={pos === 0 || submitted} style={{ opacity: pos === 0 || submitted ? 0.3 : 1 }}>
+              <Ionicons name="chevron-up" size={22} color={colors.primary} />
+            </TouchableOpacity>
+            <TouchableOpacity onPress={() => moveDown(pos)} disabled={pos === order.length - 1 || submitted} style={{ opacity: pos === order.length - 1 || submitted ? 0.3 : 1 }}>
+              <Ionicons name="chevron-down" size={22} color={colors.primary} />
+            </TouchableOpacity>
+          </View>
+        </View>
+      ))}
+      {!submitted && (
+        <TouchableOpacity
+          style={{ backgroundColor: colors.primary, borderRadius: colors.radius, paddingVertical: 16, alignItems: "center", marginTop: 6 }}
+          onPress={submit}
+          activeOpacity={0.85}
+        >
+          <Text style={{ fontSize: 16, fontFamily: "Nunito_800ExtraBold", color: colors.primaryForeground }}>
+            Submit Order
+          </Text>
+        </TouchableOpacity>
+      )}
+    </View>
+  );
+}
+
+function DragToMatch({
+  question, onAnswer, answered,
+}: {
+  question: Question; onAnswer: (isCorrect: boolean) => void;
+  answered: boolean;
+}) {
+  const colors = useColors();
+  const pairs = question.pairs ?? [];
+  const [selected, setSelected] = useState<number | null>(null);
+  const [matched, setMatched] = useState<Record<number, number>>({});
+  const [submitted, setSubmitted] = useState(false);
+  const shuffledRight = React.useMemo(() => pairs.map((_, i) => i).sort(() => Math.random() - 0.5), []);
+
+  function handleLeft(i: number) {
+    if (submitted) return;
+    setSelected(i === selected ? null : i);
+  }
+
+  function handleRight(j: number) {
+    if (selected === null || submitted) return;
+    setMatched((m) => ({ ...m, [selected]: j }));
+    setSelected(null);
+  }
+
+  function submit() {
+    if (submitted) return;
+    setSubmitted(true);
+    const correct = pairs.every((_, i) => matched[i] === i);
+    onAnswer(correct);
+  }
+
+  return (
+    <View style={{ gap: 12 }}>
+      <Text style={{ fontSize: 13, fontFamily: "Nunito_600SemiBold", color: colors.mutedForeground, textAlign: "center", marginBottom: 4 }}>
+        Tap left then right to match pairs
+      </Text>
+      <View style={{ flexDirection: "row", gap: 12 }}>
+        <View style={{ flex: 1, gap: 10 }}>
+          {pairs.map((pair, i) => {
+            const isSelected = selected === i;
+            const isMatched = matched[i] !== undefined;
+            const correct = submitted && matched[i] === i;
+            const wrong = submitted && isMatched && matched[i] !== i;
+            return (
+              <TouchableOpacity
+                key={i}
+                style={{ borderRadius: 14, padding: 14, borderWidth: 2, backgroundColor: isSelected ? colors.primary + "20" : correct ? colors.success + "18" : wrong ? colors.destructive + "18" : colors.card, borderColor: isSelected ? colors.primary : correct ? colors.success : wrong ? colors.destructive : isMatched ? colors.primary + "80" : colors.border }}
+                onPress={() => handleLeft(i)}
+                disabled={submitted}
+                activeOpacity={0.8}
+              >
+                <Text style={{ fontSize: 13, fontFamily: "Nunito_600SemiBold", color: colors.foreground, textAlign: "center" }}>{pair.left}</Text>
+              </TouchableOpacity>
+            );
+          })}
+        </View>
+        <View style={{ flex: 1, gap: 10 }}>
+          {shuffledRight.map((rightIdx, pos) => {
+            const isMatchedBySelected = Object.values(matched).includes(rightIdx);
+            return (
+              <TouchableOpacity
+                key={rightIdx}
+                style={{ borderRadius: 14, padding: 14, borderWidth: 2, backgroundColor: isMatchedBySelected ? colors.primary + "20" : colors.card, borderColor: isMatchedBySelected ? colors.primary : colors.border }}
+                onPress={() => handleRight(rightIdx)}
+                disabled={submitted || selected === null}
+                activeOpacity={0.8}
+              >
+                <Text style={{ fontSize: 13, fontFamily: "Nunito_600SemiBold", color: colors.foreground, textAlign: "center" }}>{pairs[rightIdx].right}</Text>
+              </TouchableOpacity>
+            );
+          })}
+        </View>
+      </View>
+      {!submitted && pairs.every((_, i) => matched[i] !== undefined) && (
+        <TouchableOpacity
+          style={{ backgroundColor: colors.primary, borderRadius: colors.radius, paddingVertical: 16, alignItems: "center", marginTop: 6 }}
+          onPress={submit}
+          activeOpacity={0.85}
+        >
+          <Text style={{ fontSize: 16, fontFamily: "Nunito_800ExtraBold", color: colors.primaryForeground }}>Check Matches</Text>
+        </TouchableOpacity>
+      )}
+    </View>
+  );
+}
+
+function FillInBlank({
+  question, onAnswer, answered,
+}: {
+  question: Question; onAnswer: (isCorrect: boolean) => void;
+  answered: boolean;
+}) {
+  const colors = useColors();
+  const [value, setValue] = useState("");
+  const [submitted, setSubmitted] = useState(false);
+
+  function submit() {
+    if (submitted || !value.trim()) return;
+    setSubmitted(true);
+    const normalized = value.trim().toLowerCase();
+    const correct = (question.acceptedAnswers ?? [question.blanks?.[0] ?? ""]).some(
+      (a) => a.toLowerCase() === normalized
+    );
+    onAnswer(correct);
+  }
+
+  const isCorrect = submitted && (question.acceptedAnswers ?? [question.blanks?.[0] ?? ""]).some(
+    (a) => a.toLowerCase() === value.trim().toLowerCase()
+  );
+
+  return (
+    <View style={{ gap: 12 }}>
+      <Text style={{ fontSize: 15, fontFamily: "Nunito_600SemiBold", color: colors.mutedForeground, textAlign: "center", lineHeight: 22 }}>
+        {question.template ?? "Fill in the blank:"}
+      </Text>
+      <TextInput
+        value={value}
+        onChangeText={setValue}
+        placeholder="Type your answer..."
+        placeholderTextColor={colors.mutedForeground}
+        editable={!submitted}
+        style={{
+          backgroundColor: colors.card,
+          borderRadius: colors.radius,
+          paddingHorizontal: 20, paddingVertical: 16,
+          fontSize: 18, fontFamily: "Nunito_800ExtraBold",
+          color: submitted ? (isCorrect ? colors.success : colors.destructive) : colors.foreground,
+          borderWidth: 2,
+          borderColor: submitted ? (isCorrect ? colors.success : colors.destructive) : colors.border,
+          textAlign: "center",
+        }}
+        autoCapitalize="none"
+        returnKeyType="done"
+        onSubmitEditing={submit}
+      />
+      {submitted && !isCorrect && (
+        <Text style={{ fontSize: 13, fontFamily: "Nunito_600SemiBold", color: colors.mutedForeground, textAlign: "center" }}>
+          Correct answer: {question.blanks?.[0] ?? question.acceptedAnswers?.[0]}
+        </Text>
+      )}
+      {!submitted && (
+        <TouchableOpacity
+          style={{ backgroundColor: value.trim() ? colors.primary : colors.muted, borderRadius: colors.radius, paddingVertical: 16, alignItems: "center" }}
+          onPress={submit}
+          disabled={!value.trim()}
+          activeOpacity={0.85}
+        >
+          <Text style={{ fontSize: 16, fontFamily: "Nunito_800ExtraBold", color: value.trim() ? colors.primaryForeground : colors.mutedForeground }}>
+            Submit Answer
+          </Text>
+        </TouchableOpacity>
+      )}
+    </View>
+  );
+}
+
+function TapElement({
+  question, onAnswer, answered, selectedIndex,
+}: {
+  question: Question; onAnswer: (i: number) => void;
+  answered: boolean; selectedIndex: number | null;
+}) {
+  const colors = useColors();
+  if (!question.options) return null;
+  return (
+    <View style={{ gap: 12 }}>
+      <Text style={{ fontSize: 13, fontFamily: "Nunito_600SemiBold", color: colors.mutedForeground, textAlign: "center" }}>
+        Tap the correct element
+      </Text>
+      <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 10, justifyContent: "center" }}>
+        {question.options.map((opt, i) => {
+          let borderColor = colors.border;
+          let bg = colors.card;
+          let textColor = colors.foreground;
+          if (answered) {
+            if (i === question.correctIndex) { borderColor = colors.success; bg = colors.success + "18"; textColor = colors.success; }
+            else if (i === selectedIndex) { borderColor = colors.destructive; bg = colors.destructive + "18"; textColor = colors.destructive; }
+          }
+          return (
+            <TouchableOpacity
+              key={i}
+              style={{ borderRadius: 14, paddingVertical: 18, paddingHorizontal: 20, borderWidth: 2, borderColor, backgroundColor: bg, minWidth: "45%" }}
+              onPress={() => !answered && onAnswer(i)}
+              disabled={answered}
+              activeOpacity={0.8}
+            >
+              <Text style={{ fontSize: 14, fontFamily: "Nunito_600SemiBold", color: textColor, textAlign: "center" }}>{opt}</Text>
+            </TouchableOpacity>
+          );
+        })}
+      </View>
+    </View>
+  );
+}
+
+function QuestionRenderer({
+  question, onAnswer, answered, selectedIndex, selectedBool,
+}: {
+  question: Question; onAnswer: (answer: number | boolean) => void;
+  answered: boolean; selectedIndex: number | null; selectedBool: boolean | null;
+}) {
+  switch (question.type) {
+    case "multiple_choice":
+      return <MultipleChoice question={question} onAnswer={onAnswer as (i: number) => void} answered={answered} selectedIndex={selectedIndex} />;
+    case "true_false":
+      return <TrueFalse question={question} onAnswer={onAnswer as (v: boolean) => void} answered={answered} selectedBool={selectedBool} />;
+    case "spot_the_difference":
+      return <SpotTheDifference question={question} onAnswer={onAnswer as (i: number) => void} answered={answered} selectedIndex={selectedIndex} />;
+    case "tap_the_element":
+      return <TapElement question={question} onAnswer={onAnswer as (i: number) => void} answered={answered} selectedIndex={selectedIndex} />;
+    case "arrange_in_order":
+      return <ArrangeInOrder question={question} onAnswer={(c) => onAnswer(c ? 0 : -1)} answered={answered} />;
+    case "drag_to_match":
+      return <DragToMatch question={question} onAnswer={(c) => onAnswer(c ? 0 : -1)} answered={answered} />;
+    case "fill_in_blank":
+      return <FillInBlank question={question} onAnswer={(c) => onAnswer(c ? 0 : -1)} answered={answered} />;
+    default:
+      return <MultipleChoice question={question} onAnswer={onAnswer as (i: number) => void} answered={answered} selectedIndex={selectedIndex} />;
+  }
+}
+
+export default function LessonScreen() {
+  const colors = useColors();
+  const insets = useSafeAreaInsets();
+  const { nodeId } = useLocalSearchParams<{ nodeId: string }>();
+  const { state, loseHeart, completeLesson } = useGame();
+
+  const node = nodeId ? findNodeById(nodeId) : null;
+  const course = node ? COURSES.find((c) => c.id === node.courseId) : null;
+  const allLessons: Lesson[] = node?.lessons ?? [];
+
+  const [lessonIdx, setLessonIdx] = useState(0);
+  const [questionIdx, setQuestionIdx] = useState(0);
+  const [answered, setAnswered] = useState(false);
+  const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
+  const [selectedBool, setSelectedBool] = useState<boolean | null>(null);
+  const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
+  const [showSummary, setShowSummary] = useState(false);
+  const [xpEarned, setXpEarned] = useState(0);
+  const [coinsEarned, setCoinsEarned] = useState(0);
+  const [heartsLost, setHeartsLost] = useState(0);
+  const [allDone, setAllDone] = useState(false);
+  const [mascotState, setMascotState] = useState<MascotState>("idle");
+
+  const currentLesson = allLessons[lessonIdx];
+  const questions = currentLesson?.questions ?? [];
+  const currentQ = questions[questionIdx];
+  const totalQuestions = questions.length;
+
+  const shakeX = useSharedValue(0);
+  const shakeStyle = useAnimatedStyle(() => ({ transform: [{ translateX: shakeX.value }] }));
+
+  const progressPercent = totalQuestions > 0 ? (questionIdx / totalQuestions) * 100 : 0;
+
+  const paddingTop = insets.top + (Platform.OS === "web" ? 67 : 0);
+
+  if (!node || !currentLesson || !currentQ) {
+    return (
+      <View style={{ flex: 1, backgroundColor: colors.background, alignItems: "center", justifyContent: "center" }}>
+        <GraflyMascot state="oops" size={120} />
+        <Text style={{ fontSize: 18, fontFamily: "Nunito_800ExtraBold", color: colors.foreground, marginTop: 20 }}>
+          Lesson not found
+        </Text>
+        <TouchableOpacity onPress={() => router.back()} style={{ marginTop: 20 }}>
+          <Text style={{ fontSize: 16, fontFamily: "Nunito_600SemiBold", color: colors.primary }}>Go Back</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
+
+  function getCorrect(q: Question, answer: number | boolean): boolean {
+    if (q.type === "true_false") return (answer as boolean) === q.correctBool;
+    if (q.type === "arrange_in_order" || q.type === "drag_to_match" || q.type === "fill_in_blank") return (answer as number) === 0;
+    return (answer as number) === q.correctIndex;
+  }
+
+  async function handleAnswer(answer: number | boolean) {
+    if (answered) return;
+    const correct = getCorrect(currentQ, answer);
+
+    setAnswered(true);
+    setIsCorrect(correct);
+    if (currentQ.type === "multiple_choice" || currentQ.type === "spot_the_difference" || currentQ.type === "tap_the_element") {
+      setSelectedIndex(answer as number);
+    }
+    if (currentQ.type === "true_false") setSelectedBool(answer as boolean);
+
+    if (correct) {
+      setMascotState("correct");
+      if (Platform.OS !== "web") await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      voiceService.playCorrectAnswer();
+    } else {
+      setMascotState("wrong");
+      if (Platform.OS !== "web") await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+      shakeX.value = withSequence(
+        withTiming(-12, { duration: 60 }), withTiming(12, { duration: 60 }),
+        withTiming(-8, { duration: 60 }), withTiming(8, { duration: 60 }),
+        withTiming(0, { duration: 60 })
+      );
+      loseHeart();
+      setHeartsLost((h) => h + 1);
+      voiceService.playWrongAnswer();
+      if (state.hearts - 1 <= 0) {
+        setTimeout(() => router.replace("/paywall" as any), 1200);
+        return;
+      }
+    }
+
+    setTimeout(() => {
+      setMascotState("think");
+      advance(correct);
+    }, 900);
+  }
+
+  function advance(wasCorrect: boolean) {
+    const nextQ = questionIdx + 1;
+    if (nextQ >= totalQuestions) {
+      const lessonXP = currentLesson.xpReward + (!wasCorrect || heartsLost > 0 ? 0 : 10);
+      const lessonCoins = currentLesson.coinReward;
+      setXpEarned((x) => x + lessonXP);
+      setCoinsEarned((c) => c + lessonCoins);
+      completeLesson(currentLesson.id, lessonXP, lessonCoins);
+      const nextLesson = lessonIdx + 1;
+      if (nextLesson >= allLessons.length) setAllDone(true);
+      setShowSummary(true);
+      setMascotState(heartsLost === 0 ? "celebrate" : "correct");
+    } else {
+      setQuestionIdx(nextQ);
+      setAnswered(false);
+      setSelectedIndex(null);
+      setSelectedBool(null);
+      setIsCorrect(null);
+    }
+  }
+
+  function handleNextLesson() {
+    const nextLessonIdx = lessonIdx + 1;
+    if (nextLessonIdx < allLessons.length) {
+      setLessonIdx(nextLessonIdx);
+      setQuestionIdx(0);
+      setAnswered(false);
+      setSelectedIndex(null);
+      setSelectedBool(null);
+      setIsCorrect(null);
+      setShowSummary(false);
+      setHeartsLost(0);
+      setMascotState("think");
+    } else {
+      router.replace("/(tabs)");
+    }
+  }
+
+  if (showSummary) {
+    const perfect = heartsLost === 0;
+    return (
+      <View style={{ flex: 1, backgroundColor: colors.background }}>
+        <ScrollView
+          contentContainerStyle={{ paddingTop: paddingTop + 20, paddingHorizontal: 24, paddingBottom: 60 }}
+          showsVerticalScrollIndicator={false}
+        >
+          <Animated.View entering={FadeIn} style={{ alignItems: "center", marginBottom: 32 }}>
+            <GraflyMascot state={perfect ? "celebrate" : "correct"} size={140} float={perfect} />
+            <Text style={{ fontSize: 28, fontFamily: "Nunito_800ExtraBold", color: colors.foreground, marginTop: 20, marginBottom: 8, textAlign: "center" }}>
+              {perfect ? "Perfect lesson!" : "Lesson complete!"}
+            </Text>
+            <Text style={{ fontSize: 15, fontFamily: "Nunito_600SemiBold", color: colors.mutedForeground, textAlign: "center" }}>
+              {currentLesson.title}
+            </Text>
+          </Animated.View>
+
+          {/* Rewards */}
+          <Animated.View entering={FadeIn.delay(150)} style={{ flexDirection: "row", gap: 12, marginBottom: 20 }}>
+            <View style={{ flex: 1, backgroundColor: colors.card, borderRadius: colors.radius, padding: 20, alignItems: "center", gap: 8 }}>
+              <Ionicons name="flash" size={28} color={colors.accent} />
+              <Text style={{ fontSize: 26, fontFamily: "Nunito_800ExtraBold", color: colors.foreground }}>
+                +{xpEarned}
+              </Text>
+              <Text style={{ fontSize: 11, fontFamily: "Nunito_600SemiBold", color: colors.mutedForeground }}>
+                XP EARNED
+              </Text>
+            </View>
+            <View style={{ flex: 1, backgroundColor: colors.card, borderRadius: colors.radius, padding: 20, alignItems: "center", gap: 8 }}>
+              <Ionicons name="ellipse" size={24} color={colors.warning} />
+              <Text style={{ fontSize: 26, fontFamily: "Nunito_800ExtraBold", color: colors.foreground }}>
+                +{coinsEarned}
+              </Text>
+              <Text style={{ fontSize: 11, fontFamily: "Nunito_600SemiBold", color: colors.mutedForeground }}>
+                COINS
+              </Text>
+            </View>
+            <View style={{ flex: 1, backgroundColor: colors.card, borderRadius: colors.radius, padding: 20, alignItems: "center", gap: 8 }}>
+              <Ionicons name="heart" size={26} color={perfect ? colors.success : colors.destructive} />
+              <Text style={{ fontSize: 26, fontFamily: "Nunito_800ExtraBold", color: colors.foreground }}>
+                {state.hearts}
+              </Text>
+              <Text style={{ fontSize: 11, fontFamily: "Nunito_600SemiBold", color: colors.mutedForeground }}>
+                HEARTS LEFT
+              </Text>
+            </View>
+          </Animated.View>
+
+          {/* Perfect bonus */}
+          {perfect && (
+            <Animated.View entering={FadeIn.delay(300)} style={{ backgroundColor: colors.accent + "20", borderRadius: colors.radius, padding: 16, marginBottom: 20, flexDirection: "row", alignItems: "center", gap: 12 }}>
+              <Ionicons name="star" size={22} color={colors.accent} />
+              <Text style={{ flex: 1, fontSize: 14, fontFamily: "Nunito_800ExtraBold", color: colors.foreground }}>
+                Perfect! +10 bonus XP for no mistakes
+              </Text>
+            </Animated.View>
+          )}
+
+          <Animated.View entering={FadeIn.delay(400)} style={{ gap: 12 }}>
+            {!allDone && (
+              <TouchableOpacity
+                style={{ backgroundColor: colors.primary, borderRadius: colors.radius, paddingVertical: 18, alignItems: "center" }}
+                onPress={handleNextLesson}
+                activeOpacity={0.85}
+              >
+                <Text style={{ fontSize: 17, fontFamily: "Nunito_800ExtraBold", color: colors.primaryForeground }}>
+                  Next Lesson
+                </Text>
+              </TouchableOpacity>
+            )}
+            <TouchableOpacity
+              style={{ backgroundColor: allDone ? colors.primary : colors.card, borderRadius: colors.radius, paddingVertical: 18, alignItems: "center" }}
+              onPress={() => router.replace("/(tabs)")}
+              activeOpacity={0.85}
+            >
+              <Text style={{ fontSize: 17, fontFamily: "Nunito_800ExtraBold", color: allDone ? colors.primaryForeground : colors.foreground }}>
+                {allDone ? "Back to Home" : "Return Home"}
+              </Text>
+            </TouchableOpacity>
+          </Animated.View>
+        </ScrollView>
+      </View>
+    );
+  }
+
+  const QUESTION_TYPE_LABELS: Record<string, string> = {
+    multiple_choice: "Choose the best answer",
+    true_false: "True or false?",
+    spot_the_difference: "Spot the odd one out",
+    tap_the_element: "Tap the correct element",
+    arrange_in_order: "Arrange in order",
+    drag_to_match: "Match the pairs",
+    fill_in_blank: "Fill in the blank",
+  };
+
+  return (
+    <View style={{ flex: 1, backgroundColor: colors.background }}>
+      {/* Header */}
+      <View style={{ paddingTop: paddingTop + 8, paddingHorizontal: 20, paddingBottom: 12 }}>
+        <View style={{ flexDirection: "row", alignItems: "center", gap: 12 }}>
+          <TouchableOpacity
+            onPress={() => router.back()}
+            style={{ width: 36, height: 36, borderRadius: 18, backgroundColor: colors.card, alignItems: "center", justifyContent: "center" }}
+          >
+            <Ionicons name="close" size={20} color={colors.foreground} />
+          </TouchableOpacity>
+
+          {/* Progress bar */}
+          <View style={{ flex: 1, height: 8, backgroundColor: colors.muted, borderRadius: 4, overflow: "hidden" }}>
+            <Animated.View style={{ height: "100%", width: `${progressPercent}%`, backgroundColor: course?.color ?? colors.primary, borderRadius: 4 }} />
+          </View>
+
+          {/* Hearts — ONLY on lesson screen */}
+          <View style={{ flexDirection: "row", gap: 3 }}>
+            {[...Array(5)].map((_, i) => (
+              <Ionicons
+                key={i}
+                name={i < state.hearts ? "heart" : "heart-outline"}
+                size={18}
+                color={i < state.hearts ? colors.destructive : colors.muted}
+              />
+            ))}
+          </View>
+        </View>
+      </View>
+
+      <Animated.View style={[shakeStyle, { flex: 1 }]}>
+        <ScrollView
+          contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 60, paddingTop: 8 }}
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+        >
+          {/* Mascot + question type label */}
+          <View style={{ flexDirection: "row", alignItems: "center", gap: 12, marginBottom: 16 }}>
+            <GraflyMascot state={mascotState} size={64} />
+            <View style={{ flex: 1 }}>
+              <View style={{ backgroundColor: colors.card, borderRadius: 100, paddingHorizontal: 12, paddingVertical: 5, alignSelf: "flex-start", marginBottom: 6 }}>
+                <Text style={{ fontSize: 10, fontFamily: "Nunito_800ExtraBold", color: colors.mutedForeground, letterSpacing: 1 }}>
+                  {(QUESTION_TYPE_LABELS[currentQ.type] ?? "Question").toUpperCase()}
+                </Text>
+              </View>
+              <Text style={{ fontSize: 11, fontFamily: "Nunito_600SemiBold", color: colors.mutedForeground }}>
+                {currentLesson.title}
+              </Text>
+            </View>
+            <Text style={{ fontSize: 13, fontFamily: "Nunito_600SemiBold", color: colors.mutedForeground }}>
+              {questionIdx + 1}/{totalQuestions}
+            </Text>
+          </View>
+
+          {/* Question */}
+          <Text style={{ fontSize: 22, fontFamily: "Nunito_800ExtraBold", color: colors.foreground, marginBottom: 24, lineHeight: 32 }}>
+            {currentQ.question}
+          </Text>
+
+          {/* Question component */}
+          <QuestionRenderer
+            question={currentQ}
+            onAnswer={handleAnswer}
+            answered={answered}
+            selectedIndex={selectedIndex}
+            selectedBool={selectedBool}
+          />
+
+          {/* Feedback */}
+          {answered && currentQ.explanation && (
+            <Animated.View
+              entering={FadeIn}
+              style={{
+                marginTop: 20, borderRadius: colors.radius, padding: 18,
+                backgroundColor: isCorrect ? colors.success + "18" : colors.destructive + "18",
+                borderLeftWidth: 4,
+                borderLeftColor: isCorrect ? colors.success : colors.destructive,
+              }}
+            >
+              <View style={{ flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 6 }}>
+                <Ionicons
+                  name={isCorrect ? "checkmark-circle" : "close-circle"}
+                  size={18}
+                  color={isCorrect ? colors.success : colors.destructive}
+                />
+                <Text style={{ fontSize: 14, fontFamily: "Nunito_800ExtraBold", color: isCorrect ? colors.success : colors.destructive }}>
+                  {isCorrect ? "Correct!" : "Not quite"}
+                </Text>
+              </View>
+              <Text style={{ fontSize: 14, fontFamily: "Nunito_600SemiBold", color: colors.mutedForeground, lineHeight: 20 }}>
+                {currentQ.explanation}
+              </Text>
+            </Animated.View>
+          )}
+        </ScrollView>
+      </Animated.View>
+    </View>
+  );
+}
