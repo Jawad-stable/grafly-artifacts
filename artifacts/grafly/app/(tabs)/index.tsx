@@ -171,11 +171,7 @@ export default function HomeScreen() {
   const insets = useSafeAreaInsets();
   const { state } = useGame();
 
-  useEffect(() => {
-    if (!state.onboardingComplete) {
-      router.replace("/onboarding");
-    }
-  }, [state.onboardingComplete]);
+  // Onboarding redirects are handled declaratively by AuthGate in _layout.tsx
 
   const allLessons = getAllLessons();
   const nextLesson = allLessons.find((l) => !state.completedLessons.includes(l.id));

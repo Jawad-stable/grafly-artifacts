@@ -162,7 +162,8 @@ export default function OnboardingScreen() {
       handle.trim().replace(/^@/, ""),
       profilePic,
     );
-    router.replace("/(tabs)");
+    // AuthGate will redirect to /(tabs) on the next render once
+    // state.onboardingComplete becomes true.
   }
 
   const padTop = insets.top + (Platform.OS === "web" ? 67 : 0);
