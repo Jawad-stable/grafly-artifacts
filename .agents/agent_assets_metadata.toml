@@ -6,3 +6,27 @@ id = "ATZdKaC7ZszJ7xsvrBkoH"
 uri = "file://artifacts/grafly/assets/images/icon.png"
 type = "image"
 title = "grafly app icon"
+
+[[generated]]
+id = "hcRM3F1olz5O26hbV-qwI"
+uri = "file://artifacts/grafly/assets/designs/banking_home.png"
+type = "image"
+title = "banking home"
+
+[[generated]]
+id = "CgArBD057GAwb1jRL6KXA"
+uri = "file://artifacts/grafly/assets/designs/food_detail.png"
+type = "image"
+title = "food detail"
+
+[[generated]]
+id = "eeA_jiGxx3ak6LCerBhdj"
+uri = "file://artifacts/grafly/assets/designs/fitness_dash.png"
+type = "image"
+title = "fitness dash"
+
+[[generated]]
+id = "NgnOqNuEXTzi751MYpSMN"
+uri = "file://artifacts/grafly/assets/designs/music_player.png"
+type = "image"
+title = "music player"

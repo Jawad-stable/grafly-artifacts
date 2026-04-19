@@ -19,11 +19,10 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useColors } from "@/hooks/useColors";
 import { useGame } from "@/context/GameContext";
 import {
-  fetchRandomDesign,
   sendCritiqueMessage,
-  type DesignBrief,
   type ChatMessage,
 } from "@/services/aiCritique";
+import { pickRandomLocalDesign, type LocalDesign } from "@/data/localDesigns";
 import { GraflyMascot } from "@/components/GraflyMascot";
 
 const XP_PER_SESSION = 20;
@@ -35,7 +34,7 @@ export default function CritiqueScreen() {
   const insets = useSafeAreaInsets();
   const { state, addXP, addCoins } = useGame();
 
-  const [design, setDesign] = useState<DesignBrief | null>(null);
+  const [design, setDesign] = useState<LocalDesign | null>(null);
   const [loadingDesign, setLoadingDesign] = useState(true);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState("");
@@ -53,29 +52,15 @@ export default function CritiqueScreen() {
   const paddingTop = insets.top + (Platform.OS === "web" ? 67 : 0);
   const paddingBottom = insets.bottom + (Platform.OS === "web" ? 34 : 100);
 
-  async function loadNewDesign() {
+  function loadNewDesign() {
     setLoadingDesign(true);
     setMessages([]);
     setRewardedThisDesign(false);
-    try {
-      const d = await fetchRandomDesign();
-      setDesign(d);
-      // Seed first AI message
-      const opener = `Take a look at this design: ${d.title}. What is the first thing your eye lands on, and why do you think the designer made that choice?`;
-      setMessages([{ role: "assistant", content: opener }]);
-    } catch (err) {
-      // Even on failure, show a minimal fallback so the screen stays useful
-      setDesign({
-        id: "offline",
-        title: "Design Critique",
-        description: "Imagine a clean mobile app screen.",
-        image_url: "",
-        difficulty: "beginner",
-      });
-      setMessages([{ role: "assistant", content: "I could not load a fresh design, but let us still warm up. Describe a mobile screen you have seen recently and what stood out to you." }]);
-    } finally {
-      setLoadingDesign(false);
-    }
+    const d = pickRandomLocalDesign();
+    setDesign(d);
+    const opener = `Take a look at this design: ${d.title}. What is the first thing your eye lands on, and why do you think the designer made that choice?`;
+    setMessages([{ role: "assistant", content: opener }]);
+    setLoadingDesign(false);
   }
 
   useEffect(() => {
@@ -149,7 +134,7 @@ export default function CritiqueScreen() {
         {design && (
           <Animated.View entering={FadeIn} style={{ paddingHorizontal: 20, paddingBottom: 12 }}>
             <Pressable
-              onPress={() => design.image_url && setImageOpen(true)}
+              onPress={() => setImageOpen(true)}
               style={{
                 backgroundColor: colors.card,
                 borderRadius: colors.radius,
@@ -160,17 +145,11 @@ export default function CritiqueScreen() {
                 alignItems: "center",
               }}
             >
-              {design.image_url ? (
-                <Image
-                  source={{ uri: design.image_url }}
-                  style={{ width: 70, height: 70, borderRadius: 12, backgroundColor: colors.muted }}
-                  resizeMode="cover"
-                />
-              ) : (
-                <View style={{ width: 70, height: 70, borderRadius: 12, backgroundColor: colors.muted, alignItems: "center", justifyContent: "center" }}>
-                  <Ionicons name="image-outline" size={28} color={colors.mutedForeground} />
-                </View>
-              )}
+              <Image
+                source={design.source}
+                style={{ width: 70, height: 70, borderRadius: 12, backgroundColor: colors.muted }}
+                resizeMode="cover"
+              />
               <View style={{ flex: 1 }}>
                 <Text style={{ fontSize: 14, fontFamily: "Nunito_800ExtraBold", color: colors.foreground }} numberOfLines={1}>
                   {design.title}
@@ -340,9 +319,9 @@ export default function CritiqueScreen() {
           onPress={() => setImageOpen(false)}
           style={{ flex: 1, backgroundColor: "rgba(0,0,0,0.92)", alignItems: "center", justifyContent: "center", padding: 20 }}
         >
-          {design?.image_url && (
+          {design && (
             <Image
-              source={{ uri: design.image_url }}
+              source={design.source}
               style={{ width: "100%", height: "80%" }}
               resizeMode="contain"
             />
