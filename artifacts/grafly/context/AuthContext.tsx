@@ -2,7 +2,6 @@ import React, { createContext, useContext, useEffect, useState } from "react";
 import { Session, User } from "@supabase/supabase-js";
 import * as WebBrowser from "expo-web-browser";
 import * as Linking from "expo-linking";
-import { makeRedirectUri } from "expo-auth-session";
 import { supabase } from "@/services/supabase";
 
 WebBrowser.maybeCompleteAuthSession();
@@ -19,7 +18,7 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | null>(null);
 
-const redirectTo = makeRedirectUri({ scheme: "grafly", path: "auth-callback" });
+const redirectTo = Linking.createURL("auth-callback");
 
 async function exchangeCodeFromUrl(url: string) {
   const parsed = Linking.parse(url);
