@@ -54,3 +54,9 @@ externalPort = 3001
 
 [nix]
 channel = "stable-25_05"
+
+[userenv]
+
+[userenv.shared]
+EXPO_PUBLIC_SUPABASE_URL = "https://ylvkpbfzyyruacabgfhc.supabase.co"
+EXPO_PUBLIC_SUPABASE_ANON_KEY = "sb_publishable_wVXN3lDty7PhvFerX3Immg_yRoi-rvi"

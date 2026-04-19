@@ -1,5 +1,7 @@
-import React, { createContext, useContext, useReducer, useEffect } from "react";
+import React, { createContext, useContext, useReducer, useEffect, useRef } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { supabase } from "@/services/supabase";
+import { useAuth } from "@/context/AuthContext";
 
 export type PlacementLevel =
   | "novice"
@@ -126,6 +128,11 @@ const initialState: GameState = {
   handle: "",
   profilePic: "",
 };
+
+function stripUIState(state: GameState) {
+  const { showXPPopup, xpPopupAmount, showLevelUp, ...rest } = state;
+  return rest;
+}
 
 function reducer(state: GameState, action: Action): GameState {
   switch (action.type) {
@@ -261,26 +268,59 @@ const GameContext = createContext<GameContextType | null>(null);
 
 export function GameProvider({ children }: { children: React.ReactNode }) {
   const [state, dispatch] = useReducer(reducer, initialState);
+  const { user } = useAuth();
+  const syncTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const initializedRef = useRef(false);
 
+  // Load state: prefer Supabase when signed in, fallback to AsyncStorage
   useEffect(() => {
-    AsyncStorage.getItem(STORAGE_KEY).then((saved) => {
+    async function loadState() {
+      if (user) {
+        const { data, error } = await supabase
+          .from("game_state")
+          .select("state")
+          .eq("user_id", user.id)
+          .single();
+        if (!error && data?.state) {
+          dispatch({ type: "RESTORE", state: { ...initialState, ...data.state } });
+          initializedRef.current = true;
+          return;
+        }
+      }
+      // Fallback to AsyncStorage
+      const saved = await AsyncStorage.getItem(STORAGE_KEY);
       if (saved) {
         try {
           const parsed = JSON.parse(saved) as Partial<GameState>;
           dispatch({ type: "RESTORE", state: { ...initialState, ...parsed } });
         } catch (_) {}
       }
-    });
-  }, []);
+      initializedRef.current = true;
+    }
+    initializedRef.current = false;
+    loadState();
+  }, [user?.id]);
 
+  // Sync state changes to AsyncStorage + Supabase (debounced 1.5s)
   useEffect(() => {
-    const { showXPPopup, xpPopupAmount, showLevelUp, ...toSave } = state;
+    if (!initializedRef.current) return;
+    const toSave = stripUIState(state);
     AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(toSave));
-  }, [state]);
+
+    if (user) {
+      if (syncTimerRef.current) clearTimeout(syncTimerRef.current);
+      syncTimerRef.current = setTimeout(async () => {
+        await supabase.from("game_state").upsert({
+          user_id: user.id,
+          state: toSave,
+          updated_at: new Date().toISOString(),
+        });
+      }, 1500);
+    }
+  }, [state, user?.id]);
 
   const addXP = (amount: number) => dispatch({ type: "ADD_XP", amount });
-  const addCoins = (amount: number) =>
-    dispatch({ type: "ADD_COINS", amount });
+  const addCoins = (amount: number) => dispatch({ type: "ADD_COINS", amount });
 
   const useCoins = (amount: number): boolean => {
     if (state.coins < amount) return false;
@@ -295,8 +335,7 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
     dispatch({ type: "INCREMENT_STREAK" });
     addXP(xp);
     addCoins(coins);
-    const isFirstOfDay =
-      state.lastStreakDate !== new Date().toDateString();
+    const isFirstOfDay = state.lastStreakDate !== new Date().toDateString();
     if (isFirstOfDay) addCoins(10);
   };
 
@@ -327,8 +366,7 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
     return true;
   };
 
-  const setTheme = (mode: "light" | "dark") =>
-    dispatch({ type: "SET_THEME", mode });
+  const setTheme = (mode: "light" | "dark") => dispatch({ type: "SET_THEME", mode });
 
   const refillHearts = (): boolean => {
     if (state.coins < 100) return false;

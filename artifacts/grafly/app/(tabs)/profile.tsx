@@ -14,6 +14,7 @@ import { router } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useColors } from "@/hooks/useColors";
 import { useGame, getXPProgress } from "@/context/GameContext";
+import { useAuth } from "@/context/AuthContext";
 import { GraflyMascot } from "@/components/GraflyMascot";
 import { AText, ATextInput } from "@/components/AText";
 
@@ -48,6 +49,7 @@ export default function ProfileScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
   const { state, toggleVoice, updateProfile } = useGame();
+  const { signOut, user } = useAuth();
   const [editingName, setEditingName] = useState(false);
   const [nameInput, setNameInput] = useState(state.username);
 
@@ -259,6 +261,23 @@ export default function ProfileScreen() {
               Upgrade to Pro
             </Text>
           </TouchableOpacity>
+
+          {user && (
+            <TouchableOpacity
+              style={{
+                backgroundColor: colors.card, borderRadius: colors.radius,
+                padding: 18, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 10,
+                borderWidth: 1.5, borderColor: colors.destructive + "40",
+              }}
+              onPress={signOut}
+              activeOpacity={0.85}
+            >
+              <Ionicons name="log-out-outline" size={20} color={colors.destructive} />
+              <Text style={{ fontSize: 16, fontFamily: "Nunito_800ExtraBold", color: colors.destructive }}>
+                Sign Out
+              </Text>
+            </TouchableOpacity>
+          )}
         </Animated.View>
       </ScrollView>
     </View>
