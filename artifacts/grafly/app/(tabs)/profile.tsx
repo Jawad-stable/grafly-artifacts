@@ -46,7 +46,7 @@ function getDivision(weeklyXP: number): string {
 export default function ProfileScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
-  const { state, toggleVoice, dispatch } = useGame();
+  const { state, toggleVoice, updateProfile } = useGame();
   const [editingName, setEditingName] = useState(false);
   const [nameInput, setNameInput] = useState(state.username);
 
@@ -68,7 +68,7 @@ export default function ProfileScreen() {
   function saveName() {
     const trimmed = nameInput.trim();
     if (trimmed) {
-      dispatch({ type: "COMPLETE_ONBOARDING", username: trimmed });
+      updateProfile({ username: trimmed });
     }
     setEditingName(false);
   }

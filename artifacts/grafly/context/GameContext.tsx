@@ -34,6 +34,8 @@ export interface GameState {
   xpBoosterActive: boolean;
   xpBoosterExpiry: string;
   themeMode: "light" | "dark";
+  handle: string;
+  profilePic: string;
 }
 
 function getWeekStart(): string {
@@ -82,7 +84,8 @@ type Action =
   | { type: "INCREMENT_STREAK" }
   | { type: "SET_PLACEMENT_LEVEL"; level: PlacementLevel }
   | { type: "COMPLETE_LESSON"; lessonId: string }
-  | { type: "COMPLETE_ONBOARDING"; username: string }
+  | { type: "COMPLETE_ONBOARDING"; username: string; handle: string; profilePic: string }
+  | { type: "UPDATE_PROFILE"; username?: string; handle?: string; profilePic?: string }
   | { type: "TOGGLE_VOICE" }
   | { type: "PURCHASE_SHIELD" }
   | { type: "ACTIVATE_BOOSTER" }
@@ -120,6 +123,8 @@ const initialState: GameState = {
   xpBoosterActive: false,
   xpBoosterExpiry: "",
   themeMode: "dark",
+  handle: "",
+  profilePic: "",
 };
 
 function reducer(state: GameState, action: Action): GameState {
@@ -183,7 +188,20 @@ function reducer(state: GameState, action: Action): GameState {
         completedLessons: [...state.completedLessons, action.lessonId],
       };
     case "COMPLETE_ONBOARDING":
-      return { ...state, onboardingComplete: true, username: action.username };
+      return {
+        ...state,
+        onboardingComplete: true,
+        username: action.username,
+        handle: action.handle,
+        profilePic: action.profilePic,
+      };
+    case "UPDATE_PROFILE":
+      return {
+        ...state,
+        username: action.username ?? state.username,
+        handle: action.handle ?? state.handle,
+        profilePic: action.profilePic ?? state.profilePic,
+      };
     case "TOGGLE_VOICE":
       return { ...state, voiceEnabled: !state.voiceEnabled };
     case "PURCHASE_SHIELD":
@@ -225,7 +243,13 @@ interface GameContextType {
   useCoins: (amount: number) => boolean;
   loseHeart: () => void;
   completeLesson: (lessonId: string, xp: number, coins: number) => void;
-  completeOnboarding: (username: string, placementLevel: PlacementLevel) => void;
+  completeOnboarding: (
+    username: string,
+    placementLevel: PlacementLevel,
+    handle?: string,
+    profilePic?: string,
+  ) => void;
+  updateProfile: (data: { username?: string; handle?: string; profilePic?: string }) => void;
   toggleVoice: () => void;
   purchaseShield: () => boolean;
   purchaseBooster: () => boolean;
@@ -278,11 +302,16 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
 
   const completeOnboarding = (
     username: string,
-    placementLevel: PlacementLevel
+    placementLevel: PlacementLevel,
+    handle: string = "",
+    profilePic: string = "",
   ) => {
     dispatch({ type: "SET_PLACEMENT_LEVEL", level: placementLevel });
-    dispatch({ type: "COMPLETE_ONBOARDING", username });
+    dispatch({ type: "COMPLETE_ONBOARDING", username, handle, profilePic });
   };
+
+  const updateProfile = (data: { username?: string; handle?: string; profilePic?: string }) =>
+    dispatch({ type: "UPDATE_PROFILE", ...data });
 
   const toggleVoice = () => dispatch({ type: "TOGGLE_VOICE" });
 
@@ -324,6 +353,7 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
         purchaseBooster,
         refillHearts,
         setTheme,
+        updateProfile,
       }}
     >
       {children}

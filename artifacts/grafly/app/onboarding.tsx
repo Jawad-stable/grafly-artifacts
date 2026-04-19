@@ -7,20 +7,23 @@ import {
   ScrollView,
   Dimensions,
   Platform,
+  KeyboardAvoidingView,
+  Image,
+  Alert,
 } from "react-native";
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
-  withSpring,
   withTiming,
-  withSequence,
   FadeIn,
   SlideInRight,
+  SlideInUp,
 } from "react-native-reanimated";
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { LinearGradient } from "expo-linear-gradient";
+import * as ImagePicker from "expo-image-picker";
 import { useColors } from "@/hooks/useColors";
 import { useGame } from "@/context/GameContext";
 import type { PlacementLevel } from "@/context/GameContext";
@@ -71,10 +74,13 @@ export default function OnboardingScreen() {
 
   const [step, setStep] = useState<Step>("welcome");
   const [username, setUsername] = useState("");
+  const [handle, setHandle] = useState("");
+  const [profilePic, setProfilePic] = useState("");
   const [currentQ, setCurrentQ] = useState(0);
   const [score, setScore] = useState(0);
   const [answerSelected, setAnswerSelected] = useState<number | boolean | null>(null);
   const [showFeedback, setShowFeedback] = useState(false);
+  const [lastWasCorrect, setLastWasCorrect] = useState(false);
   const [placementResult, setPlacementResult] = useState<PlacementLevel>("novice");
   const [mascotState, setMascotState] = useState<MascotState>("idle");
 
@@ -90,6 +96,27 @@ export default function OnboardingScreen() {
     width: `${progressWidth.value}%` as any,
   }));
 
+  async function pickProfilePic() {
+    try {
+      const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (!perm.granted) {
+        Alert.alert("Permission needed", "We need access to your photos to set a profile picture.");
+        return;
+      }
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        aspect: [1, 1],
+        quality: 0.7,
+      });
+      if (!result.canceled && result.assets[0]) {
+        setProfilePic(result.assets[0].uri);
+      }
+    } catch (_) {
+      Alert.alert("Could not load image", "Please try a different photo.");
+    }
+  }
+
   function handleAnswer(answer: number | boolean) {
     if (showFeedback) return;
     setAnswerSelected(answer);
@@ -97,37 +124,49 @@ export default function OnboardingScreen() {
 
     const q = PLACEMENT_QUESTIONS[currentQ];
     const correct = q.type === "true_false" ? answer === q.correctBool : answer === q.correctIndex;
+    setLastWasCorrect(correct);
     if (correct) {
       setScore((s) => s + 1);
       setMascotState("correct");
     } else {
       setMascotState("wrong");
     }
+  }
 
-    setTimeout(() => {
-      const nextQ = currentQ + 1;
-      setMascotState("think");
-      if (nextQ >= PLACEMENT_QUESTIONS.length) {
-        const finalScore = correct ? score + 1 : score;
-        const level = getPlacementLevel(finalScore, PLACEMENT_QUESTIONS.length);
-        setPlacementResult(level);
-        setStep("results");
-        setMascotState("celebrate");
-      } else {
-        setCurrentQ(nextQ);
-        setAnswerSelected(null);
-        setShowFeedback(false);
-      }
-    }, 900);
+  function handleContinueQuestion() {
+    const nextQ = currentQ + 1;
+    setMascotState("think");
+    if (nextQ >= PLACEMENT_QUESTIONS.length) {
+      const level = getPlacementLevel(score, PLACEMENT_QUESTIONS.length);
+      setPlacementResult(level);
+      setStep("results");
+      setMascotState("celebrate");
+    } else {
+      setCurrentQ(nextQ);
+      setAnswerSelected(null);
+      setShowFeedback(false);
+    }
+  }
+
+  function handleSkipPlacement() {
+    setPlacementResult("novice");
+    setStep("results");
+    setMascotState("celebrate");
   }
 
   function handleFinish() {
-    completeOnboarding(username.trim() || "Designer", placementResult);
+    completeOnboarding(
+      username.trim() || "Designer",
+      placementResult,
+      handle.trim().replace(/^@/, ""),
+      profilePic,
+    );
     router.replace("/(tabs)");
   }
 
   const padTop = insets.top + (Platform.OS === "web" ? 67 : 0);
   const padBottom = insets.bottom + (Platform.OS === "web" ? 34 : 0);
+  const canContinueSetup = username.trim().length > 0;
 
   if (step === "welcome") {
     return (
@@ -195,15 +234,6 @@ export default function OnboardingScreen() {
                   Get Started
                 </Text>
               </TouchableOpacity>
-              <TouchableOpacity
-                style={{ paddingVertical: 16, alignItems: "center", marginTop: 12 }}
-                onPress={() => { setMascotState("think"); setStep("placement"); }}
-                activeOpacity={0.7}
-              >
-                <Text style={{ fontSize: 15, fontFamily: "Nunito_600SemiBold", color: colors.mutedForeground }}>
-                  Already a designer? Skip ahead
-                </Text>
-              </TouchableOpacity>
             </Animated.View>
           </View>
         </View>
@@ -214,52 +244,125 @@ export default function OnboardingScreen() {
   if (step === "setup") {
     return (
       <View style={{ flex: 1, backgroundColor: colors.background }}>
-        <View style={{ flex: 1, paddingTop: padTop, paddingBottom: padBottom }}>
-          <Animated.View entering={SlideInRight} style={{ flex: 1, alignItems: "center", justifyContent: "center", paddingHorizontal: 28 }}>
-            <GraflyMascot state="think" size={130} />
-            <Text style={{
-              fontSize: 28, fontFamily: "Nunito_800ExtraBold",
-              color: colors.foreground, textAlign: "center", marginBottom: 10, marginTop: 20,
-            }}>
-              What is your name?
-            </Text>
-            <Text style={{
-              fontSize: 15, fontFamily: "Nunito_600SemiBold",
-              color: colors.mutedForeground, textAlign: "center", marginBottom: 28,
-            }}>
-              Your name in the Grafly community
-            </Text>
-            <TextInput
-              style={{
-                backgroundColor: colors.card, borderRadius: colors.radius,
-                paddingHorizontal: 20, paddingVertical: 18,
-                fontSize: 18, fontFamily: "Nunito_600SemiBold",
-                color: colors.foreground, borderWidth: 2, borderColor: colors.border,
-                width: "100%", marginBottom: 32,
-              }}
-              value={username}
-              onChangeText={setUsername}
-              placeholder="Your name or handle"
-              placeholderTextColor={colors.mutedForeground}
-              autoFocus
-              maxLength={24}
-              returnKeyType="done"
-            />
-            <TouchableOpacity
-              style={[{
-                backgroundColor: colors.primary, borderRadius: colors.radius,
-                paddingVertical: 18, alignItems: "center", width: "100%",
-              }, !username.trim() && { opacity: 0.5 }]}
-              onPress={() => { setMascotState("think"); setStep("placement"); }}
-              activeOpacity={0.85}
-              disabled={!username.trim()}
-            >
-              <Text style={{ fontSize: 18, fontFamily: "Nunito_800ExtraBold", color: colors.primaryForeground }}>
-                {username.trim() ? `Continue as ${username.trim()}` : "Enter your name"}
+        <KeyboardAvoidingView
+          behavior={Platform.OS === "ios" ? "padding" : "height"}
+          style={{ flex: 1 }}
+          keyboardVerticalOffset={padTop}
+        >
+          <ScrollView
+            contentContainerStyle={{
+              flexGrow: 1,
+              paddingTop: padTop + 16,
+              paddingBottom: padBottom + 24,
+              paddingHorizontal: 28,
+            }}
+            keyboardShouldPersistTaps="handled"
+            showsVerticalScrollIndicator={false}
+          >
+            <Animated.View entering={SlideInRight} style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
+              <Text style={{
+                fontSize: 28, fontFamily: "Nunito_800ExtraBold",
+                color: colors.foreground, textAlign: "center", marginBottom: 8,
+              }}>
+                Set up your profile
               </Text>
-            </TouchableOpacity>
-          </Animated.View>
-        </View>
+              <Text style={{
+                fontSize: 14, fontFamily: "Nunito_600SemiBold",
+                color: colors.mutedForeground, textAlign: "center", marginBottom: 24,
+              }}>
+                You can change this anytime
+              </Text>
+
+              <TouchableOpacity
+                onPress={pickProfilePic}
+                activeOpacity={0.85}
+                style={{
+                  width: 110, height: 110, borderRadius: 55,
+                  backgroundColor: colors.card, borderWidth: 2,
+                  borderColor: profilePic ? colors.primary : colors.border,
+                  alignItems: "center", justifyContent: "center",
+                  marginBottom: 8, overflow: "hidden",
+                }}
+              >
+                {profilePic ? (
+                  <Image source={{ uri: profilePic }} style={{ width: "100%", height: "100%" }} />
+                ) : (
+                  <Ionicons name="camera" size={36} color={colors.mutedForeground} />
+                )}
+              </TouchableOpacity>
+              <TouchableOpacity onPress={pickProfilePic} activeOpacity={0.7} style={{ marginBottom: 24 }}>
+                <Text style={{ fontSize: 13, fontFamily: "Nunito_800ExtraBold", color: colors.primary }}>
+                  {profilePic ? "Change photo" : "Upload photo"}
+                </Text>
+              </TouchableOpacity>
+
+              <View style={{ width: "100%", marginBottom: 14 }}>
+                <Text style={{ fontSize: 13, fontFamily: "Nunito_800ExtraBold", color: colors.mutedForeground, marginBottom: 8, marginLeft: 4 }}>
+                  Display name
+                </Text>
+                <TextInput
+                  style={{
+                    backgroundColor: colors.card, borderRadius: colors.radius,
+                    paddingHorizontal: 18, paddingVertical: 16,
+                    fontSize: 16, fontFamily: "Nunito_600SemiBold",
+                    color: colors.foreground, borderWidth: 2,
+                    borderColor: username.trim() ? colors.primary : colors.border,
+                    width: "100%",
+                  }}
+                  value={username}
+                  onChangeText={setUsername}
+                  placeholder="Your name"
+                  placeholderTextColor={colors.mutedForeground}
+                  maxLength={24}
+                  returnKeyType="next"
+                />
+              </View>
+
+              <View style={{ width: "100%", marginBottom: 24 }}>
+                <Text style={{ fontSize: 13, fontFamily: "Nunito_800ExtraBold", color: colors.mutedForeground, marginBottom: 8, marginLeft: 4 }}>
+                  Username (optional)
+                </Text>
+                <View style={{
+                  flexDirection: "row", alignItems: "center",
+                  backgroundColor: colors.card, borderRadius: colors.radius,
+                  borderWidth: 2, borderColor: handle.trim() ? colors.primary : colors.border,
+                  paddingHorizontal: 18,
+                }}>
+                  <Text style={{ fontSize: 16, fontFamily: "Nunito_800ExtraBold", color: colors.mutedForeground, marginRight: 4 }}>@</Text>
+                  <TextInput
+                    style={{
+                      flex: 1, paddingVertical: 16,
+                      fontSize: 16, fontFamily: "Nunito_600SemiBold",
+                      color: colors.foreground,
+                    }}
+                    value={handle}
+                    onChangeText={(t) => setHandle(t.replace(/[^a-zA-Z0-9_]/g, "").toLowerCase())}
+                    placeholder="username"
+                    placeholderTextColor={colors.mutedForeground}
+                    maxLength={20}
+                    autoCapitalize="none"
+                    autoCorrect={false}
+                    returnKeyType="done"
+                  />
+                </View>
+              </View>
+
+              <TouchableOpacity
+                style={[{
+                  backgroundColor: colors.primary, borderRadius: colors.radius,
+                  paddingVertical: 18, alignItems: "center", width: "100%",
+                }, !canContinueSetup && { opacity: 0.45 }]}
+                onPress={() => { setMascotState("think"); setStep("placement"); }}
+                activeOpacity={0.85}
+                disabled={!canContinueSetup}
+              >
+                <Text style={{ fontSize: 18, fontFamily: "Nunito_800ExtraBold", color: colors.primaryForeground }}>
+                  Continue
+                </Text>
+              </TouchableOpacity>
+            </Animated.View>
+          </ScrollView>
+        </KeyboardAvoidingView>
       </View>
     );
   }
@@ -276,13 +379,24 @@ export default function OnboardingScreen() {
             <Text style={{ fontSize: 13, fontFamily: "Nunito_600SemiBold", color: colors.mutedForeground }}>
               Question {currentQ + 1} of {PLACEMENT_QUESTIONS.length}
             </Text>
-            <GraflyMascot state={mascotState} size={52} />
+            <View style={{ flexDirection: "row", alignItems: "center", gap: 12 }}>
+              <TouchableOpacity onPress={handleSkipPlacement} activeOpacity={0.7}>
+                <Text style={{ fontSize: 13, fontFamily: "Nunito_800ExtraBold", color: colors.mutedForeground }}>
+                  Skip test
+                </Text>
+              </TouchableOpacity>
+              <GraflyMascot state={mascotState} size={52} />
+            </View>
           </View>
-          <ScrollView style={{ flex: 1, paddingHorizontal: 24 }} showsVerticalScrollIndicator={false}>
+          <ScrollView
+            style={{ flex: 1 }}
+            contentContainerStyle={{ paddingHorizontal: 24, paddingTop: 60, paddingBottom: 180 }}
+            showsVerticalScrollIndicator={false}
+          >
             <Text style={{
-              fontSize: 20, fontFamily: "Nunito_800ExtraBold",
+              fontSize: 22, fontFamily: "Nunito_800ExtraBold",
               color: colors.foreground, textAlign: "center",
-              lineHeight: 28, marginBottom: 28,
+              lineHeight: 30, marginBottom: 32,
             }}>
               {q.question}
             </Text>
@@ -333,16 +447,54 @@ export default function OnboardingScreen() {
                 })}
               </View>
             )}
-
-            {showFeedback && (
-              <Animated.View entering={FadeIn} style={{ marginTop: 20, backgroundColor: colors.card, borderRadius: colors.radius, padding: 16 }}>
-                <Text style={{ fontSize: 14, fontFamily: "Nunito_600SemiBold", color: colors.mutedForeground, lineHeight: 20 }}>
-                  {q.explanation}
-                </Text>
-              </Animated.View>
-            )}
-            <View style={{ height: 80 }} />
           </ScrollView>
+
+          {showFeedback && (
+            <Animated.View
+              entering={SlideInUp.springify().damping(18)}
+              style={{
+                position: "absolute", left: 0, right: 0, bottom: 0,
+                paddingHorizontal: 20, paddingTop: 18,
+                paddingBottom: padBottom + 20,
+                backgroundColor: lastWasCorrect ? colors.success + "18" : colors.destructive + "18",
+                borderTopLeftRadius: 28, borderTopRightRadius: 28,
+                borderTopWidth: 1,
+                borderTopColor: lastWasCorrect ? colors.success : colors.destructive,
+              }}
+            >
+              <View style={{ flexDirection: "row", alignItems: "center", gap: 10, marginBottom: 8 }}>
+                <Ionicons
+                  name={lastWasCorrect ? "checkmark-circle" : "close-circle"}
+                  size={22}
+                  color={lastWasCorrect ? colors.success : colors.destructive}
+                />
+                <Text style={{
+                  fontSize: 16, fontFamily: "Nunito_800ExtraBold",
+                  color: lastWasCorrect ? colors.success : colors.destructive,
+                }}>
+                  {lastWasCorrect ? "Nice work!" : "Not quite"}
+                </Text>
+              </View>
+              <Text style={{
+                fontSize: 14, fontFamily: "Nunito_600SemiBold",
+                color: colors.foreground, lineHeight: 20, marginBottom: 14,
+              }}>
+                {q.explanation}
+              </Text>
+              <TouchableOpacity
+                style={{
+                  backgroundColor: lastWasCorrect ? colors.success : colors.primary,
+                  borderRadius: colors.radius, paddingVertical: 16, alignItems: "center",
+                }}
+                onPress={handleContinueQuestion}
+                activeOpacity={0.85}
+              >
+                <Text style={{ fontSize: 16, fontFamily: "Nunito_800ExtraBold", color: "#FFFFFF" }}>
+                  Continue
+                </Text>
+              </TouchableOpacity>
+            </Animated.View>
+          )}
         </View>
       </View>
     );
@@ -362,7 +514,7 @@ export default function OnboardingScreen() {
               {username.trim() ? `Great work, ${username.trim().split(" ")[0]}!` : "Great work!"}
             </Text>
             <Text style={{ fontSize: 15, fontFamily: "Nunito_600SemiBold", color: colors.mutedForeground, textAlign: "center", marginBottom: 20 }}>
-              Your placement test is complete
+              You are all set up
             </Text>
 
             <View style={{ paddingHorizontal: 20, paddingVertical: 8, borderRadius: 100, marginBottom: 20, backgroundColor: levelColor }}>
