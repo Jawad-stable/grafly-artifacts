@@ -24,6 +24,7 @@ import { useGame } from "@/context/GameContext";
 import { submitCritique, type CritiqueFeedback } from "@/services/aiCritique";
 import { voiceService } from "@/services/voiceService";
 import { GraflyMascot } from "@/components/GraflyMascot";
+import { ATextInput } from "@/components/AText";
 import type { MascotState } from "@/constants/assets";
 
 const CRITIQUE_PROMPTS = [
@@ -198,7 +199,7 @@ export default function CritiqueScreen() {
                 {wordCount} words
               </Text>
             </View>
-            <TextInput
+            <ATextInput
               value={text}
               onChangeText={setText}
               placeholder="Begin your critique here. Analyze the design's hierarchy, color use, typography, spacing, and overall effectiveness..."

@@ -24,6 +24,7 @@ import { useColors } from "@/hooks/useColors";
 import { useGame, getXPProgress } from "@/context/GameContext";
 import { COURSES, getAllLessons } from "@/constants/lessons";
 import { LOGO } from "@/constants/assets";
+import { AText } from "@/components/AText";
 
 function getGreeting(name: string): string {
   const hour = new Date().getHours();
@@ -254,9 +255,9 @@ export default function HomeScreen() {
       >
         {/* Time-based greeting */}
         <Animated.View entering={FadeIn.delay(80)} style={{ marginBottom: 24 }}>
-          <Text style={{ fontSize: 26, fontFamily: "Nunito_800ExtraBold", color: colors.foreground, marginBottom: 2 }}>
+          <AText style={{ fontSize: 26, fontFamily: "Nunito_800ExtraBold", color: colors.foreground, marginBottom: 2 }}>
             {getGreeting(state.username)}
-          </Text>
+          </AText>
           <Text style={{ fontSize: 14, fontFamily: "Nunito_600SemiBold", color: colors.mutedForeground }}>
             {state.streak > 0
               ? `${state.streak} day streak`

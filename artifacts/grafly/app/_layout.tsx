@@ -13,6 +13,7 @@ import { SafeAreaProvider } from "react-native-safe-area-context";
 
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { GameProvider } from "@/context/GameContext";
+import { TESHRIN_FONTS } from "@/constants/fonts";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -43,6 +44,7 @@ export default function RootLayout() {
   const [fontsLoaded, fontError] = useFonts({
     Nunito_600SemiBold,
     Nunito_800ExtraBold,
+    ...TESHRIN_FONTS,
   });
 
   useEffect(() => {

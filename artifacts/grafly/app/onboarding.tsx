@@ -30,6 +30,7 @@ import type { PlacementLevel } from "@/context/GameContext";
 import { PLACEMENT_QUESTIONS } from "@/constants/lessons";
 import { GraflyMascot } from "@/components/GraflyMascot";
 import type { MascotState } from "@/constants/assets";
+import { AText, ATextInput } from "@/components/AText";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 type Step = "welcome" | "setup" | "placement" | "results";
@@ -300,7 +301,7 @@ export default function OnboardingScreen() {
                 <Text style={{ fontSize: 13, fontFamily: "Nunito_800ExtraBold", color: colors.mutedForeground, marginBottom: 8, marginLeft: 4 }}>
                   Display name
                 </Text>
-                <TextInput
+                <ATextInput
                   style={{
                     backgroundColor: colors.card, borderRadius: colors.radius,
                     paddingHorizontal: 18, paddingVertical: 16,
@@ -344,6 +345,7 @@ export default function OnboardingScreen() {
                     autoCorrect={false}
                     returnKeyType="done"
                   />
+                  {/* handle stays Latin only (sanitized to a-z 0-9 _) so Nunito is correct */}
                 </View>
               </View>
 
@@ -507,12 +509,12 @@ export default function OnboardingScreen() {
         <View style={{ flex: 1, paddingTop: padTop, paddingBottom: padBottom }}>
           <Animated.View entering={FadeIn} style={{ flex: 1, alignItems: "center", justifyContent: "center", paddingHorizontal: 28 }}>
             <GraflyMascot state="celebrate" size={150} float />
-            <Text style={{
+            <AText style={{
               fontSize: 28, fontFamily: "Nunito_800ExtraBold",
               color: colors.foreground, textAlign: "center", marginBottom: 8, marginTop: 20,
             }}>
               {username.trim() ? `Great work, ${username.trim().split(" ")[0]}!` : "Great work!"}
-            </Text>
+            </AText>
             <Text style={{ fontSize: 15, fontFamily: "Nunito_600SemiBold", color: colors.mutedForeground, textAlign: "center", marginBottom: 20 }}>
               You are all set up
             </Text>

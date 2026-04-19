@@ -15,6 +15,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useColors } from "@/hooks/useColors";
 import { useGame, getXPProgress } from "@/context/GameContext";
 import { GraflyMascot } from "@/components/GraflyMascot";
+import { AText, ATextInput } from "@/components/AText";
 
 const ACHIEVEMENTS = [
   { id: "first-lesson", title: "First Step", icon: "book", color: "#00A4FA", condition: (s: any) => s.completedLessons.length >= 1 },
@@ -92,7 +93,7 @@ export default function ProfileScreen() {
           <View style={{ marginTop: 16, alignItems: "center" }}>
             {editingName ? (
               <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
-                <TextInput
+                <ATextInput
                   style={{
                     backgroundColor: colors.card, borderRadius: 12,
                     paddingHorizontal: 16, paddingVertical: 10,
@@ -114,9 +115,9 @@ export default function ProfileScreen() {
               </View>
             ) : (
               <TouchableOpacity onPress={() => { setNameInput(state.username); setEditingName(true); }} style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
-                <Text style={{ fontSize: 22, fontFamily: "Nunito_800ExtraBold", color: colors.foreground }}>
+                <AText style={{ fontSize: 22, fontFamily: "Nunito_800ExtraBold", color: colors.foreground }}>
                   {state.username}
-                </Text>
+                </AText>
                 <Ionicons name="pencil" size={16} color={colors.mutedForeground} />
               </TouchableOpacity>
             )}
