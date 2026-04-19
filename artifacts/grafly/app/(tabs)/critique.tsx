@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   View,
   Text,
@@ -6,294 +6,365 @@ import {
   TextInput,
   TouchableOpacity,
   Platform,
-  Alert,
+  Image,
   ActivityIndicator,
+  KeyboardAvoidingView,
+  Modal,
+  Pressable,
 } from "react-native";
-import Animated, {
-  FadeIn,
-  SlideInUp,
-  useSharedValue,
-  useAnimatedStyle,
-  withSpring,
-} from "react-native-reanimated";
+import Animated, { FadeIn, FadeInUp } from "react-native-reanimated";
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useColors } from "@/hooks/useColors";
 import { useGame } from "@/context/GameContext";
-import { submitCritique, type CritiqueFeedback } from "@/services/aiCritique";
-import { voiceService } from "@/services/voiceService";
+import {
+  fetchRandomDesign,
+  sendCritiqueMessage,
+  type DesignBrief,
+  type ChatMessage,
+} from "@/services/aiCritique";
 import { GraflyMascot } from "@/components/GraflyMascot";
-import { ATextInput } from "@/components/AText";
-import type { MascotState } from "@/constants/assets";
 
-const CRITIQUE_PROMPTS = [
-  {
-    id: "p1",
-    title: "Airbnb Onboarding",
-    prompt: "Analyze Airbnb's mobile app onboarding experience. Consider the visual hierarchy, use of whitespace, typographic choices, color system, and how the design communicates trust to first-time users. Evaluate what design decisions support or undermine the user's confidence.",
-    emoji: "🏠",
-  },
-  {
-    id: "p2",
-    title: "Spotify Now Playing",
-    prompt: "Critique the design of Spotify's Now Playing screen. Examine the balance between the album artwork and UI controls, the information hierarchy, contrast ratios, touch target sizing, and how the overall design creates an immersive experience while remaining functional.",
-    emoji: "🎵",
-  },
-  {
-    id: "p3",
-    title: "App Store Cards",
-    prompt: "Evaluate the design language of Apple App Store's editorial cards. Analyze the typographic hierarchy, imagery usage, color application, grid structure, and how the editorial-style cards balance visual impact with readability and content discoverability.",
-    emoji: "📱",
-  },
-];
-
-const TIER_COLORS: Record<string, string> = {
-  excellent: "#22DD88",
-  good: "#00A4FA",
-  needs_development: "#8A90B0",
-};
-const TIER_LABELS: Record<string, string> = {
-  excellent: "Excellent",
-  good: "Good",
-  needs_development: "Developing",
-};
-
-function FeedbackCard({ title, items, color, delay, icon }: {
-  title: string; items: string[]; color: string; delay: number; icon: string;
-}) {
-  const colors = useColors();
-  return (
-    <Animated.View
-      entering={SlideInUp.delay(delay).springify()}
-      style={{ backgroundColor: colors.card, borderRadius: colors.radius, padding: 20, marginBottom: 14, borderLeftWidth: 3, borderLeftColor: color }}
-    >
-      <View style={{ flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 12 }}>
-        <Ionicons name={icon as any} size={18} color={color} />
-        <Text style={{ fontSize: 15, fontFamily: "Nunito_800ExtraBold", color: colors.foreground }}>{title}</Text>
-      </View>
-      {items.map((item, i) => (
-        <View key={i} style={{ flexDirection: "row", gap: 8, marginBottom: 6 }}>
-          <View style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: color, marginTop: 7, flexShrink: 0 }} />
-          <Text style={{ flex: 1, fontSize: 14, fontFamily: "Nunito_600SemiBold", color: colors.mutedForeground, lineHeight: 21 }}>{item}</Text>
-        </View>
-      ))}
-    </Animated.View>
-  );
-}
+const XP_PER_SESSION = 20;
+const COINS_PER_SESSION = 8;
+const MIN_USER_TURNS_FOR_REWARD = 3;
 
 export default function CritiqueScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
   const { state, addXP, addCoins } = useGame();
 
-  const [selectedPromptIdx, setSelectedPromptIdx] = useState(0);
-  const [text, setText] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [feedback, setFeedback] = useState<CritiqueFeedback | null>(null);
+  const [design, setDesign] = useState<DesignBrief | null>(null);
+  const [loadingDesign, setLoadingDesign] = useState(true);
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [input, setInput] = useState("");
+  const [sending, setSending] = useState(false);
+  const [imageOpen, setImageOpen] = useState(false);
   const [sessionsDone, setSessionsDone] = useState(0);
-  const [mascotState, setMascotState] = useState<MascotState>("idle");
+  const [rewardedThisDesign, setRewardedThisDesign] = useState(false);
+
+  const scrollRef = useRef<ScrollView>(null);
 
   const maxSessions = state.isPro ? Infinity : 2;
   const limitReached = sessionsDone >= maxSessions;
+  const userTurnCount = messages.filter((m) => m.role === "user").length;
 
-  const submitScale = useSharedValue(1);
-  const submitStyle = useAnimatedStyle(() => ({ transform: [{ scale: submitScale.value }] }));
-
-  const prompt = CRITIQUE_PROMPTS[selectedPromptIdx];
   const paddingTop = insets.top + (Platform.OS === "web" ? 67 : 0);
   const paddingBottom = insets.bottom + (Platform.OS === "web" ? 34 : 100);
 
-  async function handleSubmit() {
-    if (loading || limitReached) return;
-    submitScale.value = withSpring(0.96, { damping: 10 }, () => { submitScale.value = withSpring(1); });
-    setLoading(true);
-    setMascotState("think");
+  async function loadNewDesign() {
+    setLoadingDesign(true);
+    setMessages([]);
+    setRewardedThisDesign(false);
     try {
-      const result = await submitCritique(prompt.prompt, text);
-      setFeedback(result);
-      setSessionsDone((s) => s + 1);
-      const xpReward = result.quality_tier === "excellent" ? 25 : result.quality_tier === "good" ? 15 : 10;
-      addXP(xpReward);
-      addCoins(5);
-      setMascotState(result.quality_tier === "excellent" ? "celebrate" : result.quality_tier === "good" ? "correct" : "idle");
-      await voiceService.playCritiqueReady();
-      setTimeout(() => { voiceService.playQualityTier(result.quality_tier); }, 1500);
-    } catch (err: any) {
-      setMascotState("oops");
-      let msg = "Could not get critique. Check your connection.";
-      const raw = err?.message ?? "";
-      // Try to extract a clean message from a JSON error body like {"error":"..."}
-      try {
-        const parsed = JSON.parse(raw);
-        if (parsed?.error) msg = parsed.error;
-        else if (typeof parsed === "string") msg = parsed;
-      } catch {
-        if (raw && !raw.startsWith("{")) msg = raw;
-      }
-      Alert.alert("Hmm, try again", msg);
+      const d = await fetchRandomDesign();
+      setDesign(d);
+      // Seed first AI message
+      const opener = `Take a look at this design: ${d.title}. What is the first thing your eye lands on, and why do you think the designer made that choice?`;
+      setMessages([{ role: "assistant", content: opener }]);
+    } catch (err) {
+      // Even on failure, show a minimal fallback so the screen stays useful
+      setDesign({
+        id: "offline",
+        title: "Design Critique",
+        description: "Imagine a clean mobile app screen.",
+        image_url: "",
+        difficulty: "beginner",
+      });
+      setMessages([{ role: "assistant", content: "I could not load a fresh design, but let us still warm up. Describe a mobile screen you have seen recently and what stood out to you." }]);
     } finally {
-      setLoading(false);
+      setLoadingDesign(false);
     }
   }
 
-  function resetCritique() {
-    setFeedback(null);
-    setText("");
-    setMascotState("idle");
-  }
+  useEffect(() => {
+    loadNewDesign();
+  }, []);
 
-  const wordCount = text.trim() === "" ? 0 : text.trim().split(/\s+/).length;
-  const MIN_WORDS = 20;
-  const meetsMin = wordCount >= MIN_WORDS;
+  useEffect(() => {
+    setTimeout(() => scrollRef.current?.scrollToEnd({ animated: true }), 50);
+  }, [messages.length, sending]);
+
+  async function handleSend() {
+    const text = input.trim();
+    if (!text || sending || limitReached || !design) return;
+
+    const next: ChatMessage[] = [...messages, { role: "user", content: text }];
+    setMessages(next);
+    setInput("");
+    setSending(true);
+    try {
+      const reply = await sendCritiqueMessage({
+        designTitle: design.title,
+        designDescription: design.description,
+        messages: next,
+      });
+      setMessages([...next, { role: "assistant", content: reply }]);
+
+      // Reward XP once per design after MIN_USER_TURNS_FOR_REWARD exchanges
+      const newUserTurns = next.filter((m) => m.role === "user").length;
+      if (!rewardedThisDesign && newUserTurns >= MIN_USER_TURNS_FOR_REWARD) {
+        addXP(XP_PER_SESSION);
+        addCoins(COINS_PER_SESSION);
+        setSessionsDone((s) => s + 1);
+        setRewardedThisDesign(true);
+      }
+    } catch (err: any) {
+      const msg = err?.message ?? "Could not reach the AI mentor.";
+      setMessages([...next, { role: "assistant", content: `Hmm, I had trouble responding. ${msg}` }]);
+    } finally {
+      setSending(false);
+    }
+  }
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.background }}>
-      <ScrollView
-        contentContainerStyle={{ paddingTop: paddingTop + 12, paddingHorizontal: 20, paddingBottom }}
-        showsVerticalScrollIndicator={false}
-        keyboardShouldPersistTaps="handled"
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : undefined}
+        keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 0}
+        style={{ flex: 1 }}
       >
-        <Animated.View entering={FadeIn} style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
-          <View>
-            <Text style={{ fontSize: 26, fontFamily: "Nunito_800ExtraBold", color: colors.foreground }}>AI Critique</Text>
-            <Text style={{ fontSize: 13, fontFamily: "Nunito_600SemiBold", color: colors.mutedForeground }}>
-              Write your analysis. Get expert feedback.
+        {/* Header */}
+        <View style={{ paddingTop: paddingTop + 8, paddingHorizontal: 20, paddingBottom: 12, flexDirection: "row", alignItems: "center", gap: 12 }}>
+          <GraflyMascot state={sending ? "think" : "idle"} size={48} />
+          <View style={{ flex: 1 }}>
+            <Text style={{ fontSize: 20, fontFamily: "Nunito_800ExtraBold", color: colors.foreground }}>
+              Design Chat
+            </Text>
+            <Text style={{ fontSize: 12, fontFamily: "Nunito_600SemiBold", color: colors.mutedForeground }}>
+              {state.isPro ? "Unlimited sessions" : `${Math.max(0, maxSessions - sessionsDone)} of ${maxSessions} sessions left`}
             </Text>
           </View>
-          <GraflyMascot state={mascotState} size={80} float={mascotState === "think"} />
-        </Animated.View>
-
-        {!state.isPro && (
-          <View style={{ backgroundColor: colors.card, borderRadius: 12, paddingHorizontal: 14, paddingVertical: 8, alignSelf: "flex-start", marginBottom: 16 }}>
-            <Text style={{ fontSize: 13, fontFamily: "Nunito_800ExtraBold", color: colors.mutedForeground }}>
-              {maxSessions - sessionsDone}/{maxSessions} sessions left
-            </Text>
-          </View>
-        )}
-
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginHorizontal: -20, marginBottom: 16 }} contentContainerStyle={{ paddingHorizontal: 20, gap: 10 }}>
-          {CRITIQUE_PROMPTS.map((p, i) => (
-            <TouchableOpacity
-              key={p.id}
-              onPress={() => { setSelectedPromptIdx(i); resetCritique(); }}
-              style={{
-                backgroundColor: i === selectedPromptIdx ? colors.primary : colors.card,
-                borderRadius: colors.radius, paddingHorizontal: 16, paddingVertical: 10, maxWidth: 160,
-              }}
-              activeOpacity={0.8}
-            >
-              <Text style={{
-                fontSize: 13, fontFamily: "Nunito_800ExtraBold",
-                color: i === selectedPromptIdx ? colors.primaryForeground : colors.foreground,
-              }} numberOfLines={2}>
-                {p.title}
-              </Text>
-            </TouchableOpacity>
-          ))}
-        </ScrollView>
-
-        <View style={{ backgroundColor: colors.card, borderRadius: colors.radius, padding: 20, marginBottom: 16 }}>
-          <View style={{ flexDirection: "row", alignItems: "center", gap: 10, marginBottom: 10 }}>
-            <Text style={{ fontSize: 28 }}>{prompt.emoji}</Text>
-            <Text style={{ flex: 1, fontSize: 16, fontFamily: "Nunito_800ExtraBold", color: colors.foreground }}>{prompt.title}</Text>
-          </View>
-          <Text style={{ fontSize: 13, fontFamily: "Nunito_600SemiBold", color: colors.mutedForeground, lineHeight: 20 }}>
-            {prompt.prompt}
-          </Text>
+          <TouchableOpacity
+            onPress={loadNewDesign}
+            style={{ backgroundColor: colors.card, padding: 10, borderRadius: 100 }}
+            activeOpacity={0.8}
+          >
+            <Ionicons name="shuffle" size={20} color={colors.foreground} />
+          </TouchableOpacity>
         </View>
 
-        {!feedback && (
-          <Animated.View entering={FadeIn}>
-            <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
-              <Text style={{ fontSize: 15, fontFamily: "Nunito_800ExtraBold", color: colors.foreground }}>Your Critique</Text>
-              <Text style={{ fontSize: 13, fontFamily: "Nunito_800ExtraBold", color: meetsMin ? colors.success : colors.mutedForeground }}>
-                {wordCount} / {MIN_WORDS} words
+        {/* Design image card */}
+        {design && (
+          <Animated.View entering={FadeIn} style={{ paddingHorizontal: 20, paddingBottom: 12 }}>
+            <Pressable
+              onPress={() => design.image_url && setImageOpen(true)}
+              style={{
+                backgroundColor: colors.card,
+                borderRadius: colors.radius,
+                overflow: "hidden",
+                flexDirection: "row",
+                gap: 12,
+                padding: 10,
+                alignItems: "center",
+              }}
+            >
+              {design.image_url ? (
+                <Image
+                  source={{ uri: design.image_url }}
+                  style={{ width: 70, height: 70, borderRadius: 12, backgroundColor: colors.muted }}
+                  resizeMode="cover"
+                />
+              ) : (
+                <View style={{ width: 70, height: 70, borderRadius: 12, backgroundColor: colors.muted, alignItems: "center", justifyContent: "center" }}>
+                  <Ionicons name="image-outline" size={28} color={colors.mutedForeground} />
+                </View>
+              )}
+              <View style={{ flex: 1 }}>
+                <Text style={{ fontSize: 14, fontFamily: "Nunito_800ExtraBold", color: colors.foreground }} numberOfLines={1}>
+                  {design.title}
+                </Text>
+                <Text style={{ fontSize: 12, fontFamily: "Nunito_600SemiBold", color: colors.mutedForeground, marginTop: 2 }} numberOfLines={2}>
+                  Tap to view full size
+                </Text>
+              </View>
+              <Ionicons name="expand-outline" size={20} color={colors.mutedForeground} />
+            </Pressable>
+          </Animated.View>
+        )}
+
+        {/* Messages */}
+        <ScrollView
+          ref={scrollRef}
+          style={{ flex: 1 }}
+          contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 12, gap: 10 }}
+          keyboardShouldPersistTaps="handled"
+        >
+          {loadingDesign && (
+            <View style={{ alignItems: "center", paddingVertical: 40 }}>
+              <ActivityIndicator color={colors.primary} />
+            </View>
+          )}
+
+          {messages.map((m, i) => (
+            <Animated.View
+              key={i}
+              entering={FadeInUp.duration(220)}
+              style={{
+                alignSelf: m.role === "user" ? "flex-end" : "flex-start",
+                maxWidth: "85%",
+                backgroundColor: m.role === "user" ? colors.primary : colors.card,
+                paddingHorizontal: 14,
+                paddingVertical: 10,
+                borderRadius: 18,
+                borderBottomRightRadius: m.role === "user" ? 4 : 18,
+                borderBottomLeftRadius: m.role === "assistant" ? 4 : 18,
+              }}
+            >
+              <Text
+                style={{
+                  fontSize: 14,
+                  lineHeight: 20,
+                  fontFamily: "Nunito_600SemiBold",
+                  color: m.role === "user" ? colors.primaryForeground : colors.foreground,
+                }}
+              >
+                {m.content}
+              </Text>
+            </Animated.View>
+          ))}
+
+          {sending && (
+            <View
+              style={{
+                alignSelf: "flex-start",
+                backgroundColor: colors.card,
+                paddingHorizontal: 14,
+                paddingVertical: 12,
+                borderRadius: 18,
+                borderBottomLeftRadius: 4,
+                flexDirection: "row",
+                gap: 6,
+                alignItems: "center",
+              }}
+            >
+              <ActivityIndicator size="small" color={colors.mutedForeground} />
+              <Text style={{ fontSize: 12, fontFamily: "Nunito_600SemiBold", color: colors.mutedForeground }}>
+                Grafly is thinking
               </Text>
             </View>
-            <ATextInput
-              value={text}
-              onChangeText={setText}
-              placeholder="Begin your critique here. Analyze the design's hierarchy, color use, typography, spacing, and overall effectiveness..."
+          )}
+
+          {rewardedThisDesign && (
+            <Animated.View entering={FadeIn} style={{ alignSelf: "center", marginTop: 4, backgroundColor: colors.success + "20", paddingHorizontal: 12, paddingVertical: 6, borderRadius: 100 }}>
+              <Text style={{ fontSize: 12, fontFamily: "Nunito_800ExtraBold", color: colors.success }}>
+                +{XP_PER_SESSION} XP earned
+              </Text>
+            </Animated.View>
+          )}
+        </ScrollView>
+
+        {/* Composer */}
+        {limitReached ? (
+          <View style={{ paddingHorizontal: 20, paddingBottom: paddingBottom, paddingTop: 8 }}>
+            <TouchableOpacity
+              style={{
+                backgroundColor: colors.pink + "20",
+                borderRadius: colors.radius,
+                paddingVertical: 16,
+                alignItems: "center",
+                flexDirection: "row",
+                justifyContent: "center",
+                gap: 8,
+              }}
+              onPress={() => router.push("/paywall" as any)}
+              activeOpacity={0.85}
+            >
+              <Ionicons name="star" size={18} color={colors.pink} />
+              <Text style={{ fontSize: 16, fontFamily: "Nunito_800ExtraBold", color: colors.pink }}>
+                Unlock Pro for unlimited sessions
+              </Text>
+            </TouchableOpacity>
+          </View>
+        ) : (
+          <View
+            style={{
+              flexDirection: "row",
+              alignItems: "flex-end",
+              gap: 8,
+              paddingHorizontal: 16,
+              paddingTop: 8,
+              paddingBottom: paddingBottom,
+              backgroundColor: colors.background,
+              borderTopWidth: 1,
+              borderTopColor: colors.border,
+            }}
+          >
+            <TextInput
+              value={input}
+              onChangeText={setInput}
+              placeholder="Type your thought..."
               placeholderTextColor={colors.mutedForeground}
               multiline
               style={{
-                backgroundColor: colors.card, borderRadius: colors.radius,
-                padding: 18, fontSize: 15, fontFamily: "Nunito_600SemiBold",
-                color: colors.foreground, borderWidth: 2,
-                borderColor: text.trim().length > 0 ? colors.primary : colors.border,
-                minHeight: 180, textAlignVertical: "top", marginBottom: 16,
+                flex: 1,
+                backgroundColor: colors.card,
+                borderRadius: 22,
+                paddingHorizontal: 16,
+                paddingTop: 12,
+                paddingBottom: 12,
+                fontSize: 15,
+                fontFamily: "Nunito_600SemiBold",
+                color: colors.foreground,
+                maxHeight: 120,
+                minHeight: 44,
               }}
             />
-
-            {limitReached ? (
-              <TouchableOpacity
-                style={{ backgroundColor: colors.pink + "20", borderRadius: colors.radius, paddingVertical: 18, alignItems: "center", flexDirection: "row", justifyContent: "center", gap: 8 }}
-                onPress={() => router.push("/paywall" as any)}
-                activeOpacity={0.85}
-              >
-                <Ionicons name="star" size={18} color={colors.pink} />
-                <Text style={{ fontSize: 16, fontFamily: "Nunito_800ExtraBold", color: colors.pink }}>Unlock Pro for unlimited critiques</Text>
-              </TouchableOpacity>
-            ) : (
-              <Animated.View style={submitStyle}>
-                <TouchableOpacity
-                  style={{ backgroundColor: meetsMin ? colors.primary : colors.muted, borderRadius: colors.radius, paddingVertical: 18, alignItems: "center" }}
-                  onPress={handleSubmit}
-                  disabled={!meetsMin || loading}
-                  activeOpacity={0.85}
-                >
-                  {loading ? (
-                    <ActivityIndicator color={meetsMin ? colors.primaryForeground : colors.mutedForeground} />
-                  ) : (
-                    <Text style={{ fontSize: 17, fontFamily: "Nunito_800ExtraBold", color: meetsMin ? colors.primaryForeground : colors.mutedForeground }}>
-                      {meetsMin ? "Submit for AI Critique" : `Write ${MIN_WORDS - wordCount} more word${MIN_WORDS - wordCount === 1 ? "" : "s"}`}
-                    </Text>
-                  )}
-                </TouchableOpacity>
-              </Animated.View>
-            )}
-
-            {loading && (
-              <Animated.View entering={FadeIn} style={{ alignItems: "center", paddingVertical: 28, gap: 12 }}>
-                <GraflyMascot state="think" size={100} float />
-                <Text style={{ fontSize: 15, fontFamily: "Nunito_600SemiBold", color: colors.mutedForeground }}>
-                  Grafly is analysing your critique...
-                </Text>
-              </Animated.View>
-            )}
-          </Animated.View>
+            <TouchableOpacity
+              onPress={handleSend}
+              disabled={!input.trim() || sending}
+              style={{
+                backgroundColor: input.trim() && !sending ? colors.primary : colors.muted,
+                width: 44,
+                height: 44,
+                borderRadius: 22,
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+              activeOpacity={0.85}
+            >
+              <Ionicons
+                name="arrow-up"
+                size={20}
+                color={input.trim() && !sending ? colors.primaryForeground : colors.mutedForeground}
+              />
+            </TouchableOpacity>
+          </View>
         )}
+      </KeyboardAvoidingView>
 
-        {feedback && (
-          <Animated.View entering={FadeIn}>
-            <View style={{ flexDirection: "row", alignItems: "center", gap: 12, marginBottom: 16 }}>
-              <View style={{
-                backgroundColor: TIER_COLORS[feedback.quality_tier] + "20",
-                borderRadius: 100, paddingHorizontal: 16, paddingVertical: 8,
-                borderWidth: 1.5, borderColor: TIER_COLORS[feedback.quality_tier],
-              }}>
-                <Text style={{ fontSize: 13, fontFamily: "Nunito_800ExtraBold", color: TIER_COLORS[feedback.quality_tier] }}>
-                  {TIER_LABELS[feedback.quality_tier]}
-                </Text>
-              </View>
-              <Text style={{ fontSize: 13, fontFamily: "Nunito_600SemiBold", color: colors.mutedForeground }}>
-                {feedback.quality_tier === "excellent" ? "+25 XP" : feedback.quality_tier === "good" ? "+15 XP" : "+10 XP"} earned
+      {/* Full-image modal */}
+      <Modal visible={imageOpen} transparent animationType="fade" onRequestClose={() => setImageOpen(false)}>
+        <Pressable
+          onPress={() => setImageOpen(false)}
+          style={{ flex: 1, backgroundColor: "rgba(0,0,0,0.92)", alignItems: "center", justifyContent: "center", padding: 20 }}
+        >
+          {design?.image_url && (
+            <Image
+              source={{ uri: design.image_url }}
+              style={{ width: "100%", height: "80%" }}
+              resizeMode="contain"
+            />
+          )}
+          <TouchableOpacity
+            onPress={() => setImageOpen(false)}
+            style={{ position: "absolute", top: insets.top + 12, right: 16, padding: 10, backgroundColor: "rgba(255,255,255,0.15)", borderRadius: 100 }}
+          >
+            <Ionicons name="close" size={24} color="#fff" />
+          </TouchableOpacity>
+          {design && (
+            <View style={{ position: "absolute", bottom: insets.bottom + 24, left: 24, right: 24 }}>
+              <Text style={{ fontSize: 16, fontFamily: "Nunito_800ExtraBold", color: "#fff", textAlign: "center" }}>
+                {design.title}
+              </Text>
+              <Text style={{ fontSize: 13, fontFamily: "Nunito_600SemiBold", color: "rgba(255,255,255,0.7)", textAlign: "center", marginTop: 4 }}>
+                {design.description}
               </Text>
             </View>
-            <FeedbackCard title="Strengths" items={feedback.strengths} color={colors.success} delay={0} icon="checkmark-circle-outline" />
-            <FeedbackCard title="Areas to Develop" items={feedback.development_areas} color={colors.warning} delay={150} icon="arrow-up-circle-outline" />
-            <FeedbackCard title="Expert Example" items={[feedback.suggested_critique]} color={colors.primary} delay={300} icon="bulb-outline" />
-            <TouchableOpacity
-              style={{ backgroundColor: colors.card, borderRadius: colors.radius, paddingVertical: 16, alignItems: "center", marginTop: 8 }}
-              onPress={resetCritique}
-              activeOpacity={0.8}
-            >
-              <Text style={{ fontSize: 16, fontFamily: "Nunito_800ExtraBold", color: colors.foreground }}>Try Another Prompt</Text>
-            </TouchableOpacity>
-          </Animated.View>
-        )}
-      </ScrollView>
+          )}
+        </Pressable>
+      </Modal>
     </View>
   );
 }

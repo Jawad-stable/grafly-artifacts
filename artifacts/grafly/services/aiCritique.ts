@@ -1,30 +1,49 @@
 const DOMAIN = process.env.EXPO_PUBLIC_DOMAIN ?? "";
 
-export interface CritiqueFeedback {
-  strengths: string[];
-  development_areas: string[];
-  suggested_critique: string;
-  quality_tier: "needs_development" | "good" | "excellent";
+export interface DesignBrief {
+  id: string;
+  title: string;
+  description: string;
+  image_url: string;
+  difficulty: string;
 }
 
-export async function submitCritique(
-  prompt: string,
-  userCritique: string
-): Promise<CritiqueFeedback> {
-  if (!DOMAIN) {
-    throw new Error("Domain not configured");
-  }
+export interface ChatMessage {
+  role: "user" | "assistant";
+  content: string;
+}
 
-  const res = await fetch(`https://${DOMAIN}/api/critique`, {
+function ensureDomain() {
+  if (!DOMAIN) throw new Error("Domain not configured");
+}
+
+export async function fetchRandomDesign(): Promise<DesignBrief> {
+  ensureDomain();
+  const res = await fetch(`https://${DOMAIN}/api/critique/designs/random`);
+  if (!res.ok) throw new Error("Could not load a design.");
+  return (await res.json()) as DesignBrief;
+}
+
+export async function sendCritiqueMessage(args: {
+  designTitle: string;
+  designDescription: string;
+  messages: ChatMessage[];
+}): Promise<string> {
+  ensureDomain();
+  const res = await fetch(`https://${DOMAIN}/api/critique/chat`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ prompt, userCritique }),
+    body: JSON.stringify(args),
   });
-
   if (!res.ok) {
-    const err = await res.text();
-    throw new Error(err || "Critique failed");
+    const text = await res.text();
+    try {
+      const parsed = JSON.parse(text);
+      throw new Error(parsed.error ?? "Chat failed");
+    } catch {
+      throw new Error(text || "Chat failed");
+    }
   }
-
-  return (await res.json()) as CritiqueFeedback;
+  const data = (await res.json()) as { reply: string };
+  return data.reply;
 }
