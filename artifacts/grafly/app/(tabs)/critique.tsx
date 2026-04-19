@@ -121,7 +121,17 @@ export default function CritiqueScreen() {
       setTimeout(() => { voiceService.playQualityTier(result.quality_tier); }, 1500);
     } catch (err: any) {
       setMascotState("oops");
-      Alert.alert("Error", err.message ?? "Could not get critique. Check your connection.");
+      let msg = "Could not get critique. Check your connection.";
+      const raw = err?.message ?? "";
+      // Try to extract a clean message from a JSON error body like {"error":"..."}
+      try {
+        const parsed = JSON.parse(raw);
+        if (parsed?.error) msg = parsed.error;
+        else if (typeof parsed === "string") msg = parsed;
+      } catch {
+        if (raw && !raw.startsWith("{")) msg = raw;
+      }
+      Alert.alert("Hmm, try again", msg);
     } finally {
       setLoading(false);
     }
@@ -134,6 +144,8 @@ export default function CritiqueScreen() {
   }
 
   const wordCount = text.trim() === "" ? 0 : text.trim().split(/\s+/).length;
+  const MIN_WORDS = 20;
+  const meetsMin = wordCount >= MIN_WORDS;
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.background }}>
@@ -195,8 +207,8 @@ export default function CritiqueScreen() {
           <Animated.View entering={FadeIn}>
             <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
               <Text style={{ fontSize: 15, fontFamily: "Nunito_800ExtraBold", color: colors.foreground }}>Your Critique</Text>
-              <Text style={{ fontSize: 13, fontFamily: "Nunito_600SemiBold", color: colors.mutedForeground }}>
-                {wordCount} words
+              <Text style={{ fontSize: 13, fontFamily: "Nunito_800ExtraBold", color: meetsMin ? colors.success : colors.mutedForeground }}>
+                {wordCount} / {MIN_WORDS} words
               </Text>
             </View>
             <ATextInput
@@ -226,16 +238,16 @@ export default function CritiqueScreen() {
             ) : (
               <Animated.View style={submitStyle}>
                 <TouchableOpacity
-                  style={{ backgroundColor: text.trim().length > 0 ? colors.primary : colors.muted, borderRadius: colors.radius, paddingVertical: 18, alignItems: "center" }}
+                  style={{ backgroundColor: meetsMin ? colors.primary : colors.muted, borderRadius: colors.radius, paddingVertical: 18, alignItems: "center" }}
                   onPress={handleSubmit}
-                  disabled={!text.trim() || loading}
+                  disabled={!meetsMin || loading}
                   activeOpacity={0.85}
                 >
                   {loading ? (
-                    <ActivityIndicator color={text.trim().length > 0 ? colors.primaryForeground : colors.mutedForeground} />
+                    <ActivityIndicator color={meetsMin ? colors.primaryForeground : colors.mutedForeground} />
                   ) : (
-                    <Text style={{ fontSize: 17, fontFamily: "Nunito_800ExtraBold", color: text.trim().length > 0 ? colors.primaryForeground : colors.mutedForeground }}>
-                      Submit for AI Critique
+                    <Text style={{ fontSize: 17, fontFamily: "Nunito_800ExtraBold", color: meetsMin ? colors.primaryForeground : colors.mutedForeground }}>
+                      {meetsMin ? "Submit for AI Critique" : `Write ${MIN_WORDS - wordCount} more word${MIN_WORDS - wordCount === 1 ? "" : "s"}`}
                     </Text>
                   )}
                 </TouchableOpacity>

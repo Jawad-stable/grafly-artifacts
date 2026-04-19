@@ -43,8 +43,8 @@ router.post("/critique", async (req, res) => {
   }
 
   const wordCount = userCritique.trim().split(/\s+/).length;
-  if (wordCount < 50) {
-    res.status(400).json({ error: "Critique must be at least 50 words" });
+  if (wordCount < 20) {
+    res.status(400).json({ error: "Please write at least 20 words so the AI can give meaningful feedback." });
     return;
   }
 
