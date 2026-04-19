@@ -94,8 +94,6 @@ export default function CritiqueScreen() {
   const [mascotState, setMascotState] = useState<MascotState>("idle");
 
   const maxSessions = state.isPro ? Infinity : 2;
-  const wordCount = text.trim() === "" ? 0 : text.trim().split(/\s+/).length;
-  const isReady = wordCount >= 50;
   const limitReached = sessionsDone >= maxSessions;
 
   const submitScale = useSharedValue(1);
@@ -106,7 +104,7 @@ export default function CritiqueScreen() {
   const paddingBottom = insets.bottom + (Platform.OS === "web" ? 34 : 100);
 
   async function handleSubmit() {
-    if (!isReady || loading || limitReached) return;
+    if (loading || limitReached) return;
     submitScale.value = withSpring(0.96, { damping: 10 }, () => { submitScale.value = withSpring(1); });
     setLoading(true);
     setMascotState("think");
@@ -134,6 +132,8 @@ export default function CritiqueScreen() {
     setMascotState("idle");
   }
 
+  const wordCount = text.trim() === "" ? 0 : text.trim().split(/\s+/).length;
+
   return (
     <View style={{ flex: 1, backgroundColor: colors.background }}>
       <ScrollView
@@ -141,7 +141,6 @@ export default function CritiqueScreen() {
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
       >
-        {/* Header */}
         <Animated.View entering={FadeIn} style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
           <View>
             <Text style={{ fontSize: 26, fontFamily: "Nunito_800ExtraBold", color: colors.foreground }}>AI Critique</Text>
@@ -152,7 +151,6 @@ export default function CritiqueScreen() {
           <GraflyMascot state={mascotState} size={80} float={mascotState === "think"} />
         </Animated.View>
 
-        {/* Session count */}
         {!state.isPro && (
           <View style={{ backgroundColor: colors.card, borderRadius: 12, paddingHorizontal: 14, paddingVertical: 8, alignSelf: "flex-start", marginBottom: 16 }}>
             <Text style={{ fontSize: 13, fontFamily: "Nunito_800ExtraBold", color: colors.mutedForeground }}>
@@ -161,7 +159,6 @@ export default function CritiqueScreen() {
           </View>
         )}
 
-        {/* Prompt selector */}
         <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginHorizontal: -20, marginBottom: 16 }} contentContainerStyle={{ paddingHorizontal: 20, gap: 10 }}>
           {CRITIQUE_PROMPTS.map((p, i) => (
             <TouchableOpacity
@@ -183,7 +180,6 @@ export default function CritiqueScreen() {
           ))}
         </ScrollView>
 
-        {/* Prompt card */}
         <View style={{ backgroundColor: colors.card, borderRadius: colors.radius, padding: 20, marginBottom: 16 }}>
           <View style={{ flexDirection: "row", alignItems: "center", gap: 10, marginBottom: 10 }}>
             <Text style={{ fontSize: 28 }}>{prompt.emoji}</Text>
@@ -194,13 +190,12 @@ export default function CritiqueScreen() {
           </Text>
         </View>
 
-        {/* Input */}
         {!feedback && (
           <Animated.View entering={FadeIn}>
             <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
               <Text style={{ fontSize: 15, fontFamily: "Nunito_800ExtraBold", color: colors.foreground }}>Your Critique</Text>
-              <Text style={{ fontSize: 13, fontFamily: "Nunito_600SemiBold", color: isReady ? colors.success : colors.mutedForeground }}>
-                {wordCount} / 50 words{isReady ? " \u2713" : ""}
+              <Text style={{ fontSize: 13, fontFamily: "Nunito_600SemiBold", color: colors.mutedForeground }}>
+                {wordCount} words
               </Text>
             </View>
             <TextInput
@@ -213,7 +208,7 @@ export default function CritiqueScreen() {
                 backgroundColor: colors.card, borderRadius: colors.radius,
                 padding: 18, fontSize: 15, fontFamily: "Nunito_600SemiBold",
                 color: colors.foreground, borderWidth: 2,
-                borderColor: isReady ? colors.primary : colors.border,
+                borderColor: text.trim().length > 0 ? colors.primary : colors.border,
                 minHeight: 180, textAlignVertical: "top", marginBottom: 16,
               }}
             />
@@ -230,16 +225,16 @@ export default function CritiqueScreen() {
             ) : (
               <Animated.View style={submitStyle}>
                 <TouchableOpacity
-                  style={{ backgroundColor: isReady ? colors.primary : colors.muted, borderRadius: colors.radius, paddingVertical: 18, alignItems: "center" }}
+                  style={{ backgroundColor: text.trim().length > 0 ? colors.primary : colors.muted, borderRadius: colors.radius, paddingVertical: 18, alignItems: "center" }}
                   onPress={handleSubmit}
-                  disabled={!isReady || loading}
+                  disabled={!text.trim() || loading}
                   activeOpacity={0.85}
                 >
                   {loading ? (
-                    <ActivityIndicator color={isReady ? colors.primaryForeground : colors.mutedForeground} />
+                    <ActivityIndicator color={text.trim().length > 0 ? colors.primaryForeground : colors.mutedForeground} />
                   ) : (
-                    <Text style={{ fontSize: 17, fontFamily: "Nunito_800ExtraBold", color: isReady ? colors.primaryForeground : colors.mutedForeground }}>
-                      {isReady ? "Get AI Feedback" : `${50 - wordCount} more words needed`}
+                    <Text style={{ fontSize: 17, fontFamily: "Nunito_800ExtraBold", color: text.trim().length > 0 ? colors.primaryForeground : colors.mutedForeground }}>
+                      Submit for AI Critique
                     </Text>
                   )}
                 </TouchableOpacity>
@@ -257,7 +252,6 @@ export default function CritiqueScreen() {
           </Animated.View>
         )}
 
-        {/* Feedback */}
         {feedback && (
           <Animated.View entering={FadeIn}>
             <View style={{ flexDirection: "row", alignItems: "center", gap: 12, marginBottom: 16 }}>
