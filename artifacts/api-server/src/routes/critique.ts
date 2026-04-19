@@ -1,5 +1,6 @@
 import { Router } from "express";
 import { logger } from "../lib/logger";
+import { supabase } from "../lib/supabase";
 
 const router = Router();
 
@@ -82,13 +83,35 @@ const FALLBACK_DESIGNS = [
   },
 ];
 
-router.get("/critique/designs/random", (_req, res) => {
-  const pick = FALLBACK_DESIGNS[Math.floor(Math.random() * FALLBACK_DESIGNS.length)];
+async function loadDesignsFromSupabase() {
+  if (!supabase) return null;
+  try {
+    const { data, error } = await supabase
+      .from("critique_designs")
+      .select("id, title, description, image_url, difficulty")
+      .eq("active", true);
+    if (error) {
+      logger.warn({ err: error.message }, "Supabase designs fetch failed");
+      return null;
+    }
+    if (!data || data.length === 0) return null;
+    return data;
+  } catch (err) {
+    logger.warn({ err }, "Supabase designs fetch threw");
+    return null;
+  }
+}
+
+router.get("/critique/designs/random", async (_req, res) => {
+  const fromDb = await loadDesignsFromSupabase();
+  const pool = fromDb && fromDb.length > 0 ? fromDb : FALLBACK_DESIGNS;
+  const pick = pool[Math.floor(Math.random() * pool.length)];
   res.json(pick);
 });
 
-router.get("/critique/designs", (_req, res) => {
-  res.json(FALLBACK_DESIGNS);
+router.get("/critique/designs", async (_req, res) => {
+  const fromDb = await loadDesignsFromSupabase();
+  res.json(fromDb && fromDb.length > 0 ? fromDb : FALLBACK_DESIGNS);
 });
 
 interface ChatMessage {
