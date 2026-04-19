@@ -22,26 +22,22 @@ SplashScreen.preventAutoHideAsync();
 const queryClient = new QueryClient();
 
 function AuthGate({ children }: { children: React.ReactNode }) {
-  const { session, loading } = useAuth();
+  const { loading } = useAuth();
   const { state } = useGame();
   const segments = useSegments();
 
   const inAuthGroup = segments[0] === "auth";
   const inOnboarding = segments[0] === "onboarding";
 
-  useEffect(() => {}, [session, loading, state.onboardingComplete]);
-
   if (loading) return null;
 
-  if (!session && !inAuthGroup) {
-    return <Redirect href="/auth" />;
-  }
-
-  if (session && !state.onboardingComplete && !inOnboarding && inAuthGroup === false) {
+  // Onboarding first — no account required to start playing
+  if (!state.onboardingComplete && !inOnboarding && !inAuthGroup) {
     return <Redirect href="/onboarding" />;
   }
 
-  if (session && state.onboardingComplete && (inAuthGroup || inOnboarding)) {
+  // After onboarding, never bounce people back into onboarding
+  if (state.onboardingComplete && inOnboarding) {
     return <Redirect href="/(tabs)" />;
   }
 

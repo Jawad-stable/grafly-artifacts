@@ -262,7 +262,7 @@ export default function ProfileScreen() {
             </Text>
           </TouchableOpacity>
 
-          {user && (
+          {user ? (
             <TouchableOpacity
               style={{
                 backgroundColor: colors.card, borderRadius: colors.radius,
@@ -275,6 +275,20 @@ export default function ProfileScreen() {
               <Ionicons name="log-out-outline" size={20} color={colors.destructive} />
               <Text style={{ fontSize: 16, fontFamily: "Nunito_800ExtraBold", color: colors.destructive }}>
                 Sign Out
+              </Text>
+            </TouchableOpacity>
+          ) : (
+            <TouchableOpacity
+              style={{
+                backgroundColor: colors.primary, borderRadius: colors.radius,
+                padding: 18, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 10,
+              }}
+              onPress={() => router.push("/auth")}
+              activeOpacity={0.85}
+            >
+              <Ionicons name="cloud-upload-outline" size={20} color={colors.primaryForeground} />
+              <Text style={{ fontSize: 16, fontFamily: "Nunito_800ExtraBold", color: colors.primaryForeground }}>
+                Save Your Progress
               </Text>
             </TouchableOpacity>
           )}

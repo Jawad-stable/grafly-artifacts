@@ -13,6 +13,8 @@ import {
 import Animated, { FadeIn } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
+import { router } from "expo-router";
+import { useGame } from "@/context/GameContext";
 import { useColors } from "@/hooks/useColors";
 import { useAuth } from "@/context/AuthContext";
 import { GraflyMascot } from "@/components/GraflyMascot";
@@ -23,12 +25,16 @@ export default function AuthScreen() {
   const { signIn, signUp, signInWithGoogle } = useAuth();
   const [googleLoading, setGoogleLoading] = useState(false);
 
+  const { state: gameState } = useGame();
+  const canSkip = gameState.onboardingComplete;
+
   const handleGoogle = async () => {
     setError("");
     setGoogleLoading(true);
     const { error: err } = await signInWithGoogle();
     setGoogleLoading(false);
     if (err) setError(err);
+    else router.replace("/(tabs)");
   };
 
   const [mode, setMode] = useState<"signin" | "signup">("signin");
@@ -48,15 +54,29 @@ export default function AuthScreen() {
       return;
     }
     setLoading(true);
-    const { error: err } = mode === "signin"
-      ? await signIn(email.trim(), password)
-      : await signUp(email.trim(), password);
-    setLoading(false);
-    if (err) {
-      setError(err);
-    } else if (mode === "signup") {
-      Alert.alert("Check your email", "We sent a confirmation link. Please verify your email before signing in.");
-      setMode("signin");
+    if (mode === "signin") {
+      const { error: err } = await signIn(email.trim(), password);
+      setLoading(false);
+      if (err) {
+        setError(err);
+      } else {
+        router.replace("/(tabs)");
+      }
+    } else {
+      const { error: err, needsConfirmation } = await signUp(email.trim(), password);
+      setLoading(false);
+      if (err) {
+        setError(err);
+      } else if (needsConfirmation) {
+        Alert.alert(
+          "Check your email",
+          "We sent a confirmation link to " + email.trim() + ". Verify your email and then sign in.\n\nIf the email never arrives, ask the app admin to disable email confirmation in Supabase or set up an SMTP provider.",
+        );
+        setMode("signin");
+      } else {
+        // Email confirmation is off — user is signed in immediately
+        router.replace("/(tabs)");
+      }
     }
   };
 
@@ -76,6 +96,15 @@ export default function AuthScreen() {
           }}
           keyboardShouldPersistTaps="handled"
         >
+          {canSkip && (
+            <TouchableOpacity
+              onPress={() => router.back()}
+              style={{ position: "absolute", top: insets.top + 12, left: 16, zIndex: 10, padding: 8 }}
+            >
+              <Ionicons name="close" size={28} color={colors.mutedForeground} />
+            </TouchableOpacity>
+          )}
+
           <Animated.View entering={FadeIn} style={{ alignItems: "center", marginBottom: 40 }}>
             <GraflyMascot state="idle" size={100} />
             <Text style={{ fontSize: 28, fontFamily: "Nunito_800ExtraBold", color: colors.foreground, marginTop: 16 }}>
