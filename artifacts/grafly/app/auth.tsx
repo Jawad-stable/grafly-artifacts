@@ -12,6 +12,7 @@ import {
 } from "react-native";
 import Animated, { FadeIn } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { Ionicons } from "@expo/vector-icons";
 import { useColors } from "@/hooks/useColors";
 import { useAuth } from "@/context/AuthContext";
 import { GraflyMascot } from "@/components/GraflyMascot";
@@ -19,7 +20,16 @@ import { GraflyMascot } from "@/components/GraflyMascot";
 export default function AuthScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
-  const { signIn, signUp } = useAuth();
+  const { signIn, signUp, signInWithGoogle } = useAuth();
+  const [googleLoading, setGoogleLoading] = useState(false);
+
+  const handleGoogle = async () => {
+    setError("");
+    setGoogleLoading(true);
+    const { error: err } = await signInWithGoogle();
+    setGoogleLoading(false);
+    if (err) setError(err);
+  };
 
   const [mode, setMode] = useState<"signin" | "signup">("signin");
   const [email, setEmail] = useState("");
@@ -154,6 +164,42 @@ export default function AuthScreen() {
                 <Text style={{ fontSize: 17, fontFamily: "Nunito_800ExtraBold", color: "#fff" }}>
                   {mode === "signin" ? "Sign In" : "Create Account"}
                 </Text>
+              )}
+            </TouchableOpacity>
+
+            <View style={{ flexDirection: "row", alignItems: "center", gap: 12, marginVertical: 8 }}>
+              <View style={{ flex: 1, height: 1, backgroundColor: colors.border }} />
+              <Text style={{ fontSize: 12, fontFamily: "Nunito_600SemiBold", color: colors.mutedForeground }}>
+                OR
+              </Text>
+              <View style={{ flex: 1, height: 1, backgroundColor: colors.border }} />
+            </View>
+
+            <TouchableOpacity
+              onPress={handleGoogle}
+              disabled={googleLoading || loading}
+              style={{
+                backgroundColor: colors.card,
+                borderRadius: 14,
+                paddingVertical: 14,
+                alignItems: "center",
+                flexDirection: "row",
+                justifyContent: "center",
+                gap: 10,
+                borderWidth: 1.5,
+                borderColor: colors.border,
+                opacity: googleLoading ? 0.7 : 1,
+              }}
+            >
+              {googleLoading ? (
+                <ActivityIndicator color={colors.foreground} />
+              ) : (
+                <>
+                  <Ionicons name="logo-google" size={20} color={colors.foreground} />
+                  <Text style={{ fontSize: 15, fontFamily: "Nunito_800ExtraBold", color: colors.foreground }}>
+                    Continue with Google
+                  </Text>
+                </>
               )}
             </TouchableOpacity>
 

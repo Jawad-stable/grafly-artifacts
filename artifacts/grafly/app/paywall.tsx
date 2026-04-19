@@ -30,8 +30,8 @@ const BENEFITS = [
 ];
 
 const PLANS = [
-  { id: "monthly", label: "Monthly", price: "$4.99", period: "/month", annualEquiv: "", popular: false },
-  { id: "annual", label: "Annual", price: "$39.99", period: "/year", annualEquiv: "$3.33/mo", popular: true },
+  { id: "monthly", label: "Monthly", price: "$4.99", period: "per month", annualEquiv: "", popular: false },
+  { id: "annual", label: "Annual", price: "$39.99", period: "per year", annualEquiv: "$3.33 per mo", popular: true },
 ];
 
 export default function PaywallScreen() {
@@ -153,42 +153,42 @@ export default function PaywallScreen() {
                 }}
                 activeOpacity={0.8}
               >
-                <View style={{ alignItems: "center" }}>
-                  <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
-                    <Text style={{
-                      fontSize: 15,
-                      fontFamily: "Nunito_800ExtraBold",
-                      color: selectedPlan === plan.id ? colors.primaryForeground : colors.foreground,
-                    }}>
-                      {plan.price}
-                    </Text>
-                    <Text style={{
-                      fontSize: 12,
-                      fontFamily: "Nunito_600SemiBold",
-                      color: selectedPlan === plan.id ? colors.primaryForeground + "CC" : colors.mutedForeground,
-                    }}>
-                      {plan.period}
-                    </Text>
-                  </View>
+                <View style={{ alignItems: "center", minHeight: 64, justifyContent: "center" }}>
+                  <Text style={{
+                    fontSize: 18,
+                    fontFamily: "Nunito_800ExtraBold",
+                    color: selectedPlan === plan.id ? colors.primaryForeground : colors.foreground,
+                    lineHeight: 22,
+                  }}>
+                    {plan.price}
+                  </Text>
+                  <Text style={{
+                    fontSize: 11,
+                    fontFamily: "Nunito_600SemiBold",
+                    color: selectedPlan === plan.id ? colors.primaryForeground + "CC" : colors.mutedForeground,
+                    marginTop: 2,
+                  }}>
+                    {plan.period}
+                  </Text>
                   {plan.popular && (
                     <View style={{
                       backgroundColor: colors.accent,
                       borderRadius: 100,
                       paddingHorizontal: 8,
                       paddingVertical: 2,
-                      marginTop: 4,
+                      marginTop: 6,
                     }}>
-                      <Text style={{ fontSize: 10, fontFamily: "Nunito_800ExtraBold", color: "#0F0F14" }}>
+                      <Text style={{ fontSize: 9, fontFamily: "Nunito_800ExtraBold", color: "#0F0F14", letterSpacing: 0.5 }}>
                         MOST POPULAR
                       </Text>
                     </View>
                   )}
                   {plan.annualEquiv && (
                     <Text style={{
-                      fontSize: 11,
+                      fontSize: 10,
                       fontFamily: "Nunito_600SemiBold",
                       color: selectedPlan === plan.id ? colors.primaryForeground + "BB" : colors.mutedForeground,
-                      marginTop: plan.popular ? 0 : 4,
+                      marginTop: 4,
                     }}>
                       {plan.annualEquiv}
                     </Text>
