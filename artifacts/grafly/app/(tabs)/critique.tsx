@@ -28,6 +28,55 @@ import { GraflyMascot } from "@/components/GraflyMascot";
 const XP_PER_SESSION = 20;
 const COINS_PER_SESSION = 8;
 const MIN_USER_TURNS_FOR_REWARD = 3;
+// ms per character for the writing animation (lower = faster)
+const TYPEWRITER_SPEED_MS = 14;
+
+interface TypewriterTextProps {
+  text: string;
+  active: boolean;
+  style: any;
+  onTick?: () => void;
+  onDone?: () => void;
+}
+
+function TypewriterText({ text, active, style, onTick, onDone }: TypewriterTextProps) {
+  const [shown, setShown] = useState(active ? "" : text);
+  const indexRef = useRef(0);
+  const tickRef = useRef(onTick);
+  const doneRef = useRef(onDone);
+  tickRef.current = onTick;
+  doneRef.current = onDone;
+
+  useEffect(() => {
+    if (!active) {
+      setShown(text);
+      return;
+    }
+    indexRef.current = 0;
+    setShown("");
+    const timer = setInterval(() => {
+      indexRef.current += 1;
+      if (indexRef.current >= text.length) {
+        setShown(text);
+        clearInterval(timer);
+        doneRef.current?.();
+        return;
+      }
+      setShown(text.slice(0, indexRef.current));
+      tickRef.current?.();
+    }, TYPEWRITER_SPEED_MS);
+    return () => clearInterval(timer);
+  }, [text, active]);
+
+  return (
+    <Text style={style}>
+      {shown}
+      {active && shown.length < text.length ? (
+        <Text style={{ opacity: 0.55 }}>▍</Text>
+      ) : null}
+    </Text>
+  );
+}
 
 export default function CritiqueScreen() {
   const colors = useColors();
@@ -44,6 +93,9 @@ export default function CritiqueScreen() {
   const [rewardedThisDesign, setRewardedThisDesign] = useState(false);
 
   const scrollRef = useRef<ScrollView>(null);
+  // Index of the last assistant message that should run the writing animation.
+  // -1 means no animation (e.g. the opener, or messages that already finished).
+  const [animateIndex, setAnimateIndex] = useState(-1);
 
   const maxSessions = state.isPro ? Infinity : 2;
   const limitReached = sessionsDone >= maxSessions;
@@ -61,6 +113,7 @@ export default function CritiqueScreen() {
     setLoadingDesign(true);
     setMessages([]);
     setRewardedThisDesign(false);
+    setAnimateIndex(-1);
     const d = pickRandomLocalDesign();
     setDesign(d);
     const opener = `Take a look at this design: ${d.title}. What is the first thing your eye lands on, and why do you think the designer made that choice?`;
@@ -90,7 +143,10 @@ export default function CritiqueScreen() {
         designDescription: design.description,
         messages: next,
       });
-      setMessages([...next, { role: "assistant", content: reply }]);
+      const updated: ChatMessage[] = [...next, { role: "assistant", content: reply }];
+      setMessages(updated);
+      // Animate this freshly arrived assistant message with a writing effect.
+      setAnimateIndex(updated.length - 1);
 
       // Reward XP once per design after MIN_USER_TURNS_FOR_REWARD exchanges
       const newUserTurns = next.filter((m) => m.role === "user").length;
@@ -102,7 +158,12 @@ export default function CritiqueScreen() {
       }
     } catch (err: any) {
       const msg = err?.message ?? "Could not reach the AI mentor.";
-      setMessages([...next, { role: "assistant", content: `Hmm, I had trouble responding. ${msg}` }]);
+      const updated: ChatMessage[] = [
+        ...next,
+        { role: "assistant", content: `Hmm, I had trouble responding. ${msg}` },
+      ];
+      setMessages(updated);
+      setAnimateIndex(updated.length - 1);
     } finally {
       setSending(false);
     }
@@ -227,16 +288,31 @@ export default function CritiqueScreen() {
                 borderBottomLeftRadius: m.role === "assistant" ? 4 : 18,
               }}
             >
-              <Text
-                style={{
-                  fontSize: 14,
-                  lineHeight: 20,
-                  fontFamily: "Nunito_600SemiBold",
-                  color: m.role === "user" ? colors.primaryForeground : colors.foreground,
-                }}
-              >
-                {m.content}
-              </Text>
+              {m.role === "assistant" ? (
+                <TypewriterText
+                  text={m.content}
+                  active={i === animateIndex}
+                  onTick={() => scrollRef.current?.scrollToEnd({ animated: false })}
+                  onDone={() => setAnimateIndex(-1)}
+                  style={{
+                    fontSize: 14,
+                    lineHeight: 20,
+                    fontFamily: "Nunito_600SemiBold",
+                    color: colors.foreground,
+                  }}
+                />
+              ) : (
+                <Text
+                  style={{
+                    fontSize: 14,
+                    lineHeight: 20,
+                    fontFamily: "Nunito_600SemiBold",
+                    color: colors.primaryForeground,
+                  }}
+                >
+                  {m.content}
+                </Text>
+              )}
             </Animated.View>
           ))}
 
@@ -295,56 +371,78 @@ export default function CritiqueScreen() {
         ) : (
           <View
             style={{
-              flexDirection: "row",
-              alignItems: "flex-end",
-              gap: 8,
               paddingHorizontal: 16,
               paddingTop: 8,
               paddingBottom: composerLift,
               backgroundColor: colors.background,
-              borderTopWidth: 1,
-              borderTopColor: colors.border,
             }}
           >
-            <TextInput
-              value={input}
-              onChangeText={setInput}
-              placeholder="Type your thought..."
-              placeholderTextColor={colors.mutedForeground}
-              multiline
+            <View
               style={{
-                flex: 1,
                 backgroundColor: colors.card,
-                borderRadius: 22,
+                borderRadius: 26,
+                borderWidth: 1,
+                borderColor: colors.border,
                 paddingHorizontal: 16,
-                paddingTop: 12,
-                paddingBottom: 12,
-                fontSize: 15,
-                fontFamily: "Nunito_600SemiBold",
-                color: colors.foreground,
-                maxHeight: 120,
-                minHeight: 44,
+                paddingTop: 10,
+                paddingBottom: 10,
+                flexDirection: "row",
+                alignItems: "flex-end",
+                gap: 8,
+                ...(Platform.OS === "web"
+                  ? {
+                      shadowColor: "#000",
+                      shadowOffset: { width: 0, height: 2 },
+                      shadowOpacity: 0.08,
+                      shadowRadius: 8,
+                    }
+                  : {}),
               }}
-            />
-            <TouchableOpacity
-              onPress={handleSend}
-              disabled={!input.trim() || sending}
-              style={{
-                backgroundColor: input.trim() && !sending ? colors.primary : colors.muted,
-                width: 44,
-                height: 44,
-                borderRadius: 22,
-                alignItems: "center",
-                justifyContent: "center",
-              }}
-              activeOpacity={0.85}
             >
-              <Ionicons
-                name="arrow-up"
-                size={20}
-                color={input.trim() && !sending ? colors.primaryForeground : colors.mutedForeground}
+              <TextInput
+                value={input}
+                onChangeText={setInput}
+                placeholder="Message Grafly..."
+                placeholderTextColor={colors.mutedForeground}
+                multiline
+                style={{
+                  flex: 1,
+                  paddingTop: Platform.OS === "ios" ? 8 : 6,
+                  paddingBottom: 6,
+                  paddingHorizontal: 0,
+                  fontSize: 15,
+                  lineHeight: 20,
+                  fontFamily: "Nunito_600SemiBold",
+                  color: colors.foreground,
+                  maxHeight: 140,
+                  minHeight: 28,
+                  ...(Platform.OS === "web" ? { outlineStyle: "none" as any } : {}),
+                }}
               />
-            </TouchableOpacity>
+              <TouchableOpacity
+                onPress={handleSend}
+                disabled={!input.trim() || sending}
+                style={{
+                  backgroundColor:
+                    input.trim() && !sending ? colors.foreground : colors.border,
+                  width: 32,
+                  height: 32,
+                  borderRadius: 16,
+                  alignItems: "center",
+                  justifyContent: "center",
+                  marginBottom: 2,
+                }}
+                activeOpacity={0.85}
+              >
+                <Ionicons
+                  name="arrow-up"
+                  size={18}
+                  color={
+                    input.trim() && !sending ? colors.background : colors.mutedForeground
+                  }
+                />
+              </TouchableOpacity>
+            </View>
           </View>
         )}
       </KeyboardAvoidingView>
