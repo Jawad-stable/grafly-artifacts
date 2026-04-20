@@ -1,8 +1,4 @@
-import {
-  Nunito_600SemiBold,
-  Nunito_800ExtraBold,
-  useFonts,
-} from "@expo-google-fonts/nunito";
+import { useFonts } from "expo-font";
 import { Ionicons, Feather } from "@expo/vector-icons";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Redirect, Stack, useSegments } from "expo-router";
@@ -76,8 +72,10 @@ function RootLayoutNav() {
 
 export default function RootLayout() {
   const [fontsLoaded, fontError] = useFonts({
-    Nunito_600SemiBold,
-    Nunito_800ExtraBold,
+    // Alias the existing Nunito_* family names to Teshrin so every screen
+    // that hardcodes `fontFamily: "Nunito_..."` automatically renders Teshrin.
+    Nunito_600SemiBold: require("../assets/fonts/Teshrin_Medium.ttf"),
+    Nunito_800ExtraBold: require("../assets/fonts/Teshrin_Bold.ttf"),
     ...TESHRIN_FONTS,
     ...Ionicons.font,
     ...Feather.font,
