@@ -135,32 +135,65 @@ export default function CritiqueScreen() {
           </TouchableOpacity>
         </View>
 
-        {/* Design image card */}
+        {/* Design image card — shrinks to a compact strip once the chat starts */}
         {design && (
-          <Animated.View entering={FadeIn} style={{ paddingHorizontal: 20, paddingBottom: 12 }}>
+          <Animated.View
+            key={userTurnCount > 0 ? "mini" : "full"}
+            entering={FadeIn.duration(220)}
+            style={{ paddingHorizontal: 20, paddingBottom: 12 }}
+          >
             <Pressable
               onPress={() => setImageOpen(true)}
               style={{
                 backgroundColor: colors.card,
                 borderRadius: colors.radius,
                 overflow: "hidden",
+                flexDirection: userTurnCount > 0 ? "row" : "column",
+                alignItems: userTurnCount > 0 ? "center" : "stretch",
               }}
             >
               <Image
                 source={design.source}
-                style={{ width: "100%", height: 220, backgroundColor: colors.muted }}
+                style={
+                  userTurnCount > 0
+                    ? { width: 64, height: 64, backgroundColor: colors.muted }
+                    : { width: "100%", height: 220, backgroundColor: colors.muted }
+                }
                 resizeMode="cover"
               />
-              <View style={{ flexDirection: "row", alignItems: "center", padding: 12, gap: 10 }}>
+              <View
+                style={{
+                  flex: 1,
+                  flexDirection: "row",
+                  alignItems: "center",
+                  padding: userTurnCount > 0 ? 10 : 12,
+                  gap: 10,
+                }}
+              >
                 <View style={{ flex: 1 }}>
-                  <Text style={{ fontSize: 15, fontFamily: "Nunito_800ExtraBold", color: colors.foreground }} numberOfLines={1}>
+                  <Text
+                    style={{
+                      fontSize: userTurnCount > 0 ? 13 : 15,
+                      fontFamily: "Nunito_800ExtraBold",
+                      color: colors.foreground,
+                    }}
+                    numberOfLines={1}
+                  >
                     {design.title}
                   </Text>
-                  <Text style={{ fontSize: 12, fontFamily: "Nunito_600SemiBold", color: colors.mutedForeground, marginTop: 2 }} numberOfLines={1}>
+                  <Text
+                    style={{
+                      fontSize: userTurnCount > 0 ? 11 : 12,
+                      fontFamily: "Nunito_600SemiBold",
+                      color: colors.mutedForeground,
+                      marginTop: 2,
+                    }}
+                    numberOfLines={1}
+                  >
                     Tap to view full size
                   </Text>
                 </View>
-                <Ionicons name="expand-outline" size={20} color={colors.mutedForeground} />
+                <Ionicons name="expand-outline" size={userTurnCount > 0 ? 18 : 20} color={colors.mutedForeground} />
               </View>
             </Pressable>
           </Animated.View>
