@@ -50,3 +50,6 @@ Thumbs.db
 
 # Stranded git pack temp files (left over from interrupted operations)
 .git/objects/pack/tmp_pack_*
+
+# User-uploaded reference assets (kept in .local/reference_uploads/ if needed)
+attached_assets/
