@@ -11,7 +11,6 @@ import Animated, {
   useSharedValue,
   useAnimatedStyle,
   withSpring,
-  withSequence,
   withTiming,
 } from "react-native-reanimated";
 import { Ionicons } from "@expo/vector-icons";
@@ -36,40 +35,23 @@ function TabButton({
   onPress: () => void;
 }) {
   const colors = useColors();
-  const scale = useSharedValue(1);
   const pillOpacity = useSharedValue(isActive ? 1 : 0);
-  const pillScale = useSharedValue(isActive ? 1 : 0.6);
 
   useEffect(() => {
-    pillOpacity.value = withTiming(isActive ? 1 : 0, { duration: 200 });
-    pillScale.value = withSpring(isActive ? 1 : 0.6, { damping: 14 });
+    pillOpacity.value = withTiming(isActive ? 1 : 0, { duration: 150 });
   }, [isActive]);
-
-  const containerStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: scale.value }],
-    opacity: isActive ? 1 : 0.4,
-  }));
 
   const pillStyle = useAnimatedStyle(() => ({
     opacity: pillOpacity.value,
-    transform: [{ scale: pillScale.value }],
   }));
-
-  function handlePress() {
-    scale.value = withSequence(
-      withSpring(1.22, { damping: 8, stiffness: 300 }),
-      withSpring(1, { damping: 12 })
-    );
-    onPress();
-  }
 
   return (
     <TouchableOpacity
-      onPress={handlePress}
-      activeOpacity={1}
+      onPress={onPress}
+      activeOpacity={0.7}
       style={styles.tabButton}
     >
-      <Animated.View style={[styles.tabInner, containerStyle]}>
+      <View style={[styles.tabInner, { opacity: isActive ? 1 : 0.45 }]}>
         <Animated.View
           style={[
             styles.pill,
