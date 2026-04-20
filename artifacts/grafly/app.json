@@ -17,7 +17,12 @@
       "supportsTablet": false
     },
     "android": {
-      "backgroundColor": "#0F0F14"
+      "package": "com.jawadkh.grafly",
+      "backgroundColor": "#0F0F14",
+      "permissions": [
+        "android.permission.RECORD_AUDIO",
+        "android.permission.MODIFY_AUDIO_SETTINGS"
+      ]
     },
     "web": {
       "favicon": "./assets/images/icon.png"
@@ -36,6 +41,12 @@
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
-    }
+    },
+    "extra": {
+      "eas": {
+        "projectId": "9e4690ce-72f5-4ca8-b905-99e34bb71364"
+      }
+    },
+    "owner": "jawadkh"
   }
 }
