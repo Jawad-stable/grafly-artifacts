@@ -47,3 +47,6 @@ Thumbs.db
 # Replit
 .cache/
 .local/
+
+# Stranded git pack temp files (left over from interrupted operations)
+.git/objects/pack/tmp_pack_*
