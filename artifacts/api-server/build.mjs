@@ -14,6 +14,27 @@ async function buildAll() {
   const distDir = path.resolve(artifactDir, "dist");
   await rm(distDir, { recursive: true, force: true });
 
+  // Source maps are useful for local debugging but can be many MB and are not
+  // needed in production deploys. Emit them only when NODE_ENV is explicitly
+  // "development" (as set by the `dev` script). For any other environment
+  // (including unset, which is the default during deploys) we skip them.
+  // Callers can force-enable or force-disable via API_SERVER_SOURCEMAP.
+  const sourcemapEnv = process.env.API_SERVER_SOURCEMAP;
+  const sourcemapEnabled =
+    sourcemapEnv === undefined
+      ? process.env.NODE_ENV === "development"
+      : sourcemapEnv !== "false" && sourcemapEnv !== "0";
+
+  // Heavy runtime dependencies that we don't need to inline into the bundle.
+  // They are installed by pnpm at deploy time, so externalizing keeps the
+  // bundled `dist/index.mjs` small and avoids esbuild's >1 MB size warning.
+  const externalRuntimeDeps = [
+    "@supabase/supabase-js",
+    "express",
+    "cors",
+    "pino-http",
+  ];
+
   await esbuild({
     entryPoints: [path.resolve(artifactDir, "src/index.ts")],
     platform: "node",
@@ -100,8 +121,10 @@ async function buildAll() {
       "puppeteer",
       "puppeteer-core",
       "electron",
+      ...externalRuntimeDeps,
     ],
-    sourcemap: "linked",
+    minify: true,
+    sourcemap: sourcemapEnabled ? "linked" : false,
     plugins: [
       // pino relies on workers to handle logging, instead of externalizing it we use a plugin to handle it
       esbuildPluginPino({ transports: ["pino-pretty"] })
