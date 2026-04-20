@@ -17,7 +17,7 @@ pnpm workspace monorepo using TypeScript. Contains the **Grafly** gamified desig
 ### Grafly Mobile App (`artifacts/grafly`)
 - **Framework**: Expo (React Native), expo-router v6
 - **State**: React Context + AsyncStorage (`context/GameContext.tsx`)
-- **Font**: Nunito (`@expo-google-fonts/nunito`) — SemiBold 600 + ExtraBold 800
+- **Font**: Teshrin (custom TTFs in `assets/fonts/`) — Regular, Medium, Bold. The legacy family names `Nunito_600SemiBold` and `Nunito_800ExtraBold` are aliased in `app/_layout.tsx`'s `useFonts` to Teshrin Medium / Bold so existing `fontFamily: "Nunito_..."` references render Teshrin without per-file edits. `@expo-google-fonts/nunito` is no longer imported.
 - **Theme**: Dark-first (`constants/colors.ts`) — background #21263F, primary #00A4FA, accent #E3ED43, pink #FF7BD0
 - **Navigation**: Floating frosted-glass tab bar with spring press animation + Stack screens (lesson, leaderboard, paywall, onboarding)
 - **Screens**: Onboarding (4-step with placement test + mascot), Home (time greeting, XP bar, fixed streak), Skill Tree (S/Z winding path + swipeable course cards), AI Critique (mascot-driven feedback), Shop (bounce mascot), Profile (inline name edit, 2x2 stats, horizontal achievement badges), Lesson Engine, Leaderboard, Paywall
@@ -46,16 +46,37 @@ pnpm workspace monorepo using TypeScript. Contains the **Grafly** gamified desig
 - **Display rules** (strict): coins on home/shop/lesson results only; hearts on lesson screen only; streak on home only; no hyphens/dashes in UI strings; mascot only via `GraflyMascot`.
 - **Secrets policy**: never write API keys to files; always use the secrets vault. NVIDIA key was once shared in chat — needs rotation.
 
+- **Initial route**: `Stack` in `app/_layout.tsx` sets `initialRouteName="(tabs)"` so the AuthGate's onboarding redirect kicks in for new users (otherwise expo-router defaults to the first declared screen — previously `auth`, which made "Welcome back" appear first).
+- **Dev-only LogBox filter**: `app/_layout.tsx` ignores the harmless "Unable to activate keep awake" warning that fires on some Android devices (e.g. MIUI/Xiaomi) in Expo Go.
+
+## Android Build (EAS Cloud)
+
+- **Builder**: EAS Build (`eas-cli` is a devDep of `@workspace/grafly`). Auth via the `EXPO_TOKEN` secret (Expo account `jawadkh`).
+- **EAS project**: `@jawadkh/grafly`, projectId `9e4690ce-72f5-4ca8-b905-99e34bb71364` (recorded in `app.json` under `extra.eas.projectId` + `owner`).
+- **Profiles** (`artifacts/grafly/eas.json`):
+  - `development` — internal APK with dev client.
+  - `preview` — internal APK for sharing/install (this is what we use).
+  - `production` — AAB with `autoIncrement` for Play Store later.
+- **Android config** (`app.json`):
+  - `android.package = "com.jawadkh.grafly"`.
+  - `android.build.abiFilters = ["arm64-v8a"]` — 64-bit ARM only (covers all phones from ~2019, including the user's Xiaomi 11 Lite / Android 14). To re-enable 32-bit phones, add `"armeabi-v7a"`.
+  - `expo-build-properties` plugin enables `enableProguardInReleaseBuilds` + `enableShrinkResourcesInReleaseBuilds` for size reduction.
+- **Removed packages** (unused, dropped to shrink APK): `expo-glass-effect`, `expo-location`, `expo-symbols`. Kept (in use): `expo-av` (voice service), `expo-image-picker` (onboarding), `expo-blur` (tab bar), `expo-haptics` (lesson/shop).
+- **Font shrink**: only Teshrin Regular/Medium/Bold are bundled; the unused weights (Hairline/Thin/ExtraLight/Light/Black .ttfs) still live in `assets/fonts/` but are NOT loaded.
+- **Latest APK build**: `cb418a25-99c9-4cb1-9dc0-78ae34e6e16d` — ~88.8 MB (down from 95.4 MB pre-shrink). URL: `https://expo.dev/artifacts/eas/r6JLjhFZHy4CrneUctzd7H.apk`. Build page: `https://expo.dev/accounts/jawadkh/projects/grafly/builds/cb418a25-99c9-4cb1-9dc0-78ae34e6e16d`.
+- **Rebuild command** (from `artifacts/grafly`): `pnpm exec eas build --platform android --profile preview --non-interactive`.
+
 ## Pending User Actions
 
 1. Disable "Confirm email" in Supabase Auth → Providers → Email (default SMTP is rate-limited).
 2. Configure Google OAuth: Google Cloud OAuth Client ID + redirect `https://ylvkpbfzyyruacabgfhc.supabase.co/auth/v1/callback`; Supabase allow list must include `grafly://auth-callback`.
 3. Rotate the NVIDIA API key.
 4. (Optional) Run the provided SQL to create `critique_designs` table + `critique-designs` storage bucket to swap from local to user-managed designs.
+5. (Optional) After verifying icons render correctly in Expo Go post cache-clear, consider switching the EAS preview profile from `internal` to a smaller production-style build with feature trims (drop expo-av/image-picker/blur) if a sub-70MB APK is desired.
 
 ## GitHub
 
-Repo: `Jawad-stable/grafly` (last push commit `4549e3f`).
+Repo: `Jawad-stable/grafly` (last full push commit `64a479b` — merged via `-s ours` because remote had unrelated history).
 
 ## Key Commands
 
