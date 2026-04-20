@@ -10,14 +10,9 @@
  */
 
 export const TESHRIN_FONTS = {
-  Teshrin_Hairline: require("../assets/fonts/Teshrin_Hairline.ttf"),
-  Teshrin_Thin: require("../assets/fonts/Teshrin_Thin.ttf"),
-  Teshrin_ExtraLight: require("../assets/fonts/Teshrin_ExtraLight.ttf"),
-  Teshrin_Light: require("../assets/fonts/Teshrin_Light.ttf"),
   Teshrin_Regular: require("../assets/fonts/Teshrin_Regular.ttf"),
   Teshrin_Medium: require("../assets/fonts/Teshrin_Medium.ttf"),
   Teshrin_Bold: require("../assets/fonts/Teshrin_Bold.ttf"),
-  Teshrin_Black: require("../assets/fonts/Teshrin_Black.ttf"),
 };
 
 export type FontWeight = "regular" | "semibold" | "bold" | "black";
