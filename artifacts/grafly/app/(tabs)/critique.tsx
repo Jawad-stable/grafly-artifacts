@@ -50,9 +50,12 @@ export default function CritiqueScreen() {
   const userTurnCount = messages.filter((m) => m.role === "user").length;
 
   const paddingTop = insets.top + (Platform.OS === "web" ? 67 : 0);
-  const tabBarHeight = 62 + insets.bottom;
-  // Composer floats above the tab bar with breathing room
-  const composerLift = Platform.OS === "web" ? insets.bottom + 34 + 16 : tabBarHeight + 12;
+  // Match the tab bar layout in app/(tabs)/_layout.tsx so the composer
+  // always clears the floating tab bar with breathing room.
+  const tabBottomPad = Math.max(insets.bottom, Platform.OS === "web" ? 16 : 10);
+  const tabBarHeight = 62 + tabBottomPad;
+  const tabBarBottomOffset = 12; // tabBarStyle.bottom in _layout.tsx
+  const composerLift = tabBarHeight + tabBarBottomOffset + 12;
 
   function loadNewDesign() {
     setLoadingDesign(true);

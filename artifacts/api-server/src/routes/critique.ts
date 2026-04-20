@@ -141,7 +141,31 @@ router.post("/critique/chat", async (req, res) => {
     .replace("{{TITLE}}", designTitle)
     .replace("{{CONTEXT}}", designDescription ?? "");
 
-  const trimmed = messages.slice(-12);
+  // Gemma requires messages to start with `user` and strictly alternate
+  // user/assistant/user/... The frontend may include an opening assistant
+  // message (the design prompt) — drop any leading assistant turns and
+  // collapse consecutive same-role messages so the API never 400s.
+  let cleaned: ChatMessage[] = [];
+  for (const m of messages) {
+    if (cleaned.length === 0 && m.role !== "user") continue;
+    const last = cleaned[cleaned.length - 1];
+    if (last && last.role === m.role) {
+      last.content = `${last.content}\n\n${m.content}`;
+    } else {
+      cleaned.push({ role: m.role, content: m.content });
+    }
+  }
+
+  if (cleaned.length === 0) {
+    res.status(400).json({ error: "Conversation must include at least one user message." });
+    return;
+  }
+
+  const trimmed = cleaned.slice(-12);
+  // After slicing we may again start with assistant — re-trim from the front
+  while (trimmed.length > 0 && trimmed[0].role !== "user") {
+    trimmed.shift();
+  }
 
   try {
     const response = await fetch(
