@@ -339,7 +339,7 @@ export default function CritiqueScreen() {
             >
               <ActivityIndicator size="small" color={colors.mutedForeground} />
               <Text style={{ fontSize: 12, fontFamily: "Nunito_600SemiBold", color: colors.mutedForeground }}>
-                Grafly is thinking
+                Grafly is inking
               </Text>
             </View>
           )}
