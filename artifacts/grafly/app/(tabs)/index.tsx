@@ -310,68 +310,60 @@ export default function HomeScreen() {
                 <PressScale
                   onPress={() => router.push({ pathname: "/(tabs)/tree", params: { courseId: course.id } })}
                   style={{
-                    width: cardW, borderRadius: 28,
+                    width: cardW, borderRadius: 24,
                     backgroundColor: course.color,
                     overflow: "hidden",
                     shadowColor: course.color,
-                    shadowOffset: { width: 0, height: 12 },
-                    shadowOpacity: 0.18,
-                    shadowRadius: 20,
-                    elevation: 6,
+                    shadowOffset: { width: 0, height: 10 },
+                    shadowOpacity: 0.16,
+                    shadowRadius: 18,
+                    elevation: 5,
                   }}
                 >
-                  {/* Top: category pill */}
-                  <View style={{ padding: 20, paddingBottom: 0 }}>
-                    <View style={{
-                      backgroundColor: colors.accentForeground, borderRadius: 100,
-                      paddingHorizontal: 12, paddingVertical: 5,
-                      alignSelf: "flex-start", flexDirection: "row", alignItems: "center", gap: 5,
-                    }}>
-                      <Ionicons name={course.icon as any} size={11} color={colors.primaryForeground} />
-                      <Text style={{ fontSize: 10, fontFamily: "Nunito_800ExtraBold", color: colors.primaryForeground, letterSpacing: 1 }}>
+                  {/* Top: category eyebrow (no pill) */}
+                  <View style={{ paddingHorizontal: 18, paddingTop: 16 }}>
+                    <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
+                      <Ionicons name={course.icon as any} size={12} color={colors.primaryForeground + "DD"} />
+                      <Text style={{
+                        fontSize: 10, fontFamily: "Nunito_800ExtraBold",
+                        color: colors.primaryForeground + "DD", letterSpacing: 1.2,
+                      }}>
                         {course.title.toUpperCase()}
                       </Text>
                     </View>
                   </View>
 
                   {/* Title block */}
-                  <View style={{ paddingHorizontal: 20, paddingTop: 16 }}>
+                  <View style={{ paddingHorizontal: 18, paddingTop: 10 }}>
                     <Text style={{
-                      fontSize: 28, fontFamily: "Nunito_800ExtraBold",
-                      color: colors.primaryForeground, lineHeight: 32, letterSpacing: -0.6,
+                      fontSize: 24, fontFamily: "Nunito_800ExtraBold",
+                      color: colors.primaryForeground, lineHeight: 28, letterSpacing: -0.5,
                     }}>
                       {course.title}
                     </Text>
                     <Text
                       numberOfLines={2}
                       style={{
-                        fontSize: 13, fontFamily: "Nunito_600SemiBold",
-                        color: colors.primaryForeground + "CC", marginTop: 8, lineHeight: 19,
+                        fontSize: 12, fontFamily: "Nunito_600SemiBold",
+                        color: colors.primaryForeground + "CC", marginTop: 6, lineHeight: 17,
                       }}
                     >
                       {course.description}
                     </Text>
                   </View>
 
-                  {/* Collage block: mascot + abstract shapes */}
-                  <View style={{ height: 130, marginTop: 14, position: "relative", overflow: "hidden" }}>
-                    {/* Off-white shape */}
-                    <View style={{
-                      position: "absolute", left: 14, bottom: -20,
-                      width: 120, height: 120, borderRadius: 24,
-                      backgroundColor: colors.primaryForeground + "55",
-                      transform: [{ rotate: "-8deg" }],
-                    }} />
+                  {/* Collage block: mascot + accent dot */}
+                  <View style={{ height: 110, marginTop: 8, position: "relative", overflow: "hidden" }}>
                     {/* Accent dot */}
                     <View style={{
-                      position: "absolute", right: 24, top: 8,
-                      width: 36, height: 36, borderRadius: 18,
+                      position: "absolute", left: 22, top: 14,
+                      width: 28, height: 28, borderRadius: 14,
                       backgroundColor: colors.accent,
                     }} />
                     {/* Mascot */}
                     <View style={{
-                      position: "absolute", right: 6, bottom: -6,
-                      width: 130, height: 140, alignItems: "center", justifyContent: "center",
+                      position: "absolute", right: 6, bottom: -8,
+                      width: 130, height: 130, alignItems: "center", justifyContent: "center",
                     }}>
                       <GraflyMascot state={mascotState} size={120} />
                     </View>
@@ -379,14 +371,14 @@ export default function HomeScreen() {
 
                   {/* Footer strip with progress */}
                   <View style={{
-                    paddingHorizontal: 20, paddingVertical: 14,
+                    paddingHorizontal: 18, paddingVertical: 12,
                     backgroundColor: colors.accentForeground + "22",
                     flexDirection: "row", alignItems: "center", justifyContent: "space-between",
                   }}>
-                    <Text style={{ fontSize: 12, fontFamily: "Nunito_800ExtraBold", color: colors.primaryForeground }}>
+                    <Text style={{ fontSize: 11, fontFamily: "Nunito_800ExtraBold", color: colors.primaryForeground }}>
                       {completedCount}/{totalLessons} lessons
                     </Text>
-                    <Text style={{ fontSize: 12, fontFamily: "Nunito_800ExtraBold", color: colors.primaryForeground }}>
+                    <Text style={{ fontSize: 11, fontFamily: "Nunito_800ExtraBold", color: colors.primaryForeground }}>
                       {progress}%
                     </Text>
                   </View>
