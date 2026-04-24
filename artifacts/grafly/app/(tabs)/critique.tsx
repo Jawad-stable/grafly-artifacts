@@ -12,7 +12,7 @@ import {
   Pressable,
 } from "react-native";
 import { KeyboardAvoidingView } from "react-native-keyboard-controller";
-import Animated, { FadeIn, FadeInUp } from "react-native-reanimated";
+import Animated, { FadeIn, FadeInDown, FadeInUp } from "react-native-reanimated";
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -24,6 +24,7 @@ import {
 } from "@/services/aiCritique";
 import { pickRandomLocalDesign, type LocalDesign } from "@/data/localDesigns";
 import { GraflyMascot } from "@/components/GraflyMascot";
+import { PressScale } from "@/components/PressScale";
 
 const XP_PER_SESSION = 20;
 const COINS_PER_SESSION = 8;
@@ -176,32 +177,38 @@ export default function CritiqueScreen() {
         keyboardVerticalOffset={0}
         style={{ flex: 1 }}
       >
-        {/* Header */}
-        <View style={{ paddingTop: paddingTop + 8, paddingHorizontal: 20, paddingBottom: 12, flexDirection: "row", alignItems: "center", gap: 12 }}>
-          <GraflyMascot state={sending ? "think" : "idle"} size={48} />
-          <View style={{ flex: 1 }}>
-            <Text style={{ fontSize: 20, fontFamily: "Nunito_800ExtraBold", color: colors.foreground }}>
-              Design Chat
-            </Text>
-            <Text style={{ fontSize: 12, fontFamily: "Nunito_600SemiBold", color: colors.mutedForeground }}>
-              {state.isPro ? "Unlimited sessions" : `${Math.max(0, maxSessions - sessionsDone)} of ${maxSessions} sessions left`}
-            </Text>
+        {/* Editorial header */}
+        <Animated.View
+          entering={FadeInDown.duration(420).springify().damping(18)}
+          style={{ paddingTop: paddingTop + 12, paddingHorizontal: 24, paddingBottom: 14 }}
+        >
+          <View style={{ flexDirection: "row", alignItems: "flex-start", justifyContent: "space-between" }}>
+            <View style={{ flex: 1 }}>
+              <Text style={{ fontSize: 13, fontFamily: "Nunito_800ExtraBold", color: colors.mutedForeground, letterSpacing: 1.5, marginBottom: 4 }}>
+                DESIGN CHAT
+              </Text>
+              <Text style={{ fontSize: 38, fontFamily: "Nunito_800ExtraBold", color: colors.foreground, letterSpacing: -1, lineHeight: 42 }}>
+                Critique
+              </Text>
+              <Text style={{ fontSize: 13, fontFamily: "Nunito_600SemiBold", color: colors.mutedForeground, marginTop: 6 }}>
+                {state.isPro ? "Unlimited sessions" : `${Math.max(0, maxSessions - sessionsDone)} of ${maxSessions} sessions left`}
+              </Text>
+            </View>
+            <PressScale
+              onPress={loadNewDesign}
+              style={{ backgroundColor: colors.card, padding: 12, borderRadius: 100, marginTop: 16 }}
+            >
+              <Ionicons name="shuffle" size={20} color={colors.foreground} />
+            </PressScale>
           </View>
-          <TouchableOpacity
-            onPress={loadNewDesign}
-            style={{ backgroundColor: colors.card, padding: 10, borderRadius: 100 }}
-            activeOpacity={0.8}
-          >
-            <Ionicons name="shuffle" size={20} color={colors.foreground} />
-          </TouchableOpacity>
-        </View>
+        </Animated.View>
 
         {/* Design image card — shrinks to a compact strip once the chat starts */}
         {design && (
           <Animated.View
             key={userTurnCount > 0 ? "mini" : "full"}
-            entering={FadeIn.duration(220)}
-            style={{ paddingHorizontal: 20, paddingBottom: 12 }}
+            entering={FadeIn.duration(260)}
+            style={{ paddingHorizontal: 24, paddingBottom: 12 }}
           >
             <Pressable
               onPress={() => setImageOpen(true)}
@@ -264,7 +271,7 @@ export default function CritiqueScreen() {
         <ScrollView
           ref={scrollRef}
           style={{ flex: 1 }}
-          contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 12, gap: 10 }}
+          contentContainerStyle={{ paddingHorizontal: 24, paddingBottom: 12, gap: 10 }}
           keyboardShouldPersistTaps="handled"
         >
           {loadingDesign && (
@@ -348,30 +355,29 @@ export default function CritiqueScreen() {
 
         {/* Composer */}
         {limitReached ? (
-          <View style={{ paddingHorizontal: 20, paddingBottom: composerLift, paddingTop: 8 }}>
-            <TouchableOpacity
+          <View style={{ paddingHorizontal: 24, paddingBottom: composerLift, paddingTop: 8 }}>
+            <PressScale
               style={{
-                backgroundColor: colors.pink + "20",
-                borderRadius: colors.radius,
-                paddingVertical: 16,
+                backgroundColor: colors.foreground,
+                borderRadius: 100,
+                paddingVertical: 18,
                 alignItems: "center",
                 flexDirection: "row",
                 justifyContent: "center",
-                gap: 8,
+                gap: 10,
               }}
               onPress={() => router.push("/paywall" as any)}
-              activeOpacity={0.85}
             >
-              <Ionicons name="star" size={18} color={colors.pink} />
-              <Text style={{ fontSize: 16, fontFamily: "Nunito_800ExtraBold", color: colors.pink }}>
+              <Ionicons name="star" size={18} color={colors.background} />
+              <Text style={{ fontSize: 16, fontFamily: "Nunito_800ExtraBold", color: colors.background }}>
                 Unlock Pro for unlimited sessions
               </Text>
-            </TouchableOpacity>
+            </PressScale>
           </View>
         ) : (
           <View
             style={{
-              paddingHorizontal: 16,
+              paddingHorizontal: 20,
               paddingTop: 8,
               paddingBottom: composerLift,
               backgroundColor: colors.background,
@@ -380,21 +386,21 @@ export default function CritiqueScreen() {
             <View
               style={{
                 backgroundColor: colors.card,
-                borderRadius: 26,
+                borderRadius: 28,
                 borderWidth: 1,
                 borderColor: colors.border,
-                paddingHorizontal: 16,
-                paddingTop: 10,
-                paddingBottom: 10,
+                paddingHorizontal: 18,
+                paddingTop: 12,
+                paddingBottom: 12,
                 flexDirection: "row",
                 alignItems: "flex-end",
-                gap: 8,
+                gap: 10,
                 ...(Platform.OS === "web"
                   ? {
                       shadowColor: "#000",
                       shadowOffset: { width: 0, height: 2 },
-                      shadowOpacity: 0.08,
-                      shadowRadius: 8,
+                      shadowOpacity: 0.06,
+                      shadowRadius: 10,
                     }
                   : {}),
               }}
@@ -419,20 +425,19 @@ export default function CritiqueScreen() {
                   ...(Platform.OS === "web" ? { outlineStyle: "none" as any } : {}),
                 }}
               />
-              <TouchableOpacity
+              <PressScale
                 onPress={handleSend}
                 disabled={!input.trim() || sending}
                 style={{
                   backgroundColor:
                     input.trim() && !sending ? colors.foreground : colors.border,
-                  width: 32,
-                  height: 32,
-                  borderRadius: 16,
+                  width: 36,
+                  height: 36,
+                  borderRadius: 18,
                   alignItems: "center",
                   justifyContent: "center",
                   marginBottom: 2,
                 }}
-                activeOpacity={0.85}
               >
                 <Ionicons
                   name="arrow-up"
@@ -441,7 +446,7 @@ export default function CritiqueScreen() {
                     input.trim() && !sending ? colors.background : colors.mutedForeground
                   }
                 />
-              </TouchableOpacity>
+              </PressScale>
             </View>
           </View>
         )}

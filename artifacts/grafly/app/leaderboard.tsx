@@ -8,15 +8,14 @@ import {
 } from "react-native";
 import Animated, {
   FadeIn,
-  useSharedValue,
-  useAnimatedStyle,
-  withSpring,
+  FadeInDown,
 } from "react-native-reanimated";
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useColors } from "@/hooks/useColors";
 import { useGame } from "@/context/GameContext";
+import { PressScale } from "@/components/PressScale";
 
 const GLOBAL_USERS = [
   { id: "1", name: "Aria Chen", weeklyXP: 1580, streak: 21, level: 12, division: "diamond" },
@@ -75,47 +74,60 @@ export default function LeaderboardScreen() {
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.background }}>
-      {/* Header */}
-      <View style={{
-        paddingTop: paddingTop + 12,
-        paddingHorizontal: 20,
-        paddingBottom: 16,
-      }}>
-        <View style={{ flexDirection: "row", alignItems: "center", gap: 12, marginBottom: 20 }}>
-          <TouchableOpacity onPress={() => router.back()} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}>
-            <Ionicons name="arrow-back" size={24} color={colors.foreground} />
-          </TouchableOpacity>
-          <Text style={{ fontSize: 24, fontFamily: "Nunito_800ExtraBold", color: colors.foreground }}>
-            Leaderboard
-          </Text>
+      {/* Editorial header */}
+      <Animated.View
+        entering={FadeInDown.duration(420).springify().damping(18)}
+        style={{
+          paddingTop: paddingTop + 12,
+          paddingHorizontal: 24,
+          paddingBottom: 18,
+        }}
+      >
+        <View style={{ flexDirection: "row", alignItems: "center", gap: 14, marginBottom: 14 }}>
+          <PressScale
+            onPress={() => router.back()}
+            hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+            style={{ width: 40, height: 40, borderRadius: 100, backgroundColor: colors.card, alignItems: "center", justifyContent: "center" }}
+          >
+            <Ionicons name="arrow-back" size={20} color={colors.foreground} />
+          </PressScale>
+          <View style={{ flex: 1 }}>
+            <Text style={{ fontSize: 13, fontFamily: "Nunito_800ExtraBold", color: colors.mutedForeground, letterSpacing: 1.5 }}>
+              THIS WEEK
+            </Text>
+            <Text style={{ fontSize: 38, fontFamily: "Nunito_800ExtraBold", color: colors.foreground, letterSpacing: -1, lineHeight: 42 }}>
+              Leaderboard
+            </Text>
+          </View>
         </View>
 
-        {/* Tabs */}
-        <View style={{ flexDirection: "row", backgroundColor: colors.card, borderRadius: 100, padding: 4 }}>
+        {/* Tabs — editorial near-black active pill */}
+        <View style={{ flexDirection: "row", backgroundColor: colors.card, borderRadius: 100, padding: 5 }}>
           {(["global", "friends"] as const).map((t) => (
-            <TouchableOpacity
+            <PressScale
               key={t}
               onPress={() => setTab(t)}
+              scaleTo={0.98}
               style={{
                 flex: 1,
-                backgroundColor: tab === t ? colors.primary : "transparent",
+                backgroundColor: tab === t ? colors.foreground : "transparent",
                 borderRadius: 100,
-                paddingVertical: 10,
+                paddingVertical: 11,
                 alignItems: "center",
               }}
-              activeOpacity={0.8}
             >
               <Text style={{
                 fontSize: 14,
                 fontFamily: "Nunito_800ExtraBold",
-                color: tab === t ? colors.primaryForeground : colors.mutedForeground,
+                color: tab === t ? colors.background : colors.mutedForeground,
+                letterSpacing: 0.3,
               }}>
                 {t.charAt(0).toUpperCase() + t.slice(1)}
               </Text>
-            </TouchableOpacity>
+            </PressScale>
           ))}
         </View>
-      </View>
+      </Animated.View>
 
       <FlatList
         data={rest}
@@ -123,7 +135,7 @@ export default function LeaderboardScreen() {
         contentContainerStyle={{ paddingBottom: paddingBottom }}
         showsVerticalScrollIndicator={false}
         ListHeaderComponent={
-          <View style={{ paddingHorizontal: 20 }}>
+          <View style={{ paddingHorizontal: 24 }}>
             {/* Podium */}
             <Animated.View entering={FadeIn} style={{ marginBottom: 24 }}>
               <View style={{ flexDirection: "row", alignItems: "flex-end", justifyContent: "center", gap: 0 }}>
@@ -255,10 +267,10 @@ export default function LeaderboardScreen() {
 
           return (
             <Animated.View
-              entering={FadeIn.delay(index * 40)}
+              entering={FadeInDown.delay(index * 35).duration(360).springify().damping(18)}
               style={{
-                marginHorizontal: 20,
-                marginBottom: 8,
+                marginHorizontal: 24,
+                marginBottom: 10,
                 backgroundColor: isMe ? colors.primary + "15" : colors.card,
                 borderRadius: colors.radius,
                 padding: 14,
@@ -305,7 +317,7 @@ export default function LeaderboardScreen() {
         ListFooterComponent={
           !userInTop3 ? (
             <View style={{
-              marginHorizontal: 20,
+              marginHorizontal: 24,
               marginTop: 8,
               marginBottom: paddingBottom,
               backgroundColor: colors.primary + "15",

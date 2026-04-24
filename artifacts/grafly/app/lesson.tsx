@@ -24,6 +24,7 @@ import { useGame } from "@/context/GameContext";
 import { voiceService } from "@/services/voiceService";
 import { COURSES, findNodeById, type Question, type Lesson } from "@/constants/lessons";
 import { GraflyMascot } from "@/components/GraflyMascot";
+import { PressScale } from "@/components/PressScale";
 import type { MascotState } from "@/constants/assets";
 
 function MultipleChoice({
@@ -626,26 +627,24 @@ export default function LessonScreen() {
 
           <Animated.View entering={FadeIn.delay(400)} style={{ gap: 12 }}>
             {!allDone && (
-              <TouchableOpacity
+              <PressScale
                 style={{ backgroundColor: colors.foreground, borderRadius: 100, paddingVertical: 20, alignItems: "center", flexDirection: "row", justifyContent: "center", gap: 10 }}
                 onPress={handleNextLesson}
-                activeOpacity={0.88}
               >
                 <Text style={{ fontSize: 17, fontFamily: "Nunito_800ExtraBold", color: colors.background }}>
                   Next lesson
                 </Text>
                 <Ionicons name="arrow-forward" size={18} color={colors.background} />
-              </TouchableOpacity>
+              </PressScale>
             )}
-            <TouchableOpacity
+            <PressScale
               style={{ backgroundColor: allDone ? colors.foreground : colors.card, borderRadius: 100, paddingVertical: 20, alignItems: "center", borderWidth: allDone ? 0 : 1, borderColor: colors.border }}
               onPress={() => router.replace("/(tabs)")}
-              activeOpacity={0.88}
             >
               <Text style={{ fontSize: 17, fontFamily: "Nunito_800ExtraBold", color: allDone ? colors.background : colors.foreground }}>
                 {allDone ? "Back to home" : "Return home"}
               </Text>
-            </TouchableOpacity>
+            </PressScale>
           </Animated.View>
         </ScrollView>
       </View>
@@ -665,14 +664,14 @@ export default function LessonScreen() {
   return (
     <View style={{ flex: 1, backgroundColor: colors.background }}>
       {/* Header */}
-      <View style={{ paddingTop: paddingTop + 8, paddingHorizontal: 20, paddingBottom: 12 }}>
-        <View style={{ flexDirection: "row", alignItems: "center", gap: 12 }}>
-          <TouchableOpacity
+      <View style={{ paddingTop: paddingTop + 8, paddingHorizontal: 24, paddingBottom: 12 }}>
+        <View style={{ flexDirection: "row", alignItems: "center", gap: 14 }}>
+          <PressScale
             onPress={() => router.back()}
-            style={{ width: 36, height: 36, borderRadius: 18, backgroundColor: colors.card, alignItems: "center", justifyContent: "center" }}
+            style={{ width: 38, height: 38, borderRadius: 100, backgroundColor: colors.card, alignItems: "center", justifyContent: "center" }}
           >
             <Ionicons name="close" size={20} color={colors.foreground} />
-          </TouchableOpacity>
+          </PressScale>
 
           {/* Progress bar */}
           <View style={{ flex: 1, height: 8, backgroundColor: colors.muted, borderRadius: 4, overflow: "hidden" }}>
@@ -695,7 +694,7 @@ export default function LessonScreen() {
 
       <Animated.View style={[shakeStyle, { flex: 1 }]}>
         <ScrollView
-          contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 60, paddingTop: 8 }}
+          contentContainerStyle={{ paddingHorizontal: 24, paddingBottom: 60, paddingTop: 8 }}
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
         >

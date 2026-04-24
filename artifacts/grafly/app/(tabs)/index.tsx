@@ -27,6 +27,7 @@ import { COURSES, getAllLessons } from "@/constants/lessons";
 import { LOGO } from "@/constants/assets";
 import { GraflyMascot } from "@/components/GraflyMascot";
 import { AText } from "@/components/AText";
+import { PressScale } from "@/components/PressScale";
 
 function getGreeting(name: string): string {
   const hour = new Date().getHours();
@@ -272,8 +273,7 @@ export default function HomeScreen() {
         {/* Pro upgrade banner — editorial card */}
         {!state.isPro && (
           <Animated.View entering={FadeIn.delay(140)} style={{ paddingHorizontal: 24, marginTop: 22 }}>
-            <TouchableOpacity
-              activeOpacity={0.9}
+            <PressScale
               onPress={() => router.push("/paywall" as any)}
               style={{
                 backgroundColor: colors.card, borderRadius: 22,
@@ -305,7 +305,7 @@ export default function HomeScreen() {
                   Upgrade
                 </Text>
               </View>
-            </TouchableOpacity>
+            </PressScale>
           </Animated.View>
         )}
 
@@ -340,8 +340,7 @@ export default function HomeScreen() {
               const mascotState = mascotStates[index % mascotStates.length];
 
               return (
-                <TouchableOpacity
-                  activeOpacity={0.92}
+                <PressScale
                   onPress={() => router.push("/(tabs)/tree")}
                   style={{
                     width: cardW, borderRadius: 28,
@@ -424,7 +423,7 @@ export default function HomeScreen() {
                       {progress}%
                     </Text>
                   </View>
-                </TouchableOpacity>
+                </PressScale>
               );
             }}
           />
@@ -436,8 +435,7 @@ export default function HomeScreen() {
             <Text style={{ fontSize: 22, fontFamily: "Nunito_800ExtraBold", color: colors.foreground, letterSpacing: -0.4, marginBottom: 14 }}>
               Pick up where you left off
             </Text>
-            <TouchableOpacity
-              activeOpacity={0.92}
+            <PressScale
               onPress={() => router.push({ pathname: "/lesson", params: { nodeId: nextNode?.id ?? "" } })}
               style={{
                 backgroundColor: colors.foreground, borderRadius: 28,
@@ -483,7 +481,7 @@ export default function HomeScreen() {
                   <Ionicons name="arrow-forward" size={20} color={colors.accentForeground} />
                 </View>
               </View>
-            </TouchableOpacity>
+            </PressScale>
           </Animated.View>
         )}
 
@@ -509,8 +507,7 @@ export default function HomeScreen() {
           </View>
 
           {/* Rank */}
-          <TouchableOpacity
-            activeOpacity={0.85}
+          <PressScale
             onPress={() => router.push("/leaderboard")}
             style={{
               flex: 1, backgroundColor: colors.card, borderRadius: 22,
@@ -531,7 +528,7 @@ export default function HomeScreen() {
             <Text style={{ fontSize: 11, fontFamily: "Nunito_600SemiBold", color: colors.mutedForeground, marginTop: 2 }}>
               Bronze division
             </Text>
-          </TouchableOpacity>
+          </PressScale>
         </Animated.View>
 
         {/* XP progress strip */}

@@ -49,13 +49,21 @@ function AuthGate({ children }: { children: React.ReactNode }) {
 function RootLayoutNav() {
   return (
     <AuthGate>
-      <Stack initialRouteName="(tabs)" screenOptions={{ headerShown: false }}>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+      <Stack
+        initialRouteName="(tabs)"
+        screenOptions={{
+          headerShown: false,
+          // Subtle native push transition — clean, editorial, not jarring.
+          animation: "slide_from_right",
+          animationDuration: 220,
+        }}
+      >
+        <Stack.Screen name="(tabs)" options={{ headerShown: false, animation: "fade" }} />
         <Stack.Screen name="auth" options={{ headerShown: false }} />
-        <Stack.Screen name="onboarding" options={{ headerShown: false }} />
+        <Stack.Screen name="onboarding" options={{ headerShown: false, animation: "fade" }} />
         <Stack.Screen
           name="lesson"
-          options={{ headerShown: false, presentation: "fullScreenModal" }}
+          options={{ headerShown: false, presentation: "fullScreenModal", animation: "slide_from_bottom" }}
         />
         <Stack.Screen
           name="leaderboard"
@@ -63,7 +71,7 @@ function RootLayoutNav() {
         />
         <Stack.Screen
           name="paywall"
-          options={{ headerShown: false, presentation: "modal" }}
+          options={{ headerShown: false, presentation: "modal", animation: "slide_from_bottom" }}
         />
       </Stack>
     </AuthGate>

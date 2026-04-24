@@ -32,6 +32,7 @@ import { GraflyMascot } from "@/components/GraflyMascot";
 import { LOGO } from "@/constants/assets";
 import type { MascotState } from "@/constants/assets";
 import { AText, ATextInput } from "@/components/AText";
+import { PressScale } from "@/components/PressScale";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 type Step = "welcome" | "setup" | "placement" | "results";
@@ -599,20 +600,19 @@ export default function OnboardingScreen() {
               {LEVEL_DESC[placementResult]}
             </Text>
 
-            <TouchableOpacity
+            <PressScale
               style={{
                 backgroundColor: colors.foreground, borderRadius: 100,
                 paddingVertical: 20, alignItems: "center", width: "100%",
                 flexDirection: "row", justifyContent: "center", gap: 10,
               }}
               onPress={handleFinish}
-              activeOpacity={0.88}
             >
               <Text style={{ fontSize: 18, fontFamily: "Nunito_800ExtraBold", color: colors.background }}>
                 Start learning
               </Text>
               <Ionicons name="arrow-forward" size={20} color={colors.background} />
-            </TouchableOpacity>
+            </PressScale>
           </Animated.View>
         </View>
       </View>

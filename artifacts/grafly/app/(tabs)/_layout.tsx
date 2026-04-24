@@ -1,17 +1,17 @@
 import { BlurView } from "expo-blur";
 import { Tabs } from "expo-router";
-import React, { useCallback } from "react";
+import React from "react";
 import {
   Platform,
+  Pressable,
   StyleSheet,
-  TouchableOpacity,
   View,
 } from "react-native";
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
-  withSpring,
-  withSequence,
+  withTiming,
+  Easing,
 } from "react-native-reanimated";
 import { Ionicons } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -24,6 +24,9 @@ interface TabBarButtonProps {
   accessibilityState?: { selected?: boolean };
 }
 
+// Crisp, deliberate press feedback for tab buttons.
+// Scales subtly down on press in, springs back on release.
+// No overshoot, no bounce — feels intentional, not cartoony.
 function SpringTabButton({
   children,
   onPress,
@@ -34,22 +37,25 @@ function SpringTabButton({
     transform: [{ scale: scale.value }],
   }));
 
-  const handlePress = useCallback(() => {
-    scale.value = withSequence(
-      withSpring(1.22, { damping: 7, stiffness: 350 }),
-      withSpring(1, { damping: 13 })
-    );
-    onPress?.({} as any);
-  }, [onPress]);
-
   return (
-    <TouchableOpacity
-      activeOpacity={1}
-      onPress={handlePress}
+    <Pressable
+      onPressIn={() => {
+        scale.value = withTiming(0.92, {
+          duration: 80,
+          easing: Easing.out(Easing.quad),
+        });
+      }}
+      onPressOut={() => {
+        scale.value = withTiming(1, {
+          duration: 180,
+          easing: Easing.out(Easing.cubic),
+        });
+      }}
+      onPress={(e) => onPress?.(e)}
       style={style}
     >
       <Animated.View style={animStyle}>{children}</Animated.View>
-    </TouchableOpacity>
+    </Pressable>
   );
 }
 

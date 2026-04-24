@@ -19,6 +19,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { LinearGradient } from "expo-linear-gradient";
 import { useColors } from "@/hooks/useColors";
 import { useGame } from "@/context/GameContext";
+import { PressScale } from "@/components/PressScale";
 
 const BENEFITS = [
   { icon: "infinite", text: "Unlimited AI critiques per day" },
@@ -213,7 +214,7 @@ export default function PaywallScreen() {
 
         {/* CTA */}
         <Animated.View entering={FadeIn.delay(300)}>
-          <TouchableOpacity
+          <PressScale
             style={{
               backgroundColor: colors.foreground,
               borderRadius: 100,
@@ -226,13 +227,12 @@ export default function PaywallScreen() {
             }}
             onPress={handlePurchase}
             disabled={purchasing}
-            activeOpacity={0.88}
           >
             <Text style={{ fontSize: 18, fontFamily: "Nunito_800ExtraBold", color: colors.background }}>
               {purchasing ? "Processing..." : "Unlock Grafly Pro"}
             </Text>
             {!purchasing && <Ionicons name="arrow-forward" size={20} color={colors.background} />}
-          </TouchableOpacity>
+          </PressScale>
 
           <Text style={{
             fontSize: 12,
