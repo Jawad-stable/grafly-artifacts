@@ -672,7 +672,7 @@ export default function OnboardingScreen() {
             showsVerticalScrollIndicator={false}
           >
             <Animated.View key={currentQ} entering={fadeInDown(260)}>
-              <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
+              <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
                 <Text style={{
                   fontSize: 12,
                   fontFamily: "Nunito_800ExtraBold",
@@ -681,7 +681,7 @@ export default function OnboardingScreen() {
                 }}>
                   QUESTION {currentQ + 1} OF {PLACEMENT_QUESTIONS.length}
                 </Text>
-                <GraflyMascot state={mascotState} size={48} />
+                <GraflyMascot state={mascotState} size={88} float />
               </View>
 
               <Text style={{
