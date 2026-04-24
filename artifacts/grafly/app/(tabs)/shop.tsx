@@ -11,7 +11,8 @@ import Animated, {
   FadeIn,
   useSharedValue,
   useAnimatedStyle,
-  withSpring,
+  withTiming,
+  Easing,
   withSequence,
 } from "react-native-reanimated";
 import { Ionicons } from "@expo/vector-icons";
@@ -51,8 +52,8 @@ function ShopCard({ item, onBuy }: { item: ShopItem; onBuy: (item: ShopItem) => 
 
   function handlePress() {
     scale.value = withSequence(
-      withSpring(0.95, { damping: 8 }),
-      withSpring(1, { damping: 12 })
+      withTiming(0.97, { duration: 90, easing: Easing.out(Easing.cubic) }),
+      withTiming(1, { duration: 180, easing: Easing.out(Easing.cubic) })
     );
     onBuy(item);
   }

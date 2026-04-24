@@ -1,44 +1,40 @@
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   View,
   Text,
   ScrollView,
-  TouchableOpacity,
   FlatList,
   Modal,
   Dimensions,
   Platform,
+  TouchableOpacity,
 } from "react-native";
-import Animated, {
-  FadeIn,
-  useSharedValue,
-  useAnimatedStyle,
-  withSpring,
-} from "react-native-reanimated";
+import Animated, { FadeIn, FadeInDown } from "react-native-reanimated";
 import { Ionicons } from "@expo/vector-icons";
-import { router } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Svg, { Path } from "react-native-svg";
 import { useColors } from "@/hooks/useColors";
 import { useGame } from "@/context/GameContext";
 import { COURSES, type SkillNode, type Course } from "@/constants/lessons";
+import { PressScale } from "@/components/PressScale";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
-const NODE_SIZE = 70;
+const NODE_SIZE = 64;
 const VERTICAL_GAP = 110;
 
 const POSITIONS = ["left", "center", "right"] as const;
 type NodePosition = (typeof POSITIONS)[number];
 
 function getNodeX(pos: NodePosition): number {
-  const innerW = Math.min(SCREEN_WIDTH - 40, 360);
+  const innerW = Math.min(SCREEN_WIDTH - 48, 360);
   const center = innerW / 2;
   if (pos === "left") return center - 100;
   if (pos === "right") return center + 100;
   return center;
 }
 
-function CourseCard({
+function CoursePill({
   course,
   selected,
   onPress,
@@ -48,47 +44,39 @@ function CourseCard({
   onPress: () => void;
 }) {
   const colors = useColors();
-  const scale = useSharedValue(selected ? 1 : 0.95);
-  const anim = useAnimatedStyle(() => ({ transform: [{ scale: scale.value }] }));
-
-  React.useEffect(() => {
-    scale.value = withSpring(selected ? 1 : 0.95, { damping: 14 });
-  }, [selected]);
 
   return (
-    <TouchableOpacity onPress={onPress} activeOpacity={0.85}>
-      <Animated.View style={[{
-        width: 130,
-        borderRadius: 20,
-        padding: 16,
-        marginRight: 12,
-        backgroundColor: selected ? course.color + "22" : colors.card,
-        borderWidth: 2,
-        borderColor: selected ? course.color : colors.border,
+    <PressScale
+      onPress={onPress}
+      style={{
+        paddingHorizontal: 16,
+        paddingVertical: 12,
+        marginRight: 8,
+        borderRadius: 100,
+        backgroundColor: selected ? colors.foreground : colors.card,
+        borderWidth: 1,
+        borderColor: selected ? colors.foreground : colors.border,
+        flexDirection: "row",
         alignItems: "center",
         gap: 8,
-        shadowColor: selected ? course.color : "#000",
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: selected ? 0.3 : 0.1,
-        shadowRadius: 12,
-        elevation: selected ? 8 : 2,
-      }, anim]}>
-        <View style={{
-          width: 44, height: 44, borderRadius: 14,
-          backgroundColor: course.color + "30",
-          alignItems: "center", justifyContent: "center",
-        }}>
-          <Ionicons name={course.icon as any} size={22} color={course.color} />
-        </View>
-        <Text style={{
-          fontSize: 12, fontFamily: "Nunito_800ExtraBold",
-          color: selected ? course.color : colors.foreground,
-          textAlign: "center",
-        }}>
-          {course.title}
-        </Text>
-      </Animated.View>
-    </TouchableOpacity>
+      }}
+    >
+      <View style={{
+        width: 20, height: 20, borderRadius: 6,
+        backgroundColor: selected ? course.color : course.color + "30",
+        alignItems: "center", justifyContent: "center",
+      }}>
+        <Ionicons name={course.icon as any} size={12} color={selected ? colors.background : course.color} />
+      </View>
+      <Text style={{
+        fontSize: 13,
+        fontFamily: "Nunito_800ExtraBold",
+        color: selected ? colors.background : colors.foreground,
+        letterSpacing: -0.2,
+      }}>
+        {course.title}
+      </Text>
+    </PressScale>
   );
 }
 
@@ -99,53 +87,46 @@ function NodeItem({
   isLocked: boolean; posX: number; onPress: () => void;
 }) {
   const colors = useColors();
-  const scale = useSharedValue(isLocked ? 0.85 : 1);
-  const anim = useAnimatedStyle(() => ({ transform: [{ scale: scale.value }] }));
-  React.useEffect(() => {
-    scale.value = withSpring(isLocked ? 0.85 : 1, { damping: 13 });
-  }, [isLocked]);
-
   const nodeColor = isCompleted ? colors.success : isLocked ? colors.muted : course.color;
 
   return (
-    <Animated.View style={[{
+    <View style={{
       position: "absolute",
-      left: posX - NODE_SIZE / 2,
+      left: posX - (NODE_SIZE + 80) / 2,
       width: NODE_SIZE + 80,
       alignItems: "center",
-    }, anim]}>
-      <TouchableOpacity
+    }}>
+      <PressScale
         onPress={onPress}
         disabled={isLocked}
-        activeOpacity={0.8}
         style={{
           width: NODE_SIZE, height: NODE_SIZE,
           borderRadius: NODE_SIZE / 2,
-          backgroundColor: isLocked ? colors.muted + "40" : nodeColor + "20",
-          borderWidth: 3, borderColor: nodeColor,
+          backgroundColor: isLocked ? colors.muted + "30" : isCompleted ? colors.success : colors.card,
+          borderWidth: 2,
+          borderColor: isLocked ? colors.border : nodeColor,
           alignItems: "center", justifyContent: "center",
-          shadowColor: isLocked ? "transparent" : nodeColor,
-          shadowOffset: { width: 0, height: 0 },
-          shadowOpacity: isLocked ? 0 : 0.5,
-          shadowRadius: 12,
-          elevation: isLocked ? 0 : 6,
         }}
       >
         {isCompleted
-          ? <Ionicons name="checkmark-circle" size={30} color={colors.success} />
+          ? <Ionicons name="checkmark" size={28} color={colors.primaryForeground} />
           : isLocked
-          ? <Ionicons name="lock-closed" size={22} color={colors.mutedForeground} />
+          ? <Ionicons name="lock-closed" size={20} color={colors.mutedForeground} />
           : <Ionicons name={node.icon as any} size={26} color={nodeColor} />
         }
-      </TouchableOpacity>
+      </PressScale>
       <Text style={{
-        fontSize: 11, fontFamily: "Nunito_800ExtraBold",
+        fontSize: 11,
+        fontFamily: "Nunito_800ExtraBold",
         color: isLocked ? colors.mutedForeground : colors.foreground,
-        marginTop: 8, textAlign: "center", maxWidth: 90,
+        marginTop: 10,
+        textAlign: "center",
+        maxWidth: 100,
+        letterSpacing: -0.1,
       }} numberOfLines={2}>
         {node.title}
       </Text>
-    </Animated.View>
+    </View>
   );
 }
 
@@ -162,69 +143,128 @@ function NodeSheet({ node, course, isCompleted, isLocked, visible, onClose }: {
 
   return (
     <Modal visible={visible} animationType="slide" transparent onRequestClose={onClose}>
-      <TouchableOpacity style={{ flex: 1 }} activeOpacity={1} onPress={onClose} />
+      <TouchableOpacity style={{ flex: 1, backgroundColor: "rgba(0,0,0,0.4)" }} activeOpacity={1} onPress={onClose} />
       <View style={{
-        backgroundColor: colors.card, borderTopLeftRadius: 28, borderTopRightRadius: 28,
-        padding: 28, paddingBottom: insets.bottom + 20,
+        backgroundColor: colors.card,
+        borderTopLeftRadius: 32, borderTopRightRadius: 32,
+        paddingHorizontal: 24,
+        paddingTop: 16,
+        paddingBottom: insets.bottom + 24,
       }}>
-        <View style={{ width: 40, height: 4, backgroundColor: colors.border, borderRadius: 2, alignSelf: "center", marginBottom: 20 }} />
-        <View style={{ flexDirection: "row", alignItems: "center", gap: 14, marginBottom: 16 }}>
-          <View style={{ width: 52, height: 52, borderRadius: 16, backgroundColor: course.color + "20", alignItems: "center", justifyContent: "center" }}>
-            <Ionicons name={node.icon as any} size={26} color={course.color} />
-          </View>
-          <View style={{ flex: 1 }}>
-            <Text style={{ fontSize: 20, fontFamily: "Nunito_800ExtraBold", color: colors.foreground }}>{node.title}</Text>
-            <Text style={{ fontSize: 13, fontFamily: "Nunito_600SemiBold", color: colors.mutedForeground }}>{course.title}</Text>
-          </View>
-        </View>
-        <Text style={{ fontSize: 15, fontFamily: "Nunito_600SemiBold", color: colors.mutedForeground, lineHeight: 22, marginBottom: 20 }}>
+        <View style={{ width: 44, height: 4, backgroundColor: colors.border, borderRadius: 2, alignSelf: "center", marginBottom: 24 }} />
+
+        {/* Editorial eyebrow + headline */}
+        <Text style={{
+          fontSize: 12,
+          fontFamily: "Nunito_800ExtraBold",
+          color: course.color,
+          letterSpacing: 1.5,
+          marginBottom: 6,
+          textTransform: "uppercase",
+        }}>
+          {course.title}
+        </Text>
+        <Text style={{
+          fontSize: 28,
+          fontFamily: "Nunito_800ExtraBold",
+          color: colors.foreground,
+          letterSpacing: -0.8,
+          lineHeight: 32,
+          marginBottom: 14,
+        }}>
+          {node.title}
+        </Text>
+        <Text style={{
+          fontSize: 15,
+          fontFamily: "Nunito_600SemiBold",
+          color: colors.mutedForeground,
+          lineHeight: 22,
+          marginBottom: 22,
+        }}>
           {node.description}
         </Text>
-        <View style={{ flexDirection: "row", gap: 12, marginBottom: 20 }}>
+
+        {/* Stats row */}
+        <View style={{ flexDirection: "row", gap: 10, marginBottom: 20 }}>
           {[
             { val: node.lessons.length, label: "LESSONS", icon: null, iconColor: null },
             { val: totalXP, label: "XP", icon: "flash", iconColor: colors.accent },
             { val: totalCoins, label: "COINS", icon: "ellipse", iconColor: colors.warning },
           ].map((s) => (
-            <View key={s.label} style={{ flex: 1, backgroundColor: colors.background, borderRadius: 14, padding: 14, alignItems: "center" }}>
-              {s.icon && <Ionicons name={s.icon as any} size={14} color={s.iconColor!} />}
-              <Text style={{ fontSize: 20, fontFamily: "Nunito_800ExtraBold", color: colors.foreground }}>{s.val}</Text>
-              <Text style={{ fontSize: 10, fontFamily: "Nunito_600SemiBold", color: colors.mutedForeground }}>{s.label}</Text>
+            <View key={s.label} style={{
+              flex: 1,
+              backgroundColor: colors.background,
+              borderRadius: 16,
+              paddingVertical: 14,
+              alignItems: "center",
+              borderWidth: 1,
+              borderColor: colors.border,
+            }}>
+              {s.icon && <Ionicons name={s.icon as any} size={14} color={s.iconColor!} style={{ marginBottom: 2 }} />}
+              <Text style={{ fontSize: 22, fontFamily: "Nunito_800ExtraBold", color: colors.foreground, letterSpacing: -0.5 }}>{s.val}</Text>
+              <Text style={{ fontSize: 10, fontFamily: "Nunito_800ExtraBold", color: colors.mutedForeground, letterSpacing: 1, marginTop: 2 }}>{s.label}</Text>
             </View>
           ))}
         </View>
-        {node.lessons.map((lesson, i) => (
-          <View key={lesson.id} style={{
-            flexDirection: "row", alignItems: "center", gap: 12, paddingVertical: 10,
-            borderTopWidth: i === 0 ? 1 : 0, borderBottomWidth: 1, borderColor: colors.border,
-          }}>
-            <Ionicons name="book-outline" size={18} color={colors.primary} />
-            <Text style={{ flex: 1, fontSize: 14, fontFamily: "Nunito_600SemiBold", color: colors.foreground }}>{lesson.title}</Text>
-            <View style={{ flexDirection: "row", alignItems: "center", gap: 3 }}>
-              <Ionicons name="flash" size={12} color={colors.accent} />
-              <Text style={{ fontSize: 12, fontFamily: "Nunito_600SemiBold", color: colors.mutedForeground }}>+{lesson.xpReward}</Text>
+
+        {/* Lesson list */}
+        <View style={{ marginBottom: 20 }}>
+          {node.lessons.map((lesson, i) => (
+            <View key={lesson.id} style={{
+              flexDirection: "row", alignItems: "center", gap: 12,
+              paddingVertical: 12,
+              borderTopWidth: i === 0 ? 1 : 0, borderBottomWidth: 1, borderColor: colors.border,
+            }}>
+              <Text style={{
+                fontSize: 11,
+                fontFamily: "Nunito_800ExtraBold",
+                color: colors.mutedForeground,
+                width: 22,
+              }}>
+                {String(i + 1).padStart(2, "0")}
+              </Text>
+              <Text style={{ flex: 1, fontSize: 14, fontFamily: "Nunito_600SemiBold", color: colors.foreground }}>{lesson.title}</Text>
+              <View style={{ flexDirection: "row", alignItems: "center", gap: 3 }}>
+                <Ionicons name="flash" size={12} color={colors.accent} />
+                <Text style={{ fontSize: 12, fontFamily: "Nunito_800ExtraBold", color: colors.mutedForeground }}>+{lesson.xpReward}</Text>
+              </View>
             </View>
-          </View>
-        ))}
+          ))}
+        </View>
+
         {!isLocked ? (
-          <TouchableOpacity
+          <PressScale
+            onPress={() => { onClose(); router.push({ pathname: "/lesson", params: { nodeId: node.id } }); }}
             style={{
-              backgroundColor: isCompleted ? colors.success : colors.foreground,
-              borderRadius: 100, paddingVertical: 20, alignItems: "center", marginTop: 20,
+              backgroundColor: colors.foreground,
+              borderRadius: 100, paddingVertical: 20, alignItems: "center",
               flexDirection: "row", justifyContent: "center", gap: 10,
             }}
-            onPress={() => { onClose(); router.push({ pathname: "/lesson", params: { nodeId: node.id } }); }}
-            activeOpacity={0.88}
           >
-            <Text style={{ fontSize: 17, fontFamily: "Nunito_800ExtraBold", color: isCompleted ? colors.primaryForeground : colors.background }}>
+            <Text style={{
+              fontSize: 17,
+              fontFamily: "Nunito_800ExtraBold",
+              color: colors.background,
+              letterSpacing: -0.3,
+            }}>
               {isCompleted ? "Practice again" : "Start lessons"}
             </Text>
-            <Ionicons name="arrow-forward" size={18} color={isCompleted ? colors.primaryForeground : colors.background} />
-          </TouchableOpacity>
+            <Ionicons name="arrow-forward" size={18} color={colors.background} />
+          </PressScale>
         ) : (
-          <View style={{ backgroundColor: colors.muted, borderRadius: colors.radius, paddingVertical: 18, alignItems: "center", marginTop: 20, flexDirection: "row", justifyContent: "center", gap: 8 }}>
+          <View style={{
+            backgroundColor: colors.muted,
+            borderRadius: 100,
+            paddingVertical: 20,
+            alignItems: "center",
+            flexDirection: "row",
+            justifyContent: "center",
+            gap: 8,
+          }}>
             <Ionicons name="lock-closed" size={18} color={colors.mutedForeground} />
-            <Text style={{ fontSize: 15, fontFamily: "Nunito_800ExtraBold", color: colors.mutedForeground }}>Complete previous lessons</Text>
+            <Text style={{ fontSize: 15, fontFamily: "Nunito_800ExtraBold", color: colors.mutedForeground, letterSpacing: -0.2 }}>
+              Complete previous lessons
+            </Text>
           </View>
         )}
       </View>
@@ -236,15 +276,40 @@ export default function TreeScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
   const { state } = useGame();
+  const params = useLocalSearchParams<{ courseId?: string }>();
   const courseListRef = useRef<FlatList>(null);
 
-  const [selectedCourseIdx, setSelectedCourseIdx] = useState(0);
+  const initialIdx = (() => {
+    if (params.courseId) {
+      const i = COURSES.findIndex((c) => c.id === params.courseId);
+      if (i >= 0) return i;
+    }
+    return 0;
+  })();
+
+  const [selectedCourseIdx, setSelectedCourseIdx] = useState(initialIdx);
   const [selectedNode, setSelectedNode] = useState<SkillNode | null>(null);
   const [sheetVisible, setSheetVisible] = useState(false);
+
+  // Sync selection if param changes (deep links / route updates)
+  useEffect(() => {
+    if (params.courseId) {
+      const i = COURSES.findIndex((c) => c.id === params.courseId);
+      if (i >= 0 && i !== selectedCourseIdx) {
+        setSelectedCourseIdx(i);
+      }
+    }
+  }, [params.courseId]);
 
   const course = COURSES[selectedCourseIdx];
   const paddingTop = insets.top + (Platform.OS === "web" ? 67 : 0);
   const paddingBottom = insets.bottom + (Platform.OS === "web" ? 34 : 100);
+
+  // Compute progress for this course
+  const allLessonIdsInCourse = course.nodes.flatMap((n) => n.lessons.map((l) => l.id));
+  const completedInCourse = allLessonIdsInCourse.filter((id) => state.completedLessons.includes(id)).length;
+  const totalInCourse = allLessonIdsInCourse.length;
+  const courseProgress = totalInCourse > 0 ? Math.round((completedInCourse / totalInCourse) * 100) : 0;
 
   function isNodeCompleted(node: SkillNode): boolean {
     return node.lessons.every((l) => state.completedLessons.includes(l.id));
@@ -262,17 +327,30 @@ export default function TreeScreen() {
   }
 
   const nodes = course.nodes;
-  const innerW = Math.min(SCREEN_WIDTH - 40, 360);
+  const innerW = Math.min(SCREEN_WIDTH - 48, 360);
   const treeHeight = nodes.length * VERTICAL_GAP + 60;
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.background }}>
-      {/* Header — editorial */}
-      <View style={{ paddingTop: paddingTop + 12, paddingHorizontal: 24, paddingBottom: 16 }}>
-        <Text style={{ fontSize: 13, fontFamily: "Nunito_800ExtraBold", color: colors.mutedForeground, letterSpacing: 1.5, marginBottom: 4 }}>
+      {/* Editorial header */}
+      <View style={{ paddingTop: paddingTop + 12, paddingHorizontal: 24, paddingBottom: 18 }}>
+        <Text style={{
+          fontSize: 13,
+          fontFamily: "Nunito_800ExtraBold",
+          color: colors.mutedForeground,
+          letterSpacing: 1.5,
+          marginBottom: 6,
+        }}>
           YOUR JOURNEY
         </Text>
-        <Text style={{ fontSize: 38, fontFamily: "Nunito_800ExtraBold", color: colors.foreground, letterSpacing: -1, marginBottom: 18, lineHeight: 42 }}>
+        <Text style={{
+          fontSize: 38,
+          fontFamily: "Nunito_800ExtraBold",
+          color: colors.foreground,
+          letterSpacing: -1,
+          marginBottom: 20,
+          lineHeight: 42,
+        }}>
           Skill tree
         </Text>
         <FlatList
@@ -284,43 +362,122 @@ export default function TreeScreen() {
           contentContainerStyle={{ paddingRight: 24 }}
           style={{ marginHorizontal: -24, paddingLeft: 24 }}
           renderItem={({ item: c, index: idx }) => (
-            <CourseCard
+            <CoursePill
               course={c}
               selected={idx === selectedCourseIdx}
               onPress={() => handleCourseSelect(idx)}
             />
           )}
-          getItemLayout={(_, index) => ({ length: 142, offset: 142 * index, index })}
+          onScrollToIndexFailed={() => { /* fallback: do nothing */ }}
         />
       </View>
 
-      {/* Tree with S/Z path */}
       <ScrollView
         style={{ flex: 1 }}
         contentContainerStyle={{ paddingBottom: paddingBottom }}
         showsVerticalScrollIndicator={false}
       >
-        <Animated.View entering={FadeIn} style={{ paddingHorizontal: 20 }}>
-          {/* Course info strip */}
+        <Animated.View
+          key={course.id}
+          entering={FadeIn.duration(220)}
+          style={{ paddingHorizontal: 24 }}
+        >
+          {/* Editorial course summary */}
           <View style={{
-            backgroundColor: course.color + "15", borderRadius: colors.radius,
-            padding: 16, marginBottom: 24,
-            flexDirection: "row", alignItems: "center", gap: 12,
+            backgroundColor: colors.card,
+            borderRadius: 24,
+            padding: 20,
+            marginBottom: 28,
+            borderWidth: 1,
+            borderColor: colors.border,
           }}>
-            <View style={{ width: 44, height: 44, borderRadius: 14, backgroundColor: course.color + "30", alignItems: "center", justifyContent: "center" }}>
-              <Ionicons name={course.icon as any} size={22} color={course.color} />
-            </View>
-            <View style={{ flex: 1 }}>
-              <Text style={{ fontSize: 16, fontFamily: "Nunito_800ExtraBold", color: colors.foreground }}>{course.title}</Text>
-              <Text style={{ fontSize: 12, fontFamily: "Nunito_600SemiBold", color: colors.mutedForeground, marginTop: 2 }} numberOfLines={2}>
-                {course.description}
+            <View style={{ flexDirection: "row", alignItems: "center", gap: 12, marginBottom: 14 }}>
+              <View style={{
+                width: 44, height: 44, borderRadius: 14,
+                backgroundColor: course.color + "22",
+                alignItems: "center", justifyContent: "center",
+              }}>
+                <Ionicons name={course.icon as any} size={22} color={course.color} />
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text style={{
+                  fontSize: 11,
+                  fontFamily: "Nunito_800ExtraBold",
+                  color: course.color,
+                  letterSpacing: 1.4,
+                  marginBottom: 2,
+                  textTransform: "uppercase",
+                }}>
+                  Course
+                </Text>
+                <Text style={{
+                  fontSize: 18,
+                  fontFamily: "Nunito_800ExtraBold",
+                  color: colors.foreground,
+                  letterSpacing: -0.4,
+                }}>
+                  {course.title}
+                </Text>
+              </View>
+              <Text style={{
+                fontSize: 22,
+                fontFamily: "Nunito_800ExtraBold",
+                color: colors.foreground,
+                letterSpacing: -0.5,
+              }}>
+                {courseProgress}%
               </Text>
             </View>
+            <Text style={{
+              fontSize: 13,
+              fontFamily: "Nunito_600SemiBold",
+              color: colors.mutedForeground,
+              lineHeight: 19,
+              marginBottom: 14,
+            }}>
+              {course.description}
+            </Text>
+            {/* Progress bar */}
+            <View style={{
+              height: 6,
+              borderRadius: 100,
+              backgroundColor: colors.border,
+              overflow: "hidden",
+            }}>
+              <View style={{
+                height: "100%",
+                width: `${courseProgress}%`,
+                backgroundColor: course.color,
+                borderRadius: 100,
+              }} />
+            </View>
+            <Text style={{
+              fontSize: 11,
+              fontFamily: "Nunito_800ExtraBold",
+              color: colors.mutedForeground,
+              letterSpacing: 1,
+              marginTop: 10,
+            }}>
+              {completedInCourse} OF {totalInCourse} LESSONS
+            </Text>
           </View>
 
+          {/* Section eyebrow above tree */}
+          <Text style={{
+            fontSize: 11,
+            fontFamily: "Nunito_800ExtraBold",
+            color: colors.mutedForeground,
+            letterSpacing: 1.4,
+            marginBottom: 12,
+          }}>
+            THE PATH
+          </Text>
+
           {/* Winding node tree */}
-          <View style={{ height: treeHeight, position: "relative" }}>
-            {/* SVG curves connecting nodes */}
+          <Animated.View
+            entering={FadeInDown.duration(280).delay(60)}
+            style={{ height: treeHeight, position: "relative", alignSelf: "center", width: innerW }}
+          >
             <Svg
               width={innerW}
               height={treeHeight}
@@ -341,15 +498,14 @@ export default function TreeScreen() {
                     key={node.id}
                     d={`M ${x1} ${y1} C ${x1} ${cpY} ${x2} ${cpY} ${x2} ${y2}`}
                     stroke={isCompleted ? colors.success : colors.border}
-                    strokeWidth={3}
-                    strokeDasharray={isCompleted ? undefined : "8,5"}
+                    strokeWidth={2}
+                    strokeDasharray={isCompleted ? undefined : "6,6"}
                     fill="none"
                   />
                 );
               })}
             </Svg>
 
-            {/* Nodes */}
             {nodes.map((node, idx) => {
               const pos = POSITIONS[idx % 3];
               const posX = getNodeX(pos);
@@ -371,7 +527,7 @@ export default function TreeScreen() {
                 </View>
               );
             })}
-          </View>
+          </Animated.View>
         </Animated.View>
       </ScrollView>
 

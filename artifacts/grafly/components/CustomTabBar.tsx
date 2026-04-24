@@ -10,7 +10,6 @@ import {
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
-  withSpring,
   withTiming,
 } from "react-native-reanimated";
 import { Ionicons } from "@expo/vector-icons";

@@ -10,8 +10,8 @@ import Animated, {
   FadeIn,
   useSharedValue,
   useAnimatedStyle,
-  withSpring,
   withTiming,
+  Easing,
 } from "react-native-reanimated";
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
@@ -45,7 +45,7 @@ export default function PaywallScreen() {
   const pillLeft = useSharedValue(4);
 
   useEffect(() => {
-    pillLeft.value = withSpring(selectedPlan === "monthly" ? 4 : "50%" as any, { damping: 12 });
+    pillLeft.value = withTiming(selectedPlan === "monthly" ? 4 : "50%" as any, { duration: 220, easing: Easing.out(Easing.cubic) });
   }, [selectedPlan]);
 
   const pillStyle = useAnimatedStyle(() => ({

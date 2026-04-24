@@ -12,8 +12,8 @@ import {
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
-  withSpring,
   withTiming,
+  Easing,
   withSequence,
   FadeIn,
 } from "react-native-reanimated";
@@ -78,7 +78,7 @@ function XPPopup() {
 
   useEffect(() => {
     if (state.showXPPopup) {
-      scale.value = withSpring(1, { damping: 10, stiffness: 200 });
+      scale.value = withTiming(1, { duration: 220, easing: Easing.out(Easing.cubic) });
       opacity.value = withTiming(1, { duration: 200 });
       translateY.value = withSequence(withTiming(0), withTiming(-60, { duration: 1000 }));
       const t = setTimeout(() => {
@@ -118,7 +118,7 @@ function LevelUpOverlay() {
 
   useEffect(() => {
     if (state.showLevelUp) {
-      scale.value = withSpring(1, { damping: 12 });
+      scale.value = withTiming(1, { duration: 280, easing: Easing.out(Easing.cubic) });
       opacity.value = withTiming(1, { duration: 300 });
     }
   }, [state.showLevelUp]);
@@ -341,7 +341,7 @@ export default function HomeScreen() {
 
               return (
                 <PressScale
-                  onPress={() => router.push("/(tabs)/tree")}
+                  onPress={() => router.push({ pathname: "/(tabs)/tree", params: { courseId: course.id } })}
                   style={{
                     width: cardW, borderRadius: 28,
                     backgroundColor: course.color,
