@@ -1,9 +1,8 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
   ScrollView,
-  FlatList,
   Modal,
   Dimensions,
   Platform,
@@ -34,49 +33,201 @@ function getNodeX(pos: NodePosition): number {
   return center;
 }
 
-function CoursePill({
-  course,
-  selected,
-  onPress,
-}: {
-  course: Course;
-  selected: boolean;
-  onPress: () => void;
-}) {
+function HamburgerButton({ onPress }: { onPress: () => void }) {
   const colors = useColors();
-
   return (
     <PressScale
       onPress={onPress}
       style={{
-        paddingHorizontal: 16,
-        paddingVertical: 12,
-        marginRight: 8,
-        borderRadius: 100,
-        backgroundColor: selected ? colors.foreground : colors.card,
+        width: 52,
+        height: 52,
+        borderRadius: 18,
+        backgroundColor: colors.card,
         borderWidth: 1,
-        borderColor: selected ? colors.foreground : colors.border,
-        flexDirection: "row",
+        borderColor: colors.border,
         alignItems: "center",
-        gap: 8,
+        justifyContent: "center",
+        gap: 6,
       }}
     >
-      <View style={{
-        width: 20, height: 20, borderRadius: 6,
-        backgroundColor: selected ? course.color : course.color + "30",
-        alignItems: "center", justifyContent: "center",
-      }}>
-        <Ionicons name={course.icon as any} size={12} color={selected ? colors.background : course.color} />
-      </View>
-      <Text style={{
-        fontSize: 13,
-        fontFamily: "Nunito_800ExtraBold",
-        color: selected ? colors.background : colors.foreground,
-        letterSpacing: -0.2,
-      }}>
-        {course.title}
-      </Text>
+      <View style={{ width: 22, height: 2.5, borderRadius: 2, backgroundColor: colors.foreground }} />
+      <View style={{ width: 14, height: 2.5, borderRadius: 2, backgroundColor: colors.foreground }} />
+      <View style={{ width: 22, height: 2.5, borderRadius: 2, backgroundColor: colors.foreground }} />
     </PressScale>
+  );
+}
+
+function CoursePickerModal({
+  visible,
+  onClose,
+  selectedCourseIdx,
+  onSelect,
+  completedLessons,
+}: {
+  visible: boolean;
+  onClose: () => void;
+  selectedCourseIdx: number;
+  onSelect: (idx: number) => void;
+  completedLessons: string[];
+}) {
+  const colors = useColors();
+  const insets = useSafeAreaInsets();
+
+  return (
+    <Modal visible={visible} animationType="slide" onRequestClose={onClose}>
+      <View style={{ flex: 1, backgroundColor: colors.background }}>
+        {/* Top bar with X close */}
+        <View style={{
+          paddingTop: insets.top + 12,
+          paddingHorizontal: 24,
+          paddingBottom: 8,
+          flexDirection: "row",
+          alignItems: "center",
+          justifyContent: "space-between",
+        }}>
+          <Text style={{
+            fontSize: 13,
+            fontFamily: "Nunito_800ExtraBold",
+            color: colors.mutedForeground,
+            letterSpacing: 1.5,
+          }}>
+            BROWSE
+          </Text>
+          <PressScale
+            onPress={onClose}
+            style={{
+              width: 44,
+              height: 44,
+              borderRadius: 14,
+              backgroundColor: colors.card,
+              borderWidth: 1,
+              borderColor: colors.border,
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            <Ionicons name="close" size={22} color={colors.foreground} />
+          </PressScale>
+        </View>
+
+        {/* Editorial headline */}
+        <View style={{ paddingHorizontal: 24, paddingBottom: 24 }}>
+          <Text style={{
+            fontSize: 44,
+            fontFamily: "Nunito_800ExtraBold",
+            color: colors.foreground,
+            letterSpacing: -1.2,
+            lineHeight: 48,
+          }}>
+            Choose
+          </Text>
+          <Text style={{
+            fontSize: 44,
+            fontFamily: "Nunito_800ExtraBold",
+            color: colors.foreground,
+            letterSpacing: -1.2,
+            lineHeight: 48,
+          }}>
+            a course.
+          </Text>
+        </View>
+
+        {/* Course list */}
+        <ScrollView
+          style={{ flex: 1 }}
+          contentContainerStyle={{
+            paddingHorizontal: 24,
+            paddingBottom: insets.bottom + 24,
+          }}
+          showsVerticalScrollIndicator={false}
+        >
+          {COURSES.map((c, idx) => {
+            const isSelected = idx === selectedCourseIdx;
+            const totalLessonsInCourse = c.nodes.flatMap((n) => n.lessons).length;
+            const completedInCourse = c.nodes
+              .flatMap((n) => n.lessons)
+              .filter((l) => completedLessons.includes(l.id)).length;
+            const progress = totalLessonsInCourse > 0
+              ? Math.round((completedInCourse / totalLessonsInCourse) * 100)
+              : 0;
+
+            return (
+              <PressScale
+                key={c.id}
+                onPress={() => onSelect(idx)}
+                style={{
+                  backgroundColor: isSelected ? colors.foreground : colors.card,
+                  borderRadius: 22,
+                  padding: 18,
+                  marginBottom: 10,
+                  borderWidth: 1,
+                  borderColor: isSelected ? colors.foreground : colors.border,
+                  flexDirection: "row",
+                  alignItems: "center",
+                  gap: 14,
+                }}
+              >
+                <View style={{
+                  width: 52,
+                  height: 52,
+                  borderRadius: 16,
+                  backgroundColor: isSelected ? c.color : c.color + "22",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}>
+                  <Ionicons
+                    name={c.icon as any}
+                    size={26}
+                    color={isSelected ? colors.background : c.color}
+                  />
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Text style={{
+                    fontSize: 11,
+                    fontFamily: "Nunito_800ExtraBold",
+                    color: c.color,
+                    letterSpacing: 1.3,
+                    marginBottom: 2,
+                    textTransform: "uppercase",
+                  }}>
+                    {progress}% COMPLETE
+                  </Text>
+                  <Text style={{
+                    fontSize: 17,
+                    fontFamily: "Nunito_800ExtraBold",
+                    color: isSelected ? colors.background : colors.foreground,
+                    letterSpacing: -0.4,
+                    marginBottom: 2,
+                  }}>
+                    {c.title}
+                  </Text>
+                  <Text style={{
+                    fontSize: 12,
+                    fontFamily: "Nunito_600SemiBold",
+                    color: isSelected ? colors.background : colors.mutedForeground,
+                    opacity: isSelected ? 0.7 : 1,
+                  }} numberOfLines={1}>
+                    {totalLessonsInCourse} lessons
+                  </Text>
+                </View>
+                {isSelected && (
+                  <View style={{
+                    width: 28,
+                    height: 28,
+                    borderRadius: 14,
+                    backgroundColor: colors.background,
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}>
+                    <Ionicons name="checkmark" size={18} color={colors.foreground} />
+                  </View>
+                )}
+              </PressScale>
+            );
+          })}
+        </ScrollView>
+      </View>
+    </Modal>
   );
 }
 
@@ -277,7 +428,6 @@ export default function TreeScreen() {
   const insets = useSafeAreaInsets();
   const { state } = useGame();
   const params = useLocalSearchParams<{ courseId?: string }>();
-  const courseListRef = useRef<FlatList>(null);
 
   const initialIdx = (() => {
     if (params.courseId) {
@@ -290,6 +440,7 @@ export default function TreeScreen() {
   const [selectedCourseIdx, setSelectedCourseIdx] = useState(initialIdx);
   const [selectedNode, setSelectedNode] = useState<SkillNode | null>(null);
   const [sheetVisible, setSheetVisible] = useState(false);
+  const [pickerVisible, setPickerVisible] = useState(false);
 
   // Sync selection if param changes (deep links / route updates)
   useEffect(() => {
@@ -323,7 +474,7 @@ export default function TreeScreen() {
 
   function handleCourseSelect(idx: number) {
     setSelectedCourseIdx(idx);
-    courseListRef.current?.scrollToIndex({ index: idx, animated: true, viewPosition: 0.5 });
+    setPickerVisible(false);
   }
 
   const nodes = course.nodes;
@@ -332,44 +483,39 @@ export default function TreeScreen() {
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.background }}>
-      {/* Editorial header */}
-      <View style={{ paddingTop: paddingTop + 12, paddingHorizontal: 24, paddingBottom: 18 }}>
-        <Text style={{
-          fontSize: 13,
-          fontFamily: "Nunito_800ExtraBold",
-          color: colors.mutedForeground,
-          letterSpacing: 1.5,
-          marginBottom: 6,
-        }}>
-          YOUR JOURNEY
-        </Text>
-        <Text style={{
-          fontSize: 38,
-          fontFamily: "Nunito_800ExtraBold",
-          color: colors.foreground,
-          letterSpacing: -1,
-          marginBottom: 20,
-          lineHeight: 42,
-        }}>
-          Skill tree
-        </Text>
-        <FlatList
-          ref={courseListRef}
-          data={COURSES}
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          keyExtractor={(c) => c.id}
-          contentContainerStyle={{ paddingRight: 24 }}
-          style={{ marginHorizontal: -24, paddingLeft: 24 }}
-          renderItem={({ item: c, index: idx }) => (
-            <CoursePill
-              course={c}
-              selected={idx === selectedCourseIdx}
-              onPress={() => handleCourseSelect(idx)}
-            />
-          )}
-          onScrollToIndexFailed={() => { /* fallback: do nothing */ }}
-        />
+      {/* Editorial header with hamburger */}
+      <View style={{
+        paddingTop: paddingTop + 12,
+        paddingHorizontal: 24,
+        paddingBottom: 18,
+        flexDirection: "row",
+        alignItems: "flex-start",
+        justifyContent: "space-between",
+        gap: 16,
+      }}>
+        <View style={{ flex: 1 }}>
+          <Text style={{
+            fontSize: 13,
+            fontFamily: "Nunito_800ExtraBold",
+            color: colors.mutedForeground,
+            letterSpacing: 1.5,
+            marginBottom: 6,
+          }}>
+            YOUR JOURNEY
+          </Text>
+          <Text style={{
+            fontSize: 38,
+            fontFamily: "Nunito_800ExtraBold",
+            color: colors.foreground,
+            letterSpacing: -1,
+            lineHeight: 42,
+          }}>
+            Skill tree
+          </Text>
+        </View>
+        <View style={{ paddingTop: 18 }}>
+          <HamburgerButton onPress={() => setPickerVisible(true)} />
+        </View>
       </View>
 
       <ScrollView
@@ -538,6 +684,14 @@ export default function TreeScreen() {
         isLocked={selectedNode ? isNodeLocked(selectedNode) : false}
         visible={sheetVisible}
         onClose={() => setSheetVisible(false)}
+      />
+
+      <CoursePickerModal
+        visible={pickerVisible}
+        onClose={() => setPickerVisible(false)}
+        selectedCourseIdx={selectedCourseIdx}
+        onSelect={handleCourseSelect}
+        completedLessons={state.completedLessons}
       />
     </View>
   );
