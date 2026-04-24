@@ -29,6 +29,7 @@ import { useGame } from "@/context/GameContext";
 import type { PlacementLevel } from "@/context/GameContext";
 import { PLACEMENT_QUESTIONS } from "@/constants/lessons";
 import { GraflyMascot } from "@/components/GraflyMascot";
+import { LOGO } from "@/constants/assets";
 import type { MascotState } from "@/constants/assets";
 import { AText, ATextInput } from "@/components/AText";
 
@@ -172,11 +173,12 @@ export default function OnboardingScreen() {
 
   if (step === "welcome") {
     return (
-      <LinearGradient colors={[colors.background, colors.secondary]} style={{ flex: 1 }}>
+      <View style={{ flex: 1, backgroundColor: colors.background }}>
         <View style={{ flex: 1, paddingTop: padTop, paddingBottom: padBottom }}>
+          {/* Compact theme toggle pill */}
           <Animated.View
             entering={FadeIn.delay(100)}
-            style={{ flexDirection: "row", justifyContent: "center", paddingHorizontal: 28, paddingTop: 12 }}
+            style={{ flexDirection: "row", justifyContent: "flex-end", paddingHorizontal: 24, paddingTop: 8 }}
           >
             <View style={{
               flexDirection: "row", backgroundColor: colors.card, borderRadius: 100,
@@ -191,18 +193,18 @@ export default function OnboardingScreen() {
                     activeOpacity={0.85}
                     style={{
                       flexDirection: "row", alignItems: "center", gap: 6,
-                      paddingHorizontal: 16, paddingVertical: 8, borderRadius: 100,
-                      backgroundColor: active ? colors.primary : "transparent",
+                      paddingHorizontal: 14, paddingVertical: 7, borderRadius: 100,
+                      backgroundColor: active ? colors.foreground : "transparent",
                     }}
                   >
                     <Ionicons
                       name={mode === "light" ? "sunny" : "moon"}
-                      size={16}
-                      color={active ? colors.primaryForeground : colors.mutedForeground}
+                      size={14}
+                      color={active ? colors.background : colors.mutedForeground}
                     />
                     <Text style={{
-                      fontSize: 13, fontFamily: "Nunito_800ExtraBold",
-                      color: active ? colors.primaryForeground : colors.mutedForeground,
+                      fontSize: 12, fontFamily: "Nunito_800ExtraBold",
+                      color: active ? colors.background : colors.mutedForeground,
                     }}>
                       {mode === "light" ? "Light" : "Dark"}
                     </Text>
@@ -211,35 +213,87 @@ export default function OnboardingScreen() {
               })}
             </View>
           </Animated.View>
-          <View style={{ flex: 1, alignItems: "center", justifyContent: "center", paddingHorizontal: 28 }}>
-            <GraflyMascot state="celebrate" size={150} float />
+
+          {/* Editorial headline up top */}
+          <View style={{ paddingHorizontal: 28, marginTop: 16 }}>
+            <Animated.View entering={FadeIn.delay(200)} style={{ flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 6 }}>
+              <Image source={LOGO.icon_colored} style={{ width: 26, height: 26 }} resizeMode="contain" />
+              <Text style={{ fontSize: 13, fontFamily: "Nunito_800ExtraBold", color: colors.mutedForeground, letterSpacing: 1.5 }}>
+                GRAFLY
+              </Text>
+            </Animated.View>
             <Animated.Text entering={FadeIn.delay(300)} style={{
-              fontSize: 32, fontFamily: "Nunito_800ExtraBold",
-              color: colors.foreground, textAlign: "center", marginBottom: 12, marginTop: 20,
+              fontSize: 56, fontFamily: "Nunito_800ExtraBold",
+              color: colors.foreground, lineHeight: 60, letterSpacing: -1.5,
             }}>
-              Welcome to Grafly
+              Learn{"\n"}design.
             </Animated.Text>
-            <Animated.Text entering={FadeIn.delay(500)} style={{
+          </View>
+
+          {/* Collage hero — mascot + layered shapes from existing palette */}
+          <View style={{ flex: 1, alignItems: "center", justifyContent: "center", paddingHorizontal: 28 }}>
+            <View style={{ width: 280, height: 280, alignItems: "center", justifyContent: "center" }}>
+              {/* Big accent disc */}
+              <Animated.View
+                entering={FadeIn.delay(380)}
+                style={{
+                  position: "absolute", top: 30, left: 10,
+                  width: 180, height: 180, borderRadius: 90,
+                  backgroundColor: colors.accent,
+                }}
+              />
+              {/* Pink ribbon block */}
+              <Animated.View
+                entering={FadeIn.delay(450)}
+                style={{
+                  position: "absolute", bottom: 30, right: 0,
+                  width: 130, height: 80, borderRadius: 24,
+                  backgroundColor: colors.pink, transform: [{ rotate: "-8deg" }],
+                }}
+              />
+              {/* Primary square */}
+              <Animated.View
+                entering={FadeIn.delay(520)}
+                style={{
+                  position: "absolute", top: 0, right: 30,
+                  width: 64, height: 64, borderRadius: 18,
+                  backgroundColor: colors.primary, transform: [{ rotate: "12deg" }],
+                }}
+              />
+              {/* Mascot on top */}
+              <Animated.View entering={FadeIn.delay(600)}>
+                <GraflyMascot state="celebrate" size={200} float />
+              </Animated.View>
+            </View>
+          </View>
+
+          {/* Tagline + CTA pinned bottom for editorial layout */}
+          <View style={{ paddingHorizontal: 28, paddingBottom: 8 }}>
+            <Animated.Text entering={FadeIn.delay(700)} style={{
               fontSize: 16, fontFamily: "Nunito_600SemiBold",
-              color: colors.mutedForeground, textAlign: "center", lineHeight: 24, marginBottom: 48,
+              color: colors.mutedForeground, lineHeight: 24, marginBottom: 24,
             }}>
-              Design education, gamified.
-              {"\n"}Learn real skills one lesson at a time.
+              A gamified studio for real design skills. One bold lesson at a time.
             </Animated.Text>
-            <Animated.View entering={FadeIn.delay(700)} style={{ width: "100%" }}>
+            <Animated.View entering={FadeIn.delay(800)}>
               <TouchableOpacity
-                style={{ backgroundColor: colors.primary, borderRadius: colors.radius, paddingVertical: 18, alignItems: "center", width: "100%" }}
+                style={{
+                  backgroundColor: colors.foreground, borderRadius: 100,
+                  paddingVertical: 20, alignItems: "center", width: "100%",
+                  flexDirection: "row", justifyContent: "center", gap: 10,
+                }}
                 onPress={() => setStep("setup")}
-                activeOpacity={0.85}
+                activeOpacity={0.88}
               >
-                <Text style={{ fontSize: 18, fontFamily: "Nunito_800ExtraBold", color: colors.primaryForeground }}>
-                  Get Started
+                <Text style={{ fontSize: 18, fontFamily: "Nunito_800ExtraBold", color: colors.background }}>
+                  Get started
                 </Text>
+                <Ionicons name="arrow-forward" size={20} color={colors.background} />
               </TouchableOpacity>
             </Animated.View>
           </View>
         </View>
-      </LinearGradient>
+      </View>
     );
   }
 
@@ -352,16 +406,18 @@ export default function OnboardingScreen() {
 
               <TouchableOpacity
                 style={[{
-                  backgroundColor: colors.primary, borderRadius: colors.radius,
-                  paddingVertical: 18, alignItems: "center", width: "100%",
-                }, !canContinueSetup && { opacity: 0.45 }]}
+                  backgroundColor: colors.foreground, borderRadius: 100,
+                  paddingVertical: 20, alignItems: "center", width: "100%",
+                  flexDirection: "row", justifyContent: "center", gap: 10,
+                }, !canContinueSetup && { opacity: 0.35 }]}
                 onPress={() => { setMascotState("think"); setStep("placement"); }}
-                activeOpacity={0.85}
+                activeOpacity={0.88}
                 disabled={!canContinueSetup}
               >
-                <Text style={{ fontSize: 18, fontFamily: "Nunito_800ExtraBold", color: colors.primaryForeground }}>
+                <Text style={{ fontSize: 18, fontFamily: "Nunito_800ExtraBold", color: colors.background }}>
                   Continue
                 </Text>
+                <Ionicons name="arrow-forward" size={20} color={colors.background} />
               </TouchableOpacity>
             </Animated.View>
           </ScrollView>
@@ -544,13 +600,18 @@ export default function OnboardingScreen() {
             </Text>
 
             <TouchableOpacity
-              style={{ backgroundColor: colors.primary, borderRadius: colors.radius, paddingVertical: 18, alignItems: "center", width: "100%" }}
+              style={{
+                backgroundColor: colors.foreground, borderRadius: 100,
+                paddingVertical: 20, alignItems: "center", width: "100%",
+                flexDirection: "row", justifyContent: "center", gap: 10,
+              }}
               onPress={handleFinish}
-              activeOpacity={0.85}
+              activeOpacity={0.88}
             >
-              <Text style={{ fontSize: 18, fontFamily: "Nunito_800ExtraBold", color: colors.primaryForeground }}>
-                Start Learning
+              <Text style={{ fontSize: 18, fontFamily: "Nunito_800ExtraBold", color: colors.background }}>
+                Start learning
               </Text>
+              <Ionicons name="arrow-forward" size={20} color={colors.background} />
             </TouchableOpacity>
           </Animated.View>
         </View>

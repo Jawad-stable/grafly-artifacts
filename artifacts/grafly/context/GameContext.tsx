@@ -124,7 +124,7 @@ const initialState: GameState = {
   newLevel: 1,
   xpBoosterActive: false,
   xpBoosterExpiry: "",
-  themeMode: "dark",
+  themeMode: "light",
   handle: "",
   profilePic: "",
 };

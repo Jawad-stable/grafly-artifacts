@@ -86,11 +86,21 @@ export default function ProfileScreen() {
   return (
     <View style={{ flex: 1, backgroundColor: colors.background }}>
       <ScrollView
-        contentContainerStyle={{ paddingTop: paddingTop + 12, paddingHorizontal: 20, paddingBottom }}
+        contentContainerStyle={{ paddingTop: paddingTop + 12, paddingHorizontal: 24, paddingBottom }}
         showsVerticalScrollIndicator={false}
       >
+        {/* Editorial title */}
+        <View style={{ marginBottom: 8 }}>
+          <Text style={{ fontSize: 13, fontFamily: "Nunito_800ExtraBold", color: colors.mutedForeground, letterSpacing: 1.5, marginBottom: 4 }}>
+            YOUR STUDIO
+          </Text>
+          <Text style={{ fontSize: 38, fontFamily: "Nunito_800ExtraBold", color: colors.foreground, letterSpacing: -1, lineHeight: 42 }}>
+            Profile
+          </Text>
+        </View>
+
         {/* Profile header with mascot */}
-        <Animated.View entering={FadeIn} style={{ alignItems: "center", marginBottom: 24 }}>
+        <Animated.View entering={FadeIn} style={{ alignItems: "center", marginBottom: 24, marginTop: 16 }}>
           <GraflyMascot state="idle" size={120} />
           <View style={{ marginTop: 16, alignItems: "center" }}>
             {editingName ? (
@@ -250,14 +260,14 @@ export default function ProfileScreen() {
 
           <TouchableOpacity
             style={{
-              backgroundColor: colors.primary, borderRadius: colors.radius,
-              padding: 18, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 10,
+              backgroundColor: colors.foreground, borderRadius: 100,
+              padding: 20, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 10,
             }}
             onPress={() => router.push("/paywall" as any)}
-            activeOpacity={0.85}
+            activeOpacity={0.88}
           >
-            <Ionicons name="diamond" size={20} color={colors.primaryForeground} />
-            <Text style={{ fontSize: 16, fontFamily: "Nunito_800ExtraBold", color: colors.primaryForeground }}>
+            <Ionicons name="diamond" size={20} color={colors.accent} />
+            <Text style={{ fontSize: 16, fontFamily: "Nunito_800ExtraBold", color: colors.background }}>
               Upgrade to Pro
             </Text>
           </TouchableOpacity>
@@ -280,15 +290,15 @@ export default function ProfileScreen() {
           ) : (
             <TouchableOpacity
               style={{
-                backgroundColor: colors.primary, borderRadius: colors.radius,
-                padding: 18, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 10,
+                backgroundColor: colors.foreground, borderRadius: 100,
+                padding: 20, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 10,
               }}
               onPress={() => router.push("/auth")}
-              activeOpacity={0.85}
+              activeOpacity={0.88}
             >
-              <Ionicons name="cloud-upload-outline" size={20} color={colors.primaryForeground} />
-              <Text style={{ fontSize: 16, fontFamily: "Nunito_800ExtraBold", color: colors.primaryForeground }}>
-                Save Your Progress
+              <Ionicons name="cloud-upload-outline" size={20} color={colors.background} />
+              <Text style={{ fontSize: 16, fontFamily: "Nunito_800ExtraBold", color: colors.background }}>
+                Save your progress
               </Text>
             </TouchableOpacity>
           )}

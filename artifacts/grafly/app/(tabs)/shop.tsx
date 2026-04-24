@@ -146,24 +146,32 @@ export default function ShopScreen() {
   return (
     <View style={{ flex: 1, backgroundColor: colors.background }}>
       <ScrollView
-        contentContainerStyle={{ paddingTop: paddingTop + 12, paddingHorizontal: 20, paddingBottom }}
+        contentContainerStyle={{ paddingTop: paddingTop + 12, paddingHorizontal: 24, paddingBottom }}
         showsVerticalScrollIndicator={false}
       >
-        {/* Header with mascot */}
-        <Animated.View entering={FadeIn} style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
-          <View>
-            <Text style={{ fontSize: 26, fontFamily: "Nunito_800ExtraBold", color: colors.foreground }}>Shop</Text>
-            <View style={{ flexDirection: "row", alignItems: "center", gap: 6, marginTop: 4 }}>
-              <Ionicons name="ellipse" size={14} color={colors.warning} />
-              <Text style={{ fontSize: 16, fontFamily: "Nunito_800ExtraBold", color: colors.foreground }}>
-                {state.coins}
+        {/* Editorial header */}
+        <Animated.View entering={FadeIn} style={{ marginBottom: 22 }}>
+          <Text style={{ fontSize: 13, fontFamily: "Nunito_800ExtraBold", color: colors.mutedForeground, letterSpacing: 1.5, marginBottom: 4 }}>
+            POWER UP
+          </Text>
+          <View style={{ flexDirection: "row", alignItems: "flex-end", justifyContent: "space-between" }}>
+            <View>
+              <Text style={{ fontSize: 38, fontFamily: "Nunito_800ExtraBold", color: colors.foreground, letterSpacing: -1, lineHeight: 42 }}>
+                Shop
               </Text>
-              <Text style={{ fontSize: 13, fontFamily: "Nunito_600SemiBold", color: colors.mutedForeground }}>
-                coins
-              </Text>
+              <View style={{
+                flexDirection: "row", alignItems: "center", gap: 6, marginTop: 10,
+                backgroundColor: colors.foreground, borderRadius: 100,
+                paddingHorizontal: 14, paddingVertical: 8, alignSelf: "flex-start",
+              }}>
+                <Ionicons name="ellipse" size={12} color={colors.warning} />
+                <Text style={{ fontSize: 14, fontFamily: "Nunito_800ExtraBold", color: colors.background }}>
+                  {state.coins} coins
+                </Text>
+              </View>
             </View>
+            <GraflyMascot state={mascotState} size={90} />
           </View>
-          <GraflyMascot state={mascotState} size={90} />
         </Animated.View>
 
         {/* Power-ups */}

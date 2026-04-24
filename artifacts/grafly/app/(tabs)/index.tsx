@@ -6,6 +6,8 @@ import {
   TouchableOpacity,
   Platform,
   Image,
+  Dimensions,
+  FlatList,
 } from "react-native";
 import Animated, {
   useSharedValue,
@@ -18,12 +20,12 @@ import Animated, {
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { LinearGradient } from "expo-linear-gradient";
 import Svg, { Circle } from "react-native-svg";
 import { useColors } from "@/hooks/useColors";
 import { useGame, getXPProgress } from "@/context/GameContext";
 import { COURSES, getAllLessons } from "@/constants/lessons";
 import { LOGO } from "@/constants/assets";
+import { GraflyMascot } from "@/components/GraflyMascot";
 import { AText } from "@/components/AText";
 
 function getGreeting(name: string): string {
@@ -192,230 +194,378 @@ export default function HomeScreen() {
 
   if (!state.onboardingComplete) return null;
 
+  const SCREEN_W = Dimensions.get("window").width;
+  const cardW = Math.min(SCREEN_W - 80, 300);
+
   return (
     <View style={{ flex: 1, backgroundColor: colors.background }}>
       <LevelUpOverlay />
       <XPPopup />
 
-      {/* FIXED HEADER */}
+      {/* FIXED HEADER — minimal: logo + streak + coins */}
       <View style={{
         paddingTop: paddingTop + 12,
-        paddingHorizontal: 20,
+        paddingHorizontal: 24,
         paddingBottom: 0,
         backgroundColor: colors.background,
       }}>
-        {/* Top row: Logo | Streak (fixed) | Coins */}
-        <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
-          {/* Logo */}
-          <Image source={LOGO.icon_colored} style={{ width: 32, height: 32 }} resizeMode="contain" />
-
-          {/* Streak — fixed width, no animation */}
-          <View style={{ flexDirection: "row", alignItems: "center", gap: 6, minWidth: 56 }}>
-            <Ionicons name="flame" size={22} color="#FF7B00" />
-            <View style={{ minWidth: 28, alignItems: "flex-start" }}>
-              <Text style={{ fontSize: 17, fontFamily: "Nunito_800ExtraBold", color: colors.foreground }}>
+        <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
+          <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+            <Image source={LOGO.icon_colored} style={{ width: 28, height: 28 }} resizeMode="contain" />
+            <Text style={{ fontSize: 14, fontFamily: "Nunito_800ExtraBold", color: colors.mutedForeground, letterSpacing: 1.5 }}>
+              GRAFLY
+            </Text>
+          </View>
+          <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+            <View style={{
+              flexDirection: "row", alignItems: "center", gap: 4,
+              backgroundColor: colors.card, borderRadius: 100,
+              paddingHorizontal: 12, paddingVertical: 6,
+              borderWidth: 1, borderColor: colors.border,
+            }}>
+              <Ionicons name="flame" size={14} color="#FF7B00" />
+              <Text style={{ fontSize: 13, fontFamily: "Nunito_800ExtraBold", color: colors.foreground }}>
                 {state.streak}
               </Text>
             </View>
-          </View>
-
-          {/* Coins */}
-          <View style={{ flexDirection: "row", alignItems: "center", gap: 4, backgroundColor: colors.card, borderRadius: 100, paddingHorizontal: 12, paddingVertical: 6 }}>
-            <Ionicons name="ellipse" size={12} color={colors.warning} />
-            <Text style={{ fontSize: 14, fontFamily: "Nunito_800ExtraBold", color: colors.foreground }}>
-              {state.coins}
-            </Text>
-          </View>
-        </View>
-
-        {/* XP bar */}
-        <View style={{ marginBottom: 16 }}>
-          <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 4 }}>
-            <Text style={{ fontSize: 11, fontFamily: "Nunito_600SemiBold", color: colors.mutedForeground }}>
-              LVL {xpProg.level}
-            </Text>
-            <Text style={{ fontSize: 11, fontFamily: "Nunito_600SemiBold", color: colors.mutedForeground }}>
-              LVL {xpProg.level + 1}
-            </Text>
-          </View>
-          <View style={{ height: 5, backgroundColor: colors.muted, borderRadius: 3, overflow: "hidden" }}>
-            <View style={{ height: "100%", width: `${xpPercent}%`, backgroundColor: colors.accent, borderRadius: 3 }} />
+            <View style={{
+              flexDirection: "row", alignItems: "center", gap: 4,
+              backgroundColor: colors.card, borderRadius: 100,
+              paddingHorizontal: 12, paddingVertical: 6,
+              borderWidth: 1, borderColor: colors.border,
+            }}>
+              <Ionicons name="ellipse" size={11} color={colors.warning} />
+              <Text style={{ fontSize: 13, fontFamily: "Nunito_800ExtraBold", color: colors.foreground }}>
+                {state.coins}
+              </Text>
+            </View>
           </View>
         </View>
       </View>
 
       <ScrollView
         style={{ flex: 1 }}
-        contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: paddingBottom }}
+        contentContainerStyle={{ paddingBottom: paddingBottom }}
         showsVerticalScrollIndicator={false}
       >
-        {/* Time-based greeting */}
-        <Animated.View entering={FadeIn.delay(80)} style={{ marginBottom: 24 }}>
-          <AText style={{ fontSize: 26, fontFamily: "Nunito_800ExtraBold", color: colors.foreground, marginBottom: 2 }}>
-            {getGreeting(state.username)}
+        {/* Editorial headline */}
+        <Animated.View entering={FadeIn.delay(80)} style={{ paddingHorizontal: 24, marginTop: 18, marginBottom: 8 }}>
+          <AText style={{
+            fontSize: 44, fontFamily: "Nunito_800ExtraBold",
+            color: colors.foreground, lineHeight: 48, letterSpacing: -1.2,
+          }}>
+            {getGreeting(state.username).split(",")[0]},
           </AText>
-          <Text style={{ fontSize: 14, fontFamily: "Nunito_600SemiBold", color: colors.mutedForeground }}>
+          <AText style={{
+            fontSize: 44, fontFamily: "Nunito_800ExtraBold",
+            color: colors.primary, lineHeight: 48, letterSpacing: -1.2, marginBottom: 10,
+          }}>
+            {state.username.split(" ")[0]}.
+          </AText>
+          <Text style={{ fontSize: 15, fontFamily: "Nunito_600SemiBold", color: colors.mutedForeground, lineHeight: 22 }}>
             {state.streak > 0
-              ? `${state.streak} day streak`
-              : "Start your first lesson today"}
+              ? `You are on a ${state.streak} day streak. Keep the spark alive.`
+              : "Pick a lesson and start your streak today."}
           </Text>
         </Animated.View>
 
-        {/* Daily Goal */}
-        <Animated.View entering={FadeIn.delay(140)}>
-          <View style={{
-            backgroundColor: colors.card, borderRadius: colors.radius,
-            padding: 20, marginBottom: 16,
-            flexDirection: "row", alignItems: "center", gap: 20,
-          }}>
-            <CircularProgress size={88} progress={dailyProgress} color={colors.primary}>
-              <Text style={{ fontSize: 16, fontFamily: "Nunito_800ExtraBold", color: colors.foreground }}>
-                {todayLessons}/{dailyGoal}
-              </Text>
-            </CircularProgress>
-            <View style={{ flex: 1 }}>
-              <Text style={{ fontSize: 17, fontFamily: "Nunito_800ExtraBold", color: colors.foreground, marginBottom: 2 }}>
-                Daily Goal
-              </Text>
-              <Text style={{ fontSize: 12, fontFamily: "Nunito_600SemiBold", color: colors.mutedForeground }}>
-                {todayLessons >= dailyGoal
-                  ? "Goal complete!"
-                  : `${dailyGoal - todayLessons} lesson${dailyGoal - todayLessons !== 1 ? "s" : ""} left`}
-              </Text>
-            </View>
-          </View>
-        </Animated.View>
-
-        {/* Continue Learning */}
-        {nextLesson && nextCourse && (
-          <Animated.View entering={FadeIn.delay(190)}>
+        {/* Pro upgrade banner — editorial card */}
+        {!state.isPro && (
+          <Animated.View entering={FadeIn.delay(140)} style={{ paddingHorizontal: 24, marginTop: 22 }}>
             <TouchableOpacity
               activeOpacity={0.9}
-              onPress={() => router.push({ pathname: "/lesson", params: { nodeId: nextNode?.id ?? "" } })}
+              onPress={() => router.push("/paywall" as any)}
+              style={{
+                backgroundColor: colors.card, borderRadius: 22,
+                paddingVertical: 14, paddingHorizontal: 16,
+                flexDirection: "row", alignItems: "center", gap: 12,
+                borderWidth: 1, borderColor: colors.border,
+              }}
             >
-              <LinearGradient
-                colors={[colors.primary + "DD", colors.primary]}
-                start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}
-                style={{ borderRadius: colors.radius, padding: 20, marginBottom: 16 }}
-              >
-                <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
-                  <View style={{ flex: 1 }}>
-                    <View style={{
-                      backgroundColor: "#FFFFFF25", borderRadius: 100,
-                      paddingHorizontal: 12, paddingVertical: 4,
-                      alignSelf: "flex-start", marginBottom: 10,
-                    }}>
-                      <Text style={{ fontSize: 10, fontFamily: "Nunito_800ExtraBold", color: "#FFFFFFCC", letterSpacing: 1 }}>
-                        CONTINUE
-                      </Text>
-                    </View>
-                    <Text style={{ fontSize: 20, fontFamily: "Nunito_800ExtraBold", color: "#FFFFFF", marginBottom: 3 }}>
-                      {nextLesson.title}
-                    </Text>
-                    <Text style={{ fontSize: 12, fontFamily: "Nunito_600SemiBold", color: "#FFFFFFBB", marginBottom: 14 }}>
-                      {nextCourse.title}
-                    </Text>
-                    <View style={{ flexDirection: "row", alignItems: "center", gap: 14 }}>
-                      <View style={{ flexDirection: "row", alignItems: "center", gap: 4 }}>
-                        <Ionicons name="flash" size={13} color={colors.accent} />
-                        <Text style={{ fontSize: 13, fontFamily: "Nunito_800ExtraBold", color: "#FFFFFF" }}>
-                          +{nextLesson.xpReward} XP
-                        </Text>
-                      </View>
-                      <View style={{ flexDirection: "row", alignItems: "center", gap: 4 }}>
-                        <Ionicons name="ellipse" size={11} color={colors.warning} />
-                        <Text style={{ fontSize: 13, fontFamily: "Nunito_800ExtraBold", color: "#FFFFFF" }}>
-                          +{nextLesson.coinReward}
-                        </Text>
-                      </View>
-                    </View>
-                  </View>
-                  <View style={{
-                    width: 48, height: 48, borderRadius: 24,
-                    backgroundColor: "#FFFFFF25", alignItems: "center",
-                    justifyContent: "center", marginLeft: 16,
-                  }}>
-                    <Ionicons name="arrow-forward" size={22} color="#FFFFFF" />
-                  </View>
-                </View>
-              </LinearGradient>
+              <View style={{
+                width: 38, height: 38, borderRadius: 19,
+                backgroundColor: colors.accent,
+                alignItems: "center", justifyContent: "center",
+              }}>
+                <Ionicons name="diamond" size={18} color={colors.accentForeground} />
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text style={{ fontSize: 14, fontFamily: "Nunito_800ExtraBold", color: colors.foreground }}>
+                  Upgrade Pro
+                </Text>
+                <Text style={{ fontSize: 11, fontFamily: "Nunito_600SemiBold", color: colors.mutedForeground }}>
+                  Unlimited critique, no ads, all courses
+                </Text>
+              </View>
+              <View style={{
+                backgroundColor: colors.foreground, borderRadius: 100,
+                paddingHorizontal: 14, paddingVertical: 7,
+              }}>
+                <Text style={{ fontSize: 12, fontFamily: "Nunito_800ExtraBold", color: colors.background }}>
+                  Upgrade
+                </Text>
+              </View>
             </TouchableOpacity>
           </Animated.View>
         )}
 
-        {/* Weekly Rank */}
-        <Animated.View entering={FadeIn.delay(240)}>
+        {/* Popular Courses — horizontal carousel (editorial cards) */}
+        <Animated.View entering={FadeIn.delay(190)} style={{ marginTop: 28 }}>
+          <View style={{ paddingHorizontal: 24, flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
+            <Text style={{ fontSize: 22, fontFamily: "Nunito_800ExtraBold", color: colors.foreground, letterSpacing: -0.4 }}>
+              Popular courses
+            </Text>
+            <TouchableOpacity onPress={() => router.push("/(tabs)/tree")} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+              <Text style={{ fontSize: 13, fontFamily: "Nunito_800ExtraBold", color: colors.mutedForeground }}>
+                See all
+              </Text>
+            </TouchableOpacity>
+          </View>
+
+          <FlatList
+            data={COURSES}
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            keyExtractor={(c) => c.id}
+            contentContainerStyle={{ paddingHorizontal: 24, gap: 16 }}
+            snapToInterval={cardW + 16}
+            decelerationRate="fast"
+            renderItem={({ item: course, index }) => {
+              const totalLessons = course.nodes.flatMap((n) => n.lessons).length;
+              const completedCount = course.nodes
+                .flatMap((n) => n.lessons)
+                .filter((l) => state.completedLessons.includes(l.id)).length;
+              const progress = totalLessons > 0 ? Math.round((completedCount / totalLessons) * 100) : 0;
+              const mascotStates = ["think", "celebrate", "idle", "correct", "oops"] as const;
+              const mascotState = mascotStates[index % mascotStates.length];
+
+              return (
+                <TouchableOpacity
+                  activeOpacity={0.92}
+                  onPress={() => router.push("/(tabs)/tree")}
+                  style={{
+                    width: cardW, borderRadius: 28,
+                    backgroundColor: course.color,
+                    overflow: "hidden",
+                    shadowColor: course.color,
+                    shadowOffset: { width: 0, height: 12 },
+                    shadowOpacity: 0.18,
+                    shadowRadius: 20,
+                    elevation: 6,
+                  }}
+                >
+                  {/* Top: category pill */}
+                  <View style={{ padding: 20, paddingBottom: 0 }}>
+                    <View style={{
+                      backgroundColor: colors.accentForeground, borderRadius: 100,
+                      paddingHorizontal: 12, paddingVertical: 5,
+                      alignSelf: "flex-start", flexDirection: "row", alignItems: "center", gap: 5,
+                    }}>
+                      <Ionicons name={course.icon as any} size={11} color={colors.primaryForeground} />
+                      <Text style={{ fontSize: 10, fontFamily: "Nunito_800ExtraBold", color: colors.primaryForeground, letterSpacing: 1 }}>
+                        {course.title.toUpperCase()}
+                      </Text>
+                    </View>
+                  </View>
+
+                  {/* Title block */}
+                  <View style={{ paddingHorizontal: 20, paddingTop: 16 }}>
+                    <Text style={{
+                      fontSize: 28, fontFamily: "Nunito_800ExtraBold",
+                      color: colors.primaryForeground, lineHeight: 32, letterSpacing: -0.6,
+                    }}>
+                      {course.title}
+                    </Text>
+                    <Text
+                      numberOfLines={2}
+                      style={{
+                        fontSize: 13, fontFamily: "Nunito_600SemiBold",
+                        color: colors.primaryForeground + "CC", marginTop: 8, lineHeight: 19,
+                      }}
+                    >
+                      {course.description}
+                    </Text>
+                  </View>
+
+                  {/* Collage block: mascot + abstract shapes */}
+                  <View style={{ height: 130, marginTop: 14, position: "relative", overflow: "hidden" }}>
+                    {/* Off-white shape */}
+                    <View style={{
+                      position: "absolute", left: 14, bottom: -20,
+                      width: 120, height: 120, borderRadius: 24,
+                      backgroundColor: colors.primaryForeground + "55",
+                      transform: [{ rotate: "-8deg" }],
+                    }} />
+                    {/* Accent dot */}
+                    <View style={{
+                      position: "absolute", right: 24, top: 8,
+                      width: 36, height: 36, borderRadius: 18,
+                      backgroundColor: colors.accent,
+                    }} />
+                    {/* Mascot */}
+                    <View style={{
+                      position: "absolute", right: 6, bottom: -6,
+                      width: 130, height: 140, alignItems: "center", justifyContent: "center",
+                    }}>
+                      <GraflyMascot state={mascotState} size={120} />
+                    </View>
+                  </View>
+
+                  {/* Footer strip with progress */}
+                  <View style={{
+                    paddingHorizontal: 20, paddingVertical: 14,
+                    backgroundColor: colors.accentForeground + "22",
+                    flexDirection: "row", alignItems: "center", justifyContent: "space-between",
+                  }}>
+                    <Text style={{ fontSize: 12, fontFamily: "Nunito_800ExtraBold", color: colors.primaryForeground }}>
+                      {completedCount}/{totalLessons} lessons
+                    </Text>
+                    <Text style={{ fontSize: 12, fontFamily: "Nunito_800ExtraBold", color: colors.primaryForeground }}>
+                      {progress}%
+                    </Text>
+                  </View>
+                </TouchableOpacity>
+              );
+            }}
+          />
+        </Animated.View>
+
+        {/* Continue Learning — high-contrast near-black editorial CTA card */}
+        {nextLesson && nextCourse && (
+          <Animated.View entering={FadeIn.delay(240)} style={{ paddingHorizontal: 24, marginTop: 28 }}>
+            <Text style={{ fontSize: 22, fontFamily: "Nunito_800ExtraBold", color: colors.foreground, letterSpacing: -0.4, marginBottom: 14 }}>
+              Pick up where you left off
+            </Text>
+            <TouchableOpacity
+              activeOpacity={0.92}
+              onPress={() => router.push({ pathname: "/lesson", params: { nodeId: nextNode?.id ?? "" } })}
+              style={{
+                backgroundColor: colors.foreground, borderRadius: 28,
+                padding: 22,
+              }}
+            >
+              <View style={{
+                backgroundColor: colors.accent, borderRadius: 100,
+                paddingHorizontal: 12, paddingVertical: 5,
+                alignSelf: "flex-start", marginBottom: 14,
+              }}>
+                <Text style={{ fontSize: 10, fontFamily: "Nunito_800ExtraBold", color: colors.accentForeground, letterSpacing: 1.2 }}>
+                  CONTINUE LESSON
+                </Text>
+              </View>
+              <Text style={{ fontSize: 24, fontFamily: "Nunito_800ExtraBold", color: colors.background, marginBottom: 4, lineHeight: 28, letterSpacing: -0.5 }}>
+                {nextLesson.title}
+              </Text>
+              <Text style={{ fontSize: 13, fontFamily: "Nunito_600SemiBold", color: colors.background + "AA", marginBottom: 18 }}>
+                {nextCourse.title}
+              </Text>
+
+              <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
+                <View style={{ flexDirection: "row", alignItems: "center", gap: 14 }}>
+                  <View style={{ flexDirection: "row", alignItems: "center", gap: 5 }}>
+                    <Ionicons name="flash" size={14} color={colors.accent} />
+                    <Text style={{ fontSize: 13, fontFamily: "Nunito_800ExtraBold", color: colors.background }}>
+                      +{nextLesson.xpReward} XP
+                    </Text>
+                  </View>
+                  <View style={{ flexDirection: "row", alignItems: "center", gap: 5 }}>
+                    <Ionicons name="ellipse" size={11} color={colors.warning} />
+                    <Text style={{ fontSize: 13, fontFamily: "Nunito_800ExtraBold", color: colors.background }}>
+                      +{nextLesson.coinReward}
+                    </Text>
+                  </View>
+                </View>
+                <View style={{
+                  width: 44, height: 44, borderRadius: 22,
+                  backgroundColor: colors.accent,
+                  alignItems: "center", justifyContent: "center",
+                }}>
+                  <Ionicons name="arrow-forward" size={20} color={colors.accentForeground} />
+                </View>
+              </View>
+            </TouchableOpacity>
+          </Animated.View>
+        )}
+
+        {/* Daily Goal + Rank — side by side editorial cards */}
+        <Animated.View entering={FadeIn.delay(290)} style={{ paddingHorizontal: 24, marginTop: 22, flexDirection: "row", gap: 12 }}>
+          {/* Daily goal */}
+          <View style={{
+            flex: 1, backgroundColor: colors.card, borderRadius: 22,
+            padding: 16, alignItems: "center",
+            borderWidth: 1, borderColor: colors.border,
+          }}>
+            <CircularProgress size={72} progress={dailyProgress} color={colors.primary}>
+              <Text style={{ fontSize: 14, fontFamily: "Nunito_800ExtraBold", color: colors.foreground }}>
+                {todayLessons}/{dailyGoal}
+              </Text>
+            </CircularProgress>
+            <Text style={{ fontSize: 13, fontFamily: "Nunito_800ExtraBold", color: colors.foreground, marginTop: 10 }}>
+              Daily goal
+            </Text>
+            <Text style={{ fontSize: 11, fontFamily: "Nunito_600SemiBold", color: colors.mutedForeground, marginTop: 2, textAlign: "center" }}>
+              {todayLessons >= dailyGoal ? "Complete!" : `${dailyGoal - todayLessons} to go`}
+            </Text>
+          </View>
+
+          {/* Rank */}
           <TouchableOpacity
             activeOpacity={0.85}
             onPress={() => router.push("/leaderboard")}
             style={{
-              backgroundColor: colors.card, borderRadius: colors.radius,
-              padding: 20, marginBottom: 16,
-              flexDirection: "row", alignItems: "center",
+              flex: 1, backgroundColor: colors.card, borderRadius: 22,
+              padding: 16, alignItems: "center",
+              borderWidth: 1, borderColor: colors.border,
             }}
           >
             <View style={{
-              width: 46, height: 46, borderRadius: 23,
-              backgroundColor: "#CD7F3220", alignItems: "center",
-              justifyContent: "center", marginRight: 14,
+              width: 72, height: 72, borderRadius: 36,
+              backgroundColor: "#CD7F3225",
+              alignItems: "center", justifyContent: "center",
             }}>
-              <Ionicons name="medal" size={24} color="#CD7F32" />
+              <Ionicons name="medal" size={32} color="#CD7F32" />
             </View>
-            <View style={{ flex: 1 }}>
-              <Text style={{ fontSize: 15, fontFamily: "Nunito_800ExtraBold", color: colors.foreground, marginBottom: 1 }}>
-                #{userRank} This Week
-              </Text>
-              <Text style={{ fontSize: 12, fontFamily: "Nunito_600SemiBold", color: colors.mutedForeground }}>
-                Bronze Division
-              </Text>
-            </View>
-            <Ionicons name="chevron-forward" size={16} color={colors.primary} />
+            <Text style={{ fontSize: 13, fontFamily: "Nunito_800ExtraBold", color: colors.foreground, marginTop: 10 }}>
+              Rank #{userRank}
+            </Text>
+            <Text style={{ fontSize: 11, fontFamily: "Nunito_600SemiBold", color: colors.mutedForeground, marginTop: 2 }}>
+              Bronze division
+            </Text>
           </TouchableOpacity>
         </Animated.View>
 
-        {/* All Courses */}
-        <Animated.View entering={FadeIn.delay(290)}>
-          <Text style={{ fontSize: 17, fontFamily: "Nunito_800ExtraBold", color: colors.foreground, marginBottom: 12 }}>
-            All Courses
-          </Text>
-          {COURSES.map((course) => {
-            const totalLessons = course.nodes.flatMap((n) => n.lessons).length;
-            const completedCount = course.nodes
-              .flatMap((n) => n.lessons)
-              .filter((l) => state.completedLessons.includes(l.id)).length;
-            const progress = totalLessons > 0 ? completedCount / totalLessons : 0;
-            return (
-              <TouchableOpacity
-                key={course.id}
-                style={{
-                  backgroundColor: colors.card, borderRadius: colors.radius,
-                  padding: 16, marginBottom: 10,
-                  flexDirection: "row", alignItems: "center", gap: 14,
-                }}
-                onPress={() => router.push("/(tabs)/tree")}
-                activeOpacity={0.8}
-              >
+        {/* XP progress strip */}
+        <Animated.View entering={FadeIn.delay(340)} style={{ paddingHorizontal: 24, marginTop: 22 }}>
+          <View style={{
+            backgroundColor: colors.card, borderRadius: 22,
+            padding: 18, borderWidth: 1, borderColor: colors.border,
+          }}>
+            <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
+              <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
                 <View style={{
-                  width: 44, height: 44, borderRadius: 13,
-                  backgroundColor: course.color + "25",
+                  width: 32, height: 32, borderRadius: 16,
+                  backgroundColor: colors.accent,
                   alignItems: "center", justifyContent: "center",
                 }}>
-                  <Ionicons name={course.icon as any} size={22} color={course.color} />
+                  <Ionicons name="flash" size={16} color={colors.accentForeground} />
                 </View>
-                <View style={{ flex: 1 }}>
-                  <Text style={{ fontSize: 14, fontFamily: "Nunito_800ExtraBold", color: colors.foreground, marginBottom: 6 }}>
-                    {course.title}
+                <View>
+                  <Text style={{ fontSize: 13, fontFamily: "Nunito_800ExtraBold", color: colors.foreground }}>
+                    Level {xpProg.level}
                   </Text>
-                  <View style={{ height: 4, backgroundColor: colors.muted, borderRadius: 2, overflow: "hidden" }}>
-                    <View style={{ height: "100%", width: `${Math.round(progress * 100)}%`, backgroundColor: course.color, borderRadius: 2 }} />
-                  </View>
+                  <Text style={{ fontSize: 11, fontFamily: "Nunito_600SemiBold", color: colors.mutedForeground }}>
+                    {xpProg.current} / {xpProg.required} XP
+                  </Text>
                 </View>
-                <Text style={{ fontSize: 12, fontFamily: "Nunito_600SemiBold", color: colors.mutedForeground }}>
-                  {completedCount}/{totalLessons}
-                </Text>
-              </TouchableOpacity>
-            );
-          })}
+              </View>
+              <Text style={{ fontSize: 13, fontFamily: "Nunito_800ExtraBold", color: colors.mutedForeground }}>
+                Lvl {xpProg.level + 1}
+              </Text>
+            </View>
+            <View style={{ height: 8, backgroundColor: colors.muted, borderRadius: 4, overflow: "hidden" }}>
+              <View style={{ height: "100%", width: `${xpPercent}%`, backgroundColor: colors.foreground, borderRadius: 4 }} />
+            </View>
+          </View>
         </Animated.View>
       </ScrollView>
     </View>

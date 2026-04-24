@@ -208,13 +208,18 @@ function NodeSheet({ node, course, isCompleted, isLocked, visible, onClose }: {
         ))}
         {!isLocked ? (
           <TouchableOpacity
-            style={{ backgroundColor: isCompleted ? colors.success : colors.primary, borderRadius: colors.radius, paddingVertical: 18, alignItems: "center", marginTop: 20 }}
+            style={{
+              backgroundColor: isCompleted ? colors.success : colors.foreground,
+              borderRadius: 100, paddingVertical: 20, alignItems: "center", marginTop: 20,
+              flexDirection: "row", justifyContent: "center", gap: 10,
+            }}
             onPress={() => { onClose(); router.push({ pathname: "/lesson", params: { nodeId: node.id } }); }}
-            activeOpacity={0.85}
+            activeOpacity={0.88}
           >
-            <Text style={{ fontSize: 17, fontFamily: "Nunito_800ExtraBold", color: "#FFFFFF" }}>
-              {isCompleted ? "Practice Again" : "Start Lessons"}
+            <Text style={{ fontSize: 17, fontFamily: "Nunito_800ExtraBold", color: isCompleted ? colors.primaryForeground : colors.background }}>
+              {isCompleted ? "Practice again" : "Start lessons"}
             </Text>
+            <Ionicons name="arrow-forward" size={18} color={isCompleted ? colors.primaryForeground : colors.background} />
           </TouchableOpacity>
         ) : (
           <View style={{ backgroundColor: colors.muted, borderRadius: colors.radius, paddingVertical: 18, alignItems: "center", marginTop: 20, flexDirection: "row", justifyContent: "center", gap: 8 }}>
@@ -262,10 +267,13 @@ export default function TreeScreen() {
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.background }}>
-      {/* Header */}
-      <View style={{ paddingTop: paddingTop + 12, paddingHorizontal: 20, paddingBottom: 16 }}>
-        <Text style={{ fontSize: 26, fontFamily: "Nunito_800ExtraBold", color: colors.foreground, marginBottom: 16 }}>
-          Skill Tree
+      {/* Header — editorial */}
+      <View style={{ paddingTop: paddingTop + 12, paddingHorizontal: 24, paddingBottom: 16 }}>
+        <Text style={{ fontSize: 13, fontFamily: "Nunito_800ExtraBold", color: colors.mutedForeground, letterSpacing: 1.5, marginBottom: 4 }}>
+          YOUR JOURNEY
+        </Text>
+        <Text style={{ fontSize: 38, fontFamily: "Nunito_800ExtraBold", color: colors.foreground, letterSpacing: -1, marginBottom: 18, lineHeight: 42 }}>
+          Skill tree
         </Text>
         <FlatList
           ref={courseListRef}
@@ -273,8 +281,8 @@ export default function TreeScreen() {
           horizontal
           showsHorizontalScrollIndicator={false}
           keyExtractor={(c) => c.id}
-          contentContainerStyle={{ paddingRight: 20 }}
-          style={{ marginHorizontal: -20, paddingLeft: 20 }}
+          contentContainerStyle={{ paddingRight: 24 }}
+          style={{ marginHorizontal: -24, paddingLeft: 24 }}
           renderItem={({ item: c, index: idx }) => (
             <CourseCard
               course={c}

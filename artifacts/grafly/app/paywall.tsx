@@ -215,24 +215,23 @@ export default function PaywallScreen() {
         <Animated.View entering={FadeIn.delay(300)}>
           <TouchableOpacity
             style={{
-              backgroundColor: colors.pink,
-              borderRadius: colors.radius,
-              paddingVertical: 20,
+              backgroundColor: colors.foreground,
+              borderRadius: 100,
+              paddingVertical: 22,
               alignItems: "center",
               marginBottom: 14,
-              shadowColor: colors.pink,
-              shadowOffset: { width: 0, height: 8 },
-              shadowOpacity: 0.35,
-              shadowRadius: 16,
-              elevation: 8,
+              flexDirection: "row",
+              justifyContent: "center",
+              gap: 10,
             }}
             onPress={handlePurchase}
             disabled={purchasing}
             activeOpacity={0.88}
           >
-            <Text style={{ fontSize: 18, fontFamily: "Nunito_800ExtraBold", color: "#FFFFFF" }}>
+            <Text style={{ fontSize: 18, fontFamily: "Nunito_800ExtraBold", color: colors.background }}>
               {purchasing ? "Processing..." : "Unlock Grafly Pro"}
             </Text>
+            {!purchasing && <Ionicons name="arrow-forward" size={20} color={colors.background} />}
           </TouchableOpacity>
 
           <Text style={{

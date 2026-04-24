@@ -197,13 +197,14 @@ function ArrangeInOrder({
       ))}
       {!submitted && (
         <TouchableOpacity
-          style={{ backgroundColor: colors.primary, borderRadius: colors.radius, paddingVertical: 16, alignItems: "center", marginTop: 6 }}
+          style={{ backgroundColor: colors.foreground, borderRadius: 100, paddingVertical: 18, alignItems: "center", marginTop: 6, flexDirection: "row", justifyContent: "center", gap: 10 }}
           onPress={submit}
-          activeOpacity={0.85}
+          activeOpacity={0.88}
         >
-          <Text style={{ fontSize: 16, fontFamily: "Nunito_800ExtraBold", color: colors.primaryForeground }}>
-            Submit Order
+          <Text style={{ fontSize: 16, fontFamily: "Nunito_800ExtraBold", color: colors.background }}>
+            Submit order
           </Text>
+          <Ionicons name="arrow-forward" size={18} color={colors.background} />
         </TouchableOpacity>
       )}
     </View>
@@ -285,11 +286,12 @@ function DragToMatch({
       </View>
       {!submitted && pairs.every((_, i) => matched[i] !== undefined) && (
         <TouchableOpacity
-          style={{ backgroundColor: colors.primary, borderRadius: colors.radius, paddingVertical: 16, alignItems: "center", marginTop: 6 }}
+          style={{ backgroundColor: colors.foreground, borderRadius: 100, paddingVertical: 18, alignItems: "center", marginTop: 6, flexDirection: "row", justifyContent: "center", gap: 10 }}
           onPress={submit}
-          activeOpacity={0.85}
+          activeOpacity={0.88}
         >
-          <Text style={{ fontSize: 16, fontFamily: "Nunito_800ExtraBold", color: colors.primaryForeground }}>Check Matches</Text>
+          <Text style={{ fontSize: 16, fontFamily: "Nunito_800ExtraBold", color: colors.background }}>Check matches</Text>
+          <Ionicons name="arrow-forward" size={18} color={colors.background} />
         </TouchableOpacity>
       )}
     </View>
@@ -352,14 +354,15 @@ function FillInBlank({
       )}
       {!submitted && (
         <TouchableOpacity
-          style={{ backgroundColor: value.trim() ? colors.primary : colors.muted, borderRadius: colors.radius, paddingVertical: 16, alignItems: "center" }}
+          style={{ backgroundColor: value.trim() ? colors.foreground : colors.muted, borderRadius: 100, paddingVertical: 18, alignItems: "center", flexDirection: "row", justifyContent: "center", gap: 10 }}
           onPress={submit}
           disabled={!value.trim()}
-          activeOpacity={0.85}
+          activeOpacity={0.88}
         >
-          <Text style={{ fontSize: 16, fontFamily: "Nunito_800ExtraBold", color: value.trim() ? colors.primaryForeground : colors.mutedForeground }}>
-            Submit Answer
+          <Text style={{ fontSize: 16, fontFamily: "Nunito_800ExtraBold", color: value.trim() ? colors.background : colors.mutedForeground }}>
+            Submit answer
           </Text>
+          {value.trim() ? <Ionicons name="arrow-forward" size={18} color={colors.background} /> : null}
         </TouchableOpacity>
       )}
     </View>
@@ -624,22 +627,23 @@ export default function LessonScreen() {
           <Animated.View entering={FadeIn.delay(400)} style={{ gap: 12 }}>
             {!allDone && (
               <TouchableOpacity
-                style={{ backgroundColor: colors.primary, borderRadius: colors.radius, paddingVertical: 18, alignItems: "center" }}
+                style={{ backgroundColor: colors.foreground, borderRadius: 100, paddingVertical: 20, alignItems: "center", flexDirection: "row", justifyContent: "center", gap: 10 }}
                 onPress={handleNextLesson}
-                activeOpacity={0.85}
+                activeOpacity={0.88}
               >
-                <Text style={{ fontSize: 17, fontFamily: "Nunito_800ExtraBold", color: colors.primaryForeground }}>
-                  Next Lesson
+                <Text style={{ fontSize: 17, fontFamily: "Nunito_800ExtraBold", color: colors.background }}>
+                  Next lesson
                 </Text>
+                <Ionicons name="arrow-forward" size={18} color={colors.background} />
               </TouchableOpacity>
             )}
             <TouchableOpacity
-              style={{ backgroundColor: allDone ? colors.primary : colors.card, borderRadius: colors.radius, paddingVertical: 18, alignItems: "center" }}
+              style={{ backgroundColor: allDone ? colors.foreground : colors.card, borderRadius: 100, paddingVertical: 20, alignItems: "center", borderWidth: allDone ? 0 : 1, borderColor: colors.border }}
               onPress={() => router.replace("/(tabs)")}
-              activeOpacity={0.85}
+              activeOpacity={0.88}
             >
-              <Text style={{ fontSize: 17, fontFamily: "Nunito_800ExtraBold", color: allDone ? colors.primaryForeground : colors.foreground }}>
-                {allDone ? "Back to Home" : "Return Home"}
+              <Text style={{ fontSize: 17, fontFamily: "Nunito_800ExtraBold", color: allDone ? colors.background : colors.foreground }}>
+                {allDone ? "Back to home" : "Return home"}
               </Text>
             </TouchableOpacity>
           </Animated.View>

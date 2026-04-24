@@ -16,6 +16,7 @@ import Animated, {
 import { Ionicons } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useColors } from "@/hooks/useColors";
+import { useGame } from "@/context/GameContext";
 interface TabBarButtonProps {
   children?: React.ReactNode;
   onPress?: (e: any) => void;
@@ -62,20 +63,26 @@ function TabIcon({
   focused: boolean;
 }) {
   const colors = useColors();
+  const { state } = useGame();
+  const isLight = state.themeMode === "light";
+  // On light theme the bar is near-black, so use bright pill + white inactive icons
+  const activePillBg = isLight ? colors.accent : colors.primary + "22";
+  const activeIcon = isLight ? colors.accentForeground : colors.primary;
+  const inactiveIcon = isLight ? colors.primaryForeground + "99" : colors.mutedForeground;
   return (
     <View style={styles.iconWrap}>
       {focused && (
         <View
           style={[
             styles.activePill,
-            { backgroundColor: colors.primary + "22" },
+            { backgroundColor: activePillBg },
           ]}
         />
       )}
       <Ionicons
         name={(focused ? name : outlineName) as any}
         size={24}
-        color={focused ? colors.primary : colors.mutedForeground}
+        color={focused ? activeIcon : inactiveIcon}
       />
     </View>
   );
@@ -84,9 +91,11 @@ function TabIcon({
 export default function TabLayout() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
+  const { state } = useGame();
   const bottomPad = Math.max(insets.bottom, Platform.OS === "web" ? 16 : 10);
   const tabBarHeight = 62 + bottomPad;
   const tabBottom = Platform.OS === "web" ? 12 : 12;
+  const isLight = state.themeMode === "light";
 
   return (
     <Tabs
@@ -115,16 +124,16 @@ export default function TabLayout() {
           <>
             <BlurView
               intensity={85}
-              tint="dark"
+              tint={isLight ? "light" : "dark"}
               style={[StyleSheet.absoluteFill, { borderRadius: 32, overflow: "hidden" }]}
             />
             <View
               style={[
                 StyleSheet.absoluteFill,
                 {
-                  backgroundColor: colors.card + "CC",
+                  backgroundColor: isLight ? colors.foreground : colors.card + "CC",
                   borderRadius: 32,
-                  borderWidth: 1,
+                  borderWidth: isLight ? 0 : 1,
                   borderColor: colors.border + "50",
                 },
               ]}
