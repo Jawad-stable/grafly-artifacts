@@ -532,44 +532,45 @@ export default function TreeScreen() {
           <View style={{
             backgroundColor: colors.card,
             borderRadius: 24,
-            padding: 20,
+            padding: 22,
             marginBottom: 28,
             borderWidth: 1,
             borderColor: colors.border,
           }}>
-            <View style={{ flexDirection: "row", alignItems: "center", gap: 12, marginBottom: 14 }}>
+            <View style={{ flexDirection: "row", alignItems: "center", gap: 14, marginBottom: 16 }}>
               <View style={{
-                width: 44, height: 44, borderRadius: 14,
-                backgroundColor: course.color + "22",
+                width: 52, height: 52, borderRadius: 16,
+                backgroundColor: course.color + "1F",
                 alignItems: "center", justifyContent: "center",
               }}>
-                <Ionicons name={course.icon as any} size={22} color={course.color} />
+                <Ionicons name={course.icon as any} size={26} color={course.color} />
               </View>
               <View style={{ flex: 1 }}>
                 <Text style={{
                   fontSize: 11,
                   fontFamily: "Nunito_800ExtraBold",
                   color: course.color,
-                  letterSpacing: 1.4,
-                  marginBottom: 2,
+                  letterSpacing: 1.6,
+                  marginBottom: 3,
                   textTransform: "uppercase",
                 }}>
                   Course
                 </Text>
                 <Text style={{
-                  fontSize: 18,
+                  fontSize: 19,
                   fontFamily: "Nunito_800ExtraBold",
                   color: colors.foreground,
-                  letterSpacing: -0.4,
+                  letterSpacing: -0.5,
+                  lineHeight: 22,
                 }}>
                   {course.title}
                 </Text>
               </View>
               <Text style={{
-                fontSize: 22,
+                fontSize: 30,
                 fontFamily: "Nunito_800ExtraBold",
                 color: colors.foreground,
-                letterSpacing: -0.5,
+                letterSpacing: -1,
               }}>
                 {courseProgress}%
               </Text>
@@ -579,13 +580,13 @@ export default function TreeScreen() {
               fontFamily: "Nunito_600SemiBold",
               color: colors.mutedForeground,
               lineHeight: 19,
-              marginBottom: 14,
+              marginBottom: 18,
             }}>
               {course.description}
             </Text>
-            {/* Progress bar */}
+            {/* Thin progress bar */}
             <View style={{
-              height: 6,
+              height: 4,
               borderRadius: 100,
               backgroundColor: colors.border,
               overflow: "hidden",
@@ -601,8 +602,8 @@ export default function TreeScreen() {
               fontSize: 11,
               fontFamily: "Nunito_800ExtraBold",
               color: colors.mutedForeground,
-              letterSpacing: 1,
-              marginTop: 10,
+              letterSpacing: 1.2,
+              marginTop: 12,
             }}>
               {completedInCourse} OF {totalInCourse} LESSONS
             </Text>
