@@ -32,10 +32,14 @@ export default function AuthScreen() {
   const handleGoogle = async () => {
     setError("");
     setGoogleLoading(true);
-    const { error: err } = await signInWithGoogle();
+    const { error: err, completed } = await signInWithGoogle();
     setGoogleLoading(false);
-    if (err) setError(err);
-    else router.replace("/(tabs)");
+    if (err) {
+      setError(err);
+      return;
+    }
+    if (!completed) return;
+    router.replace("/(tabs)");
   };
 
   const [mode, setMode] = useState<"signin" | "signup">("signin");

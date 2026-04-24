@@ -12,7 +12,7 @@ interface AuthContextType {
   loading: boolean;
   signUp: (email: string, password: string) => Promise<{ error: string | null; needsConfirmation: boolean }>;
   signIn: (email: string, password: string) => Promise<{ error: string | null }>;
-  signInWithGoogle: () => Promise<{ error: string | null }>;
+  signInWithGoogle: () => Promise<{ error: string | null; completed: boolean }>;
   signOut: () => Promise<void>;
 }
 
@@ -47,7 +47,7 @@ async function exchangeCodeFromUrl(url: string) {
     });
     return { error: error?.message ?? null };
   }
-  return { error: null };
+  return { error: "OAuth callback missing credentials." };
 }
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
@@ -98,18 +98,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         skipBrowserRedirect: true,
       },
     });
-    if (error) return { error: error.message };
-    if (!data?.url) return { error: "Failed to start Google sign-in." };
+    if (error) return { error: error.message, completed: false };
+    if (!data?.url) return { error: "Failed to start Google sign-in.", completed: false };
 
     const result = await WebBrowser.openAuthSessionAsync(data.url, redirectTo);
     if (result.type === "success" && result.url) {
       const { error: exErr } = await exchangeCodeFromUrl(result.url);
-      return { error: exErr };
+      return { error: exErr, completed: !exErr };
     }
     if (result.type === "cancel" || result.type === "dismiss") {
-      return { error: null };
+      return { error: null, completed: false };
     }
-    return { error: "Google sign-in did not complete." };
+    return { error: "Google sign-in did not complete.", completed: false };
   };
 
   const signOut = async () => {
