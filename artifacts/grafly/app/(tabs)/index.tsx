@@ -20,7 +20,6 @@ import Animated, {
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import Svg, { Circle } from "react-native-svg";
 import { useColors } from "@/hooks/useColors";
 import { useGame, getXPProgress } from "@/context/GameContext";
 import { COURSES, getAllLessons } from "@/constants/lessons";
@@ -35,38 +34,6 @@ function getGreeting(name: string): string {
   if (hour < 12) return `Good morning, ${first}`;
   if (hour < 17) return `Good afternoon, ${first}`;
   return `Good evening, ${first}`;
-}
-
-function CircularProgress({
-  size,
-  progress,
-  color,
-  children,
-}: {
-  size: number;
-  progress: number;
-  color: string;
-  children?: React.ReactNode;
-}) {
-  const colors = useColors();
-  const r = (size - 12) / 2;
-  const circ = 2 * Math.PI * r;
-  const offset = circ - Math.min(progress, 1) * circ;
-  return (
-    <View style={{ width: size, height: size, alignItems: "center", justifyContent: "center" }}>
-      <Svg width={size} height={size} style={{ position: "absolute" }}>
-        <Circle cx={size / 2} cy={size / 2} r={r} stroke={colors.muted} strokeWidth={10} fill="none" />
-        <Circle
-          cx={size / 2} cy={size / 2} r={r}
-          stroke={color} strokeWidth={10} fill="none"
-          strokeDasharray={circ} strokeDashoffset={offset}
-          strokeLinecap="round"
-          transform={`rotate(-90 ${size / 2} ${size / 2})`}
-        />
-      </Svg>
-      {children}
-    </View>
-  );
 }
 
 function XPPopup() {
@@ -485,25 +452,66 @@ export default function HomeScreen() {
           </Animated.View>
         )}
 
-        {/* Daily Goal + Rank — side by side editorial cards */}
+        {/* Daily Goal + Rank — editorial side-by-side cards */}
         <Animated.View entering={FadeIn.delay(290)} style={{ paddingHorizontal: 24, marginTop: 22, flexDirection: "row", gap: 12 }}>
           {/* Daily goal */}
           <View style={{
             flex: 1, backgroundColor: colors.card, borderRadius: 22,
-            padding: 16, alignItems: "center",
+            padding: 18,
             borderWidth: 1, borderColor: colors.border,
+            justifyContent: "space-between",
+            minHeight: 132,
           }}>
-            <CircularProgress size={72} progress={dailyProgress} color={colors.primary}>
-              <Text style={{ fontSize: 14, fontFamily: "Nunito_800ExtraBold", color: colors.foreground }}>
-                {todayLessons}/{dailyGoal}
+            <Text style={{
+              fontSize: 11,
+              fontFamily: "Nunito_800ExtraBold",
+              color: colors.mutedForeground,
+              letterSpacing: 1.4,
+            }}>
+              DAILY GOAL
+            </Text>
+            <View style={{ flexDirection: "row", alignItems: "baseline", gap: 4, marginTop: 8 }}>
+              <Text style={{
+                fontSize: 38,
+                fontFamily: "Nunito_800ExtraBold",
+                color: colors.foreground,
+                letterSpacing: -1.2,
+                lineHeight: 40,
+              }}>
+                {todayLessons}
               </Text>
-            </CircularProgress>
-            <Text style={{ fontSize: 13, fontFamily: "Nunito_800ExtraBold", color: colors.foreground, marginTop: 10 }}>
-              Daily goal
-            </Text>
-            <Text style={{ fontSize: 11, fontFamily: "Nunito_600SemiBold", color: colors.mutedForeground, marginTop: 2, textAlign: "center" }}>
-              {todayLessons >= dailyGoal ? "Complete!" : `${dailyGoal - todayLessons} to go`}
-            </Text>
+              <Text style={{
+                fontSize: 18,
+                fontFamily: "Nunito_800ExtraBold",
+                color: colors.mutedForeground,
+                letterSpacing: -0.5,
+              }}>
+                /{dailyGoal}
+              </Text>
+            </View>
+            <View style={{ marginTop: 12 }}>
+              <View style={{
+                height: 4,
+                borderRadius: 100,
+                backgroundColor: colors.border,
+                overflow: "hidden",
+                marginBottom: 8,
+              }}>
+                <View style={{
+                  height: "100%",
+                  width: `${Math.min(100, dailyProgress * 100)}%`,
+                  backgroundColor: colors.primary,
+                  borderRadius: 100,
+                }} />
+              </View>
+              <Text style={{
+                fontSize: 12,
+                fontFamily: "Nunito_600SemiBold",
+                color: colors.mutedForeground,
+              }}>
+                {todayLessons >= dailyGoal ? "Complete!" : `${dailyGoal - todayLessons} to go`}
+              </Text>
+            </View>
           </View>
 
           {/* Rank */}
@@ -511,23 +519,67 @@ export default function HomeScreen() {
             onPress={() => router.push("/leaderboard")}
             style={{
               flex: 1, backgroundColor: colors.card, borderRadius: 22,
-              padding: 16, alignItems: "center",
+              padding: 18,
               borderWidth: 1, borderColor: colors.border,
+              justifyContent: "space-between",
+              minHeight: 132,
             }}
           >
-            <View style={{
-              width: 72, height: 72, borderRadius: 36,
-              backgroundColor: "#CD7F3225",
-              alignItems: "center", justifyContent: "center",
-            }}>
-              <Ionicons name="medal" size={32} color="#CD7F32" />
+            <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start" }}>
+              <Text style={{
+                fontSize: 11,
+                fontFamily: "Nunito_800ExtraBold",
+                color: colors.mutedForeground,
+                letterSpacing: 1.4,
+              }}>
+                YOUR RANK
+              </Text>
+              <View style={{
+                width: 28, height: 28, borderRadius: 10,
+                backgroundColor: "#CD7F3222",
+                alignItems: "center", justifyContent: "center",
+              }}>
+                <Ionicons name="medal" size={16} color="#CD7F32" />
+              </View>
             </View>
-            <Text style={{ fontSize: 13, fontFamily: "Nunito_800ExtraBold", color: colors.foreground, marginTop: 10 }}>
-              Rank #{userRank}
-            </Text>
-            <Text style={{ fontSize: 11, fontFamily: "Nunito_600SemiBold", color: colors.mutedForeground, marginTop: 2 }}>
-              Bronze division
-            </Text>
+            <View style={{ flexDirection: "row", alignItems: "baseline", gap: 2, marginTop: 8 }}>
+              <Text style={{
+                fontSize: 22,
+                fontFamily: "Nunito_800ExtraBold",
+                color: colors.mutedForeground,
+                letterSpacing: -0.5,
+                lineHeight: 40,
+              }}>
+                #
+              </Text>
+              <Text style={{
+                fontSize: 38,
+                fontFamily: "Nunito_800ExtraBold",
+                color: colors.foreground,
+                letterSpacing: -1.2,
+                lineHeight: 40,
+              }}>
+                {userRank}
+              </Text>
+            </View>
+            <View style={{ marginTop: 12 }}>
+              <Text style={{
+                fontSize: 12,
+                fontFamily: "Nunito_800ExtraBold",
+                color: "#CD7F32",
+                letterSpacing: 0.2,
+              }}>
+                Bronze division
+              </Text>
+              <Text style={{
+                fontSize: 11,
+                fontFamily: "Nunito_600SemiBold",
+                color: colors.mutedForeground,
+                marginTop: 2,
+              }}>
+                View leaderboard
+              </Text>
+            </View>
           </PressScale>
         </Animated.View>
 
