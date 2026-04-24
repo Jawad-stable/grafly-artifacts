@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import {
   View,
   Text,
@@ -6,54 +6,60 @@ import {
   Platform,
   ScrollView,
 } from "react-native";
-import Animated, {
-  FadeIn,
-  useSharedValue,
-  useAnimatedStyle,
-  withTiming,
-  Easing,
-} from "react-native-reanimated";
+import Animated, { FadeIn } from "react-native-reanimated";
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { LinearGradient } from "expo-linear-gradient";
 import { useColors } from "@/hooks/useColors";
 import { useGame } from "@/context/GameContext";
 import { PressScale } from "@/components/PressScale";
+import { GraflyMascot } from "@/components/GraflyMascot";
 
 const BENEFITS = [
-  { icon: "infinite", text: "Unlimited AI critiques per day" },
-  { icon: "shield-checkmark", text: "5 streak shields per month" },
-  { icon: "flash", text: "Exclusive bonus XP challenges" },
-  { icon: "lock-open", text: "Early access to new courses" },
-  { icon: "star", text: "Pro badge on your profile" },
-  { icon: "headset", text: "Priority support from the team" },
+  { icon: "infinite", title: "Unlimited AI critiques", subtitle: "No daily caps on feedback" },
+  { icon: "shield-checkmark", title: "Streak shields", subtitle: "5 freezes per month" },
+  { icon: "flash", title: "Bonus XP challenges", subtitle: "Exclusive Pro only quests" },
+  { icon: "lock-open", title: "Early access", subtitle: "New courses before anyone else" },
+  { icon: "star", title: "Pro badge", subtitle: "Show it off on your profile" },
+  { icon: "headset", title: "Priority support", subtitle: "Direct line to the team" },
 ];
 
-const PLANS = [
-  { id: "monthly", label: "Monthly", price: "$4.99", period: "per month", annualEquiv: "", popular: false },
-  { id: "annual", label: "Annual", price: "$39.99", period: "per year", annualEquiv: "$3.33 per mo", popular: true },
+type PlanId = "monthly" | "annual";
+
+const PLANS: {
+  id: PlanId;
+  label: string;
+  price: string;
+  period: string;
+  caption: string;
+  badge?: string;
+}[] = [
+  {
+    id: "annual",
+    label: "Annual",
+    price: "$39.99",
+    period: "per year",
+    caption: "$3.33 per month, billed yearly",
+    badge: "SAVE 33%",
+  },
+  {
+    id: "monthly",
+    label: "Monthly",
+    price: "$4.99",
+    period: "per month",
+    caption: "Cancel anytime",
+  },
 ];
 
 export default function PaywallScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
   const { dispatch } = useGame();
-  const [selectedPlan, setSelectedPlan] = useState<"monthly" | "annual">("annual");
+  const [selectedPlan, setSelectedPlan] = useState<PlanId>("annual");
   const [purchasing, setPurchasing] = useState(false);
 
-  const pillLeft = useSharedValue(4);
-
-  useEffect(() => {
-    pillLeft.value = withTiming(selectedPlan === "monthly" ? 4 : "50%" as any, { duration: 220, easing: Easing.out(Easing.cubic) });
-  }, [selectedPlan]);
-
-  const pillStyle = useAnimatedStyle(() => ({
-    left: pillLeft.value,
-  }));
-
   const paddingTop = insets.top + (Platform.OS === "web" ? 67 : 0);
-  const paddingBottom = insets.bottom + (Platform.OS === "web" ? 34 : 20);
+  const paddingBottom = insets.bottom + (Platform.OS === "web" ? 34 : 24);
 
   async function handlePurchase() {
     setPurchasing(true);
@@ -63,188 +69,413 @@ export default function PaywallScreen() {
     router.back();
   }
 
+  const activePlan = PLANS.find((p) => p.id === selectedPlan)!;
+
   return (
     <View style={{ flex: 1, backgroundColor: colors.background }}>
       <ScrollView
         contentContainerStyle={{
           paddingTop: paddingTop + 12,
           paddingHorizontal: 24,
-          paddingBottom: paddingBottom,
+          paddingBottom: paddingBottom + 120,
         }}
         showsVerticalScrollIndicator={false}
       >
-        {/* Close button */}
-        <TouchableOpacity
-          onPress={() => router.back()}
-          style={{ alignSelf: "flex-end", marginBottom: 16 }}
-          hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+        {/* Top bar with close */}
+        <View
+          style={{
+            flexDirection: "row",
+            justifyContent: "space-between",
+            alignItems: "center",
+            marginBottom: 24,
+          }}
         >
-          <Ionicons name="close-circle" size={30} color={colors.mutedForeground} />
-        </TouchableOpacity>
-
-        {/* Hero */}
-        <Animated.View entering={FadeIn} style={{ alignItems: "center", marginBottom: 28 }}>
-          <LinearGradient
-            colors={[colors.pink + "30", colors.primary + "20"]}
+          <Text
             style={{
-              width: 88,
-              height: 88,
-              borderRadius: 28,
-              alignItems: "center",
-              justifyContent: "center",
-              marginBottom: 18,
-              borderWidth: 2,
-              borderColor: colors.pink + "50",
+              fontSize: 13,
+              fontFamily: "Nunito_800ExtraBold",
+              color: colors.mutedForeground,
+              letterSpacing: 1.5,
             }}
           >
-            <Ionicons name="star" size={42} color={colors.pink} />
-          </LinearGradient>
-          <Text style={{ fontSize: 30, fontFamily: "Nunito_800ExtraBold", color: colors.foreground, textAlign: "center", marginBottom: 8 }}>
-            Grafly Pro
+            GRAFLY PRO
           </Text>
-          <Text style={{ fontSize: 16, fontFamily: "Nunito_600SemiBold", color: colors.mutedForeground, textAlign: "center", lineHeight: 24 }}>
-            Unlock your full design education.{"\n"}No limits. No excuses.
+          <TouchableOpacity
+            onPress={() => router.back()}
+            hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+            style={{
+              width: 36,
+              height: 36,
+              borderRadius: 18,
+              backgroundColor: colors.card,
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            <Ionicons name="close" size={20} color={colors.mutedForeground} />
+          </TouchableOpacity>
+        </View>
+
+        {/* Editorial hero */}
+        <Animated.View entering={FadeIn} style={{ marginBottom: 28 }}>
+          <Text
+            style={{
+              fontSize: 44,
+              fontFamily: "Nunito_800ExtraBold",
+              color: colors.foreground,
+              letterSpacing: -1.2,
+              lineHeight: 46,
+              marginBottom: 12,
+            }}
+          >
+            Become{"\n"}limitless.
+          </Text>
+          <Text
+            style={{
+              fontSize: 16,
+              fontFamily: "Nunito_600SemiBold",
+              color: colors.mutedForeground,
+              lineHeight: 24,
+            }}
+          >
+            Your full design education. No daily caps, no locked lessons, no excuses.
           </Text>
         </Animated.View>
 
-        {/* Benefits */}
-        <Animated.View entering={FadeIn.delay(100)} style={{ marginBottom: 28 }}>
-          {BENEFITS.map((b, i) => (
-            <Animated.View
-              key={b.icon}
-              entering={FadeIn.delay(100 + i * 60)}
+        {/* Editorial mascot card */}
+        <Animated.View
+          entering={FadeIn.delay(80)}
+          style={{
+            backgroundColor: colors.pink,
+            borderRadius: 24,
+            padding: 22,
+            marginBottom: 28,
+            flexDirection: "row",
+            alignItems: "center",
+            gap: 16,
+            overflow: "hidden",
+          }}
+        >
+          <View style={{ flex: 1 }}>
+            <View
               style={{
                 flexDirection: "row",
                 alignItems: "center",
-                gap: 14,
-                paddingVertical: 10,
-                borderBottomWidth: i < BENEFITS.length - 1 ? 1 : 0,
-                borderBottomColor: colors.border,
+                gap: 6,
+                marginBottom: 8,
               }}
             >
-              <View style={{
-                width: 38,
-                height: 38,
-                borderRadius: 12,
-                backgroundColor: colors.pink + "20",
-                alignItems: "center",
-                justifyContent: "center",
-              }}>
-                <Ionicons name={b.icon as any} size={20} color={colors.pink} />
-              </View>
-              <Text style={{ flex: 1, fontSize: 15, fontFamily: "Nunito_600SemiBold", color: colors.foreground }}>
-                {b.text}
-              </Text>
-            </Animated.View>
-          ))}
-        </Animated.View>
-
-        {/* Plan Toggle */}
-        <Animated.View entering={FadeIn.delay(200)} style={{ marginBottom: 24 }}>
-          <View style={{ flexDirection: "row", backgroundColor: colors.card, borderRadius: 100, padding: 4, position: "relative" }}>
-            {PLANS.map((plan) => (
-              <TouchableOpacity
-                key={plan.id}
-                onPress={() => setSelectedPlan(plan.id as "monthly" | "annual")}
+              <Ionicons name="star" size={14} color={colors.pinkForeground} />
+              <Text
                 style={{
-                  flex: 1,
-                  paddingVertical: 12,
-                  alignItems: "center",
-                  zIndex: 1,
+                  fontSize: 12,
+                  fontFamily: "Nunito_800ExtraBold",
+                  color: colors.pinkForeground,
+                  letterSpacing: 1.4,
                 }}
-                activeOpacity={0.8}
               >
-                <View style={{ alignItems: "center", minHeight: 64, justifyContent: "center" }}>
-                  <Text style={{
-                    fontSize: 18,
-                    fontFamily: "Nunito_800ExtraBold",
-                    color: selectedPlan === plan.id ? colors.primaryForeground : colors.foreground,
-                    lineHeight: 22,
-                  }}>
-                    {plan.price}
-                  </Text>
-                  <Text style={{
-                    fontSize: 11,
-                    fontFamily: "Nunito_600SemiBold",
-                    color: selectedPlan === plan.id ? colors.primaryForeground + "CC" : colors.mutedForeground,
-                    marginTop: 2,
-                  }}>
-                    {plan.period}
-                  </Text>
-                  {plan.popular && (
-                    <View style={{
-                      backgroundColor: colors.accent,
-                      borderRadius: 100,
-                      paddingHorizontal: 8,
-                      paddingVertical: 2,
-                      marginTop: 6,
-                    }}>
-                      <Text style={{ fontSize: 9, fontFamily: "Nunito_800ExtraBold", color: "#0F0F14", letterSpacing: 0.5 }}>
-                        MOST POPULAR
-                      </Text>
-                    </View>
-                  )}
-                  {plan.annualEquiv && (
-                    <Text style={{
-                      fontSize: 10,
-                      fontFamily: "Nunito_600SemiBold",
-                      color: selectedPlan === plan.id ? colors.primaryForeground + "BB" : colors.mutedForeground,
-                      marginTop: 4,
-                    }}>
-                      {plan.annualEquiv}
-                    </Text>
-                  )}
-                </View>
-              </TouchableOpacity>
-            ))}
-            {/* Sliding pill */}
-            <Animated.View
-              style={[{
-                position: "absolute",
-                top: 4,
-                bottom: 4,
-                width: "50%",
-                backgroundColor: colors.primary,
-                borderRadius: 100,
-                zIndex: 0,
-              }, pillStyle]}
-            />
+                JOIN 12,000 PRO DESIGNERS
+              </Text>
+            </View>
+            <Text
+              style={{
+                fontSize: 22,
+                fontFamily: "Nunito_800ExtraBold",
+                color: colors.pinkForeground,
+                letterSpacing: -0.4,
+                lineHeight: 26,
+              }}
+            >
+              7 day free trial. Cancel anytime.
+            </Text>
+          </View>
+          <View
+            style={{
+              width: 96,
+              height: 96,
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            <GraflyMascot state="celebrate" size={96} float />
           </View>
         </Animated.View>
 
-        {/* CTA */}
-        <Animated.View entering={FadeIn.delay(300)}>
-          <PressScale
+        {/* Benefits */}
+        <Animated.View entering={FadeIn.delay(160)} style={{ marginBottom: 32 }}>
+          <Text
             style={{
-              backgroundColor: colors.foreground,
-              borderRadius: 100,
-              paddingVertical: 22,
-              alignItems: "center",
-              marginBottom: 14,
-              flexDirection: "row",
-              justifyContent: "center",
-              gap: 10,
+              fontSize: 13,
+              fontFamily: "Nunito_800ExtraBold",
+              color: colors.mutedForeground,
+              letterSpacing: 1.5,
+              marginBottom: 6,
             }}
-            onPress={handlePurchase}
-            disabled={purchasing}
           >
-            <Text style={{ fontSize: 18, fontFamily: "Nunito_800ExtraBold", color: colors.background }}>
-              {purchasing ? "Processing..." : "Unlock Grafly Pro"}
-            </Text>
-            {!purchasing && <Ionicons name="arrow-forward" size={20} color={colors.background} />}
-          </PressScale>
+            WHAT YOU GET
+          </Text>
+          <Text
+            style={{
+              fontSize: 22,
+              fontFamily: "Nunito_800ExtraBold",
+              color: colors.foreground,
+              letterSpacing: -0.4,
+              marginBottom: 14,
+            }}
+          >
+            Everything, unlocked
+          </Text>
+          <View
+            style={{
+              backgroundColor: colors.card,
+              borderRadius: colors.radius,
+              paddingHorizontal: 18,
+              paddingVertical: 6,
+            }}
+          >
+            {BENEFITS.map((b, i) => (
+              <View
+                key={b.icon}
+                style={{
+                  flexDirection: "row",
+                  alignItems: "center",
+                  gap: 14,
+                  paddingVertical: 14,
+                  borderBottomWidth: i < BENEFITS.length - 1 ? 1 : 0,
+                  borderBottomColor: colors.border,
+                }}
+              >
+                <View
+                  style={{
+                    width: 40,
+                    height: 40,
+                    borderRadius: 20,
+                    backgroundColor: colors.pink + "22",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                >
+                  <Ionicons name={b.icon as any} size={20} color={colors.pink} />
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Text
+                    style={{
+                      fontSize: 15,
+                      fontFamily: "Nunito_800ExtraBold",
+                      color: colors.foreground,
+                      marginBottom: 2,
+                    }}
+                  >
+                    {b.title}
+                  </Text>
+                  <Text
+                    style={{
+                      fontSize: 12,
+                      fontFamily: "Nunito_600SemiBold",
+                      color: colors.mutedForeground,
+                    }}
+                  >
+                    {b.subtitle}
+                  </Text>
+                </View>
+              </View>
+            ))}
+          </View>
+        </Animated.View>
 
-          <Text style={{
-            fontSize: 12,
+        {/* Plan picker — stacked editorial cards */}
+        <Animated.View entering={FadeIn.delay(240)} style={{ marginBottom: 24 }}>
+          <Text
+            style={{
+              fontSize: 13,
+              fontFamily: "Nunito_800ExtraBold",
+              color: colors.mutedForeground,
+              letterSpacing: 1.5,
+              marginBottom: 6,
+            }}
+          >
+            CHOOSE YOUR PLAN
+          </Text>
+          <Text
+            style={{
+              fontSize: 22,
+              fontFamily: "Nunito_800ExtraBold",
+              color: colors.foreground,
+              letterSpacing: -0.4,
+              marginBottom: 14,
+            }}
+          >
+            Pick what fits
+          </Text>
+          <View style={{ gap: 12 }}>
+            {PLANS.map((plan) => {
+              const selected = selectedPlan === plan.id;
+              return (
+                <PressScale
+                  key={plan.id}
+                  onPress={() => setSelectedPlan(plan.id)}
+                  style={{
+                    backgroundColor: colors.card,
+                    borderRadius: colors.radius,
+                    padding: 18,
+                    borderWidth: 2,
+                    borderColor: selected ? colors.foreground : colors.border,
+                    flexDirection: "row",
+                    alignItems: "center",
+                    gap: 14,
+                  }}
+                >
+                  <View
+                    style={{
+                      width: 22,
+                      height: 22,
+                      borderRadius: 11,
+                      borderWidth: 2,
+                      borderColor: selected ? colors.foreground : colors.border,
+                      backgroundColor: selected ? colors.foreground : "transparent",
+                      alignItems: "center",
+                      justifyContent: "center",
+                    }}
+                  >
+                    {selected && (
+                      <Ionicons name="checkmark" size={14} color={colors.background} />
+                    )}
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    <View
+                      style={{
+                        flexDirection: "row",
+                        alignItems: "center",
+                        gap: 8,
+                        marginBottom: 2,
+                      }}
+                    >
+                      <Text
+                        style={{
+                          fontSize: 17,
+                          fontFamily: "Nunito_800ExtraBold",
+                          color: colors.foreground,
+                          letterSpacing: -0.3,
+                        }}
+                      >
+                        {plan.label}
+                      </Text>
+                      {plan.badge && (
+                        <View
+                          style={{
+                            backgroundColor: colors.accent,
+                            borderRadius: 100,
+                            paddingHorizontal: 8,
+                            paddingVertical: 2,
+                          }}
+                        >
+                          <Text
+                            style={{
+                              fontSize: 10,
+                              fontFamily: "Nunito_800ExtraBold",
+                              color: colors.accentForeground,
+                              letterSpacing: 0.6,
+                            }}
+                          >
+                            {plan.badge}
+                          </Text>
+                        </View>
+                      )}
+                    </View>
+                    <Text
+                      style={{
+                        fontSize: 12,
+                        fontFamily: "Nunito_600SemiBold",
+                        color: colors.mutedForeground,
+                      }}
+                    >
+                      {plan.caption}
+                    </Text>
+                  </View>
+                  <View style={{ alignItems: "flex-end" }}>
+                    <Text
+                      style={{
+                        fontSize: 22,
+                        fontFamily: "Nunito_800ExtraBold",
+                        color: colors.foreground,
+                        letterSpacing: -0.4,
+                      }}
+                    >
+                      {plan.price}
+                    </Text>
+                    <Text
+                      style={{
+                        fontSize: 11,
+                        fontFamily: "Nunito_600SemiBold",
+                        color: colors.mutedForeground,
+                        marginTop: 2,
+                      }}
+                    >
+                      {plan.period}
+                    </Text>
+                  </View>
+                </PressScale>
+              );
+            })}
+          </View>
+        </Animated.View>
+      </ScrollView>
+
+      {/* Sticky CTA footer */}
+      <View
+        style={{
+          position: "absolute",
+          left: 0,
+          right: 0,
+          bottom: 0,
+          paddingHorizontal: 24,
+          paddingTop: 14,
+          paddingBottom: paddingBottom,
+          backgroundColor: colors.background,
+          borderTopWidth: 1,
+          borderTopColor: colors.border,
+        }}
+      >
+        <PressScale
+          style={{
+            backgroundColor: colors.foreground,
+            borderRadius: 100,
+            paddingVertical: 20,
+            alignItems: "center",
+            flexDirection: "row",
+            justifyContent: "center",
+            gap: 10,
+            opacity: purchasing ? 0.7 : 1,
+          }}
+          onPress={handlePurchase}
+          disabled={purchasing}
+        >
+          <Text
+            style={{
+              fontSize: 16,
+              fontFamily: "Nunito_800ExtraBold",
+              color: colors.background,
+            }}
+          >
+            {purchasing ? "Processing" : `Start with ${activePlan.label} · ${activePlan.price}`}
+          </Text>
+          {!purchasing && (
+            <Ionicons name="arrow-forward" size={18} color={colors.background} />
+          )}
+        </PressScale>
+        <Text
+          style={{
+            fontSize: 11,
             fontFamily: "Nunito_600SemiBold",
             color: colors.mutedForeground,
             textAlign: "center",
-            lineHeight: 18,
-          }}>
-            Cancel anytime. Billed through the App Store.{"\n"}Subscriptions auto-renew until cancelled.
-          </Text>
-        </Animated.View>
-      </ScrollView>
+            marginTop: 10,
+            lineHeight: 16,
+          }}
+        >
+          Cancel anytime. Billed through the App Store. Subscriptions auto renew until cancelled.
+        </Text>
+      </View>
     </View>
   );
 }
