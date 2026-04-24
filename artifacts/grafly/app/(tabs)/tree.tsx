@@ -33,26 +33,41 @@ function getNodeX(pos: NodePosition): number {
   return center;
 }
 
-function HamburgerButton({ onPress }: { onPress: () => void }) {
+function CoursesButton({ onPress }: { onPress: () => void }) {
   const colors = useColors();
   return (
     <PressScale
       onPress={onPress}
       style={{
-        width: 52,
         height: 52,
-        borderRadius: 18,
+        borderRadius: 100,
         backgroundColor: colors.card,
         borderWidth: 1,
         borderColor: colors.border,
+        flexDirection: "row",
         alignItems: "center",
-        justifyContent: "center",
-        gap: 6,
+        paddingLeft: 10,
+        paddingRight: 18,
+        gap: 10,
       }}
     >
-      <View style={{ width: 22, height: 2.5, borderRadius: 2, backgroundColor: colors.foreground }} />
-      <View style={{ width: 14, height: 2.5, borderRadius: 2, backgroundColor: colors.foreground }} />
-      <View style={{ width: 22, height: 2.5, borderRadius: 2, backgroundColor: colors.foreground }} />
+      <View style={{
+        width: 32,
+        height: 32,
+        borderRadius: 10,
+        alignItems: "center",
+        justifyContent: "center",
+      }}>
+        <Ionicons name="apps" size={20} color={colors.foreground} />
+      </View>
+      <Text style={{
+        fontSize: 15,
+        fontFamily: "Nunito_800ExtraBold",
+        color: colors.foreground,
+        letterSpacing: -0.3,
+      }}>
+        Courses
+      </Text>
     </PressScale>
   );
 }
@@ -514,7 +529,7 @@ export default function TreeScreen() {
           </Text>
         </View>
         <View style={{ paddingTop: 18 }}>
-          <HamburgerButton onPress={() => setPickerVisible(true)} />
+          <CoursesButton onPress={() => setPickerVisible(true)} />
         </View>
       </View>
 
