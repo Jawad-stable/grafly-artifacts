@@ -449,28 +449,36 @@ export default function HomeScreen() {
             </Text>
           </View>
           <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
-            <View style={{
-              flexDirection: "row", alignItems: "center", gap: 4,
-              backgroundColor: colors.accent, borderRadius: 100,
-              paddingHorizontal: 12, paddingVertical: 6,
-              borderWidth: 1, borderColor: colors.accent,
-            }}>
-              <Icon name="flame" size={14} color="#FF7B00" />
-              <Text style={{ fontSize: 13, fontFamily: "Nunito_800ExtraBold", color: colors.accentForeground }}>
+            <LinearGradient
+              colors={["#00A4FA", "#0078BB"]}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={{
+                flexDirection: "row", alignItems: "center", gap: 4,
+                borderRadius: 100,
+                paddingHorizontal: 12, paddingVertical: 6,
+              }}
+            >
+              <Icon name="flame" size={14} color="#FFFFFF" />
+              <Text style={{ fontSize: 13, fontFamily: "Nunito_800ExtraBold", color: "#FFFFFF" }}>
                 {state.streak}
               </Text>
-            </View>
-            <View style={{
-              flexDirection: "row", alignItems: "center", gap: 4,
-              backgroundColor: colors.accent, borderRadius: 100,
-              paddingHorizontal: 12, paddingVertical: 6,
-              borderWidth: 1, borderColor: colors.accent,
-            }}>
-              <Icon name="ellipse" size={11} color={colors.accentForeground} />
-              <Text style={{ fontSize: 13, fontFamily: "Nunito_800ExtraBold", color: colors.accentForeground }}>
+            </LinearGradient>
+            <LinearGradient
+              colors={["#00A4FA", "#0078BB"]}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={{
+                flexDirection: "row", alignItems: "center", gap: 4,
+                borderRadius: 100,
+                paddingHorizontal: 12, paddingVertical: 6,
+              }}
+            >
+              <Icon name="ellipse" size={11} color="#FFFFFF" />
+              <Text style={{ fontSize: 13, fontFamily: "Nunito_800ExtraBold", color: "#FFFFFF" }}>
                 {state.coins}
               </Text>
-            </View>
+            </LinearGradient>
           </View>
         </View>
       </View>
