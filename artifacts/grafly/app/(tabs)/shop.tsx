@@ -92,7 +92,7 @@ function ShopCard({ item, onBuy }: { item: ShopItem; onBuy: (item: ShopItem) => 
           paddingHorizontal: 14, paddingVertical: 8,
         }}
       >
-        {!owned && <Icon name="ellipse" size={12} color={canAfford ? colors.accentForeground : colors.mutedForeground} />}
+        {!owned && <Icon name="coin" size={14} color={canAfford ? colors.accentForeground : colors.mutedForeground} weight="fill" />}
         <Text style={{
           fontSize: 14, fontFamily: "Nunito_800ExtraBold",
           color: owned ? colors.success : canAfford ? colors.accentForeground : colors.mutedForeground,
@@ -165,7 +165,7 @@ export default function ShopScreen() {
                 backgroundColor: colors.foreground, borderRadius: 100,
                 paddingHorizontal: 14, paddingVertical: 8, alignSelf: "flex-start",
               }}>
-                <Icon name="ellipse" size={12} color={colors.warning} />
+                <Icon name="coin" size={14} color={colors.warning} weight="fill" />
                 <Text style={{ fontSize: 14, fontFamily: "Nunito_800ExtraBold", color: colors.background }}>
                   {state.coins} coins
                 </Text>
