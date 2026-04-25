@@ -188,7 +188,7 @@ export default function HomeScreen() {
   // Wider card for a balanced, near-square composition that matches the
   // reference. Side gutters reduced from 80 → 56 so the card breathes more.
   const cardW = Math.min(SCREEN_W - 56, 360);
-  const cardH = 340;
+  const cardH = 312;
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.background }}>
