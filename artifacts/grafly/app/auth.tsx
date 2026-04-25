@@ -3,14 +3,14 @@ import {
   View,
   Text,
   TextInput,
-  TouchableOpacity,
   KeyboardAvoidingView,
   Platform,
   ActivityIndicator,
   ScrollView,
   Alert,
 } from "react-native";
-import Animated, { FadeIn, FadeInDown, Easing } from "react-native-reanimated";
+import Animated, { FadeInDown, Easing } from "react-native-reanimated";
+import { LinearGradient } from "expo-linear-gradient";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Icon } from "@/components/Icon";
 import { router } from "expo-router";
@@ -20,15 +20,30 @@ import { useAuth } from "@/context/AuthContext";
 import { GraflyMascot } from "@/components/GraflyMascot";
 import { PressScale } from "@/components/PressScale";
 
+type Mode = "signin" | "signup" | "reset";
+
 export default function AuthScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
   const { signIn, signUp, signInWithGoogle, resetPassword } = useAuth();
-  const [googleLoading, setGoogleLoading] = useState(false);
-  const [notice, setNotice] = useState("");
-
   const { state: gameState } = useGame();
   const canSkip = gameState.onboardingComplete;
+
+  const [mode, setMode] = useState<Mode>("signin");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [notice, setNotice] = useState("");
+  const [focused, setFocused] = useState<"email" | "password" | null>(null);
+
+  const switchMode = (next: Mode) => {
+    setMode(next);
+    setError("");
+    setNotice("");
+  };
 
   const handleGoogle = async () => {
     setError("");
@@ -41,18 +56,6 @@ export default function AuthScreen() {
     }
     if (!completed) return;
     router.replace("/(tabs)");
-  };
-
-  const [mode, setMode] = useState<"signin" | "signup" | "reset">("signin");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
-
-  const switchMode = (next: "signin" | "signup" | "reset") => {
-    setMode(next);
-    setError("");
-    setNotice("");
   };
 
   const handleSubmit = async () => {
@@ -102,14 +105,50 @@ export default function AuthScreen() {
         );
         switchMode("signin");
       } else {
-        // Email confirmation is off — user is signed in immediately
         router.replace("/(tabs)");
       }
     }
   };
 
+  const eyebrow =
+    mode === "signin" ? "WELCOME BACK" :
+    mode === "signup" ? "JOIN GRAFLY" : "FORGOT PASSWORD";
+  const headline =
+    mode === "signin" ? "Sign in" :
+    mode === "signup" ? "Create account" : "Reset password";
+  const subhead =
+    mode === "signin" ? "Pick up your design journey right where you left off."
+    : mode === "signup" ? "Start learning design through bite sized daily lessons."
+    : "Enter your email and we will send you a reset link.";
+
+  const ctaLabel =
+    mode === "signin" ? "Sign in" :
+    mode === "signup" ? "Create account" : "Send reset link";
+
   return (
     <View style={{ flex: 1, backgroundColor: colors.background }}>
+      {/* Decorative hero gradient blob */}
+      <LinearGradient
+        colors={[colors.primary + "26", colors.primary + "00"]}
+        start={{ x: 0.2, y: 0 }}
+        end={{ x: 0.8, y: 1 }}
+        style={{
+          position: "absolute", top: 0, left: 0, right: 0,
+          height: 360,
+        }}
+        pointerEvents="none"
+      />
+      <LinearGradient
+        colors={[colors.accent + "1F", colors.accent + "00"]}
+        start={{ x: 1, y: 0 }}
+        end={{ x: 0, y: 1 }}
+        style={{
+          position: "absolute", top: 0, right: -60,
+          width: 280, height: 280, borderRadius: 200,
+        }}
+        pointerEvents="none"
+      />
+
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : "height"}
         style={{ flex: 1 }}
@@ -118,96 +157,198 @@ export default function AuthScreen() {
           contentContainerStyle={{
             flexGrow: 1,
             justifyContent: "center",
-            paddingHorizontal: 28,
-            paddingTop: insets.top + 24,
+            paddingHorizontal: 24,
+            paddingTop: insets.top + 56,
             paddingBottom: insets.bottom + 24,
           }}
           keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
         >
           {canSkip && (
             <PressScale
               onPress={() => router.back()}
-              style={{ position: "absolute", top: insets.top + 12, left: 20, zIndex: 10, width: 40, height: 40, borderRadius: 100, backgroundColor: colors.card, alignItems: "center", justifyContent: "center" }}
+              style={{
+                position: "absolute",
+                top: insets.top + 14,
+                right: 20,
+                zIndex: 10,
+                width: 40,
+                height: 40,
+                borderRadius: 100,
+                backgroundColor: colors.card,
+                borderWidth: 1,
+                borderColor: colors.border,
+                alignItems: "center",
+                justifyContent: "center",
+              }}
             >
-              <Icon name="close" size={20} color={colors.foreground} />
+              <Icon name="close" size={18} color={colors.foreground} />
             </PressScale>
           )}
 
+          {/* Mascot plate */}
           <Animated.View
             entering={FadeInDown.duration(560).easing(Easing.out(Easing.cubic))}
-            style={{ marginBottom: 36 }}
+            style={{ alignItems: "center", marginBottom: 24 }}
           >
-            <View style={{ alignItems: "flex-start", marginBottom: 18 }}>
-              <GraflyMascot state="idle" size={88} />
+            <View
+              style={{
+                width: 116, height: 116, borderRadius: 32,
+                backgroundColor: colors.card,
+                borderWidth: 1, borderColor: colors.border,
+                alignItems: "center", justifyContent: "center",
+                shadowColor: colors.primary,
+                shadowOffset: { width: 0, height: 12 },
+                shadowOpacity: 0.18,
+                shadowRadius: 24,
+                elevation: 6,
+              }}
+            >
+              <GraflyMascot
+                state={mode === "reset" ? "idle" : mode === "signup" ? "celebrate" : "idle"}
+                size={84}
+              />
             </View>
-            <Text style={{ fontSize: 13, fontFamily: "Nunito_800ExtraBold", color: colors.mutedForeground, letterSpacing: 1.5, marginBottom: 6 }}>
-              {mode === "signin" ? "WELCOME BACK" : mode === "signup" ? "JOIN GRAFLY" : "FORGOT PASSWORD"}
+          </Animated.View>
+
+          {/* Headline */}
+          <Animated.View
+            entering={FadeInDown.delay(80).duration(560).easing(Easing.out(Easing.cubic))}
+            style={{ marginBottom: 28, alignItems: "center" }}
+          >
+            <View style={{
+              flexDirection: "row", alignItems: "center", gap: 6,
+              paddingHorizontal: 12, paddingVertical: 6,
+              borderRadius: 100,
+              backgroundColor: colors.primary + "1A",
+              marginBottom: 14,
+            }}>
+              <View style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: colors.primary }} />
+              <Text style={{
+                fontSize: 11, fontFamily: "Nunito_800ExtraBold",
+                color: colors.primary, letterSpacing: 1.4,
+              }}>
+                {eyebrow}
+              </Text>
+            </View>
+            <Text style={{
+              fontSize: 40, fontFamily: "Nunito_800ExtraBold",
+              color: colors.foreground, letterSpacing: -1.2,
+              lineHeight: 44, textAlign: "center",
+            }}>
+              {headline}
             </Text>
-            <Text style={{ fontSize: 44, fontFamily: "Nunito_800ExtraBold", color: colors.foreground, letterSpacing: -1.2, lineHeight: 48 }}>
-              {mode === "signin" ? "Sign in." : mode === "signup" ? "Create your account." : "Reset password."}
-            </Text>
-            <Text style={{ fontSize: 15, fontFamily: "Nunito_600SemiBold", color: colors.mutedForeground, marginTop: 10, lineHeight: 22 }}>
-              {mode === "signin"
-                ? "Pick up your design journey right where you left off."
-                : mode === "signup"
-                ? "Start learning design through bite sized daily lessons."
-                : "Enter your email and we will send you a reset link."}
+            <Text style={{
+              fontSize: 15, fontFamily: "Nunito_600SemiBold",
+              color: colors.mutedForeground, marginTop: 12,
+              lineHeight: 22, textAlign: "center", maxWidth: 320,
+            }}>
+              {subhead}
             </Text>
           </Animated.View>
 
-          <Animated.View entering={FadeInDown.delay(120).duration(560).easing(Easing.out(Easing.cubic))} style={{ gap: 14 }}>
+          {/* Form */}
+          <Animated.View
+            entering={FadeInDown.delay(160).duration(560).easing(Easing.out(Easing.cubic))}
+            style={{ gap: 14 }}
+          >
+            {/* Email */}
             <View>
-              <Text style={{ fontSize: 12, fontFamily: "Nunito_800ExtraBold", color: colors.mutedForeground, marginBottom: 8, letterSpacing: 1.2 }}>
+              <Text style={{
+                fontSize: 11, fontFamily: "Nunito_800ExtraBold",
+                color: colors.mutedForeground, marginBottom: 8, letterSpacing: 1.4,
+              }}>
                 EMAIL
               </Text>
-              <TextInput
-                value={email}
-                onChangeText={setEmail}
-                placeholder="you@example.com"
-                placeholderTextColor={colors.mutedForeground}
-                keyboardType="email-address"
-                autoCapitalize="none"
-                autoCorrect={false}
-                style={{
-                  backgroundColor: colors.card,
-                  borderRadius: 18,
-                  paddingHorizontal: 18,
-                  paddingVertical: 16,
-                  fontSize: 16,
-                  fontFamily: "Nunito_600SemiBold",
-                  color: colors.foreground,
-                  borderWidth: 1.5,
-                  borderColor: colors.border,
-                  ...(Platform.OS === "web" ? { outlineStyle: "none" as any } : {}),
-                }}
-              />
-            </View>
-
-            {mode !== "reset" && (
-              <View>
-                <Text style={{ fontSize: 12, fontFamily: "Nunito_800ExtraBold", color: colors.mutedForeground, marginBottom: 8, letterSpacing: 1.2 }}>
-                  PASSWORD
-                </Text>
+              <View style={{
+                flexDirection: "row", alignItems: "center",
+                backgroundColor: colors.card,
+                borderRadius: 18,
+                borderWidth: 1.5,
+                borderColor: focused === "email" ? colors.primary : colors.border,
+                paddingHorizontal: 16,
+              }}>
+                <Icon
+                  name="mail-outline"
+                  size={18}
+                  color={focused === "email" ? colors.primary : colors.mutedForeground}
+                />
                 <TextInput
-                  value={password}
-                  onChangeText={setPassword}
-                  placeholder="Min. 6 characters"
+                  value={email}
+                  onChangeText={setEmail}
+                  onFocus={() => setFocused("email")}
+                  onBlur={() => setFocused(null)}
+                  placeholder="you@example.com"
                   placeholderTextColor={colors.mutedForeground}
-                  secureTextEntry
+                  keyboardType="email-address"
                   autoCapitalize="none"
+                  autoCorrect={false}
                   style={{
-                    backgroundColor: colors.card,
-                    borderRadius: 18,
-                    paddingHorizontal: 18,
+                    flex: 1,
                     paddingVertical: 16,
+                    paddingLeft: 12,
                     fontSize: 16,
                     fontFamily: "Nunito_600SemiBold",
                     color: colors.foreground,
-                    borderWidth: 1.5,
-                    borderColor: colors.border,
                     ...(Platform.OS === "web" ? { outlineStyle: "none" as any } : {}),
                   }}
                 />
+              </View>
+            </View>
+
+            {/* Password */}
+            {mode !== "reset" && (
+              <View>
+                <Text style={{
+                  fontSize: 11, fontFamily: "Nunito_800ExtraBold",
+                  color: colors.mutedForeground, marginBottom: 8, letterSpacing: 1.4,
+                }}>
+                  PASSWORD
+                </Text>
+                <View style={{
+                  flexDirection: "row", alignItems: "center",
+                  backgroundColor: colors.card,
+                  borderRadius: 18,
+                  borderWidth: 1.5,
+                  borderColor: focused === "password" ? colors.primary : colors.border,
+                  paddingHorizontal: 16,
+                }}>
+                  <Icon
+                    name="lock-closed-outline"
+                    size={18}
+                    color={focused === "password" ? colors.primary : colors.mutedForeground}
+                  />
+                  <TextInput
+                    value={password}
+                    onChangeText={setPassword}
+                    onFocus={() => setFocused("password")}
+                    onBlur={() => setFocused(null)}
+                    placeholder="Min. 6 characters"
+                    placeholderTextColor={colors.mutedForeground}
+                    secureTextEntry={!showPassword}
+                    autoCapitalize="none"
+                    style={{
+                      flex: 1,
+                      paddingVertical: 16,
+                      paddingLeft: 12,
+                      fontSize: 16,
+                      fontFamily: "Nunito_600SemiBold",
+                      color: colors.foreground,
+                      ...(Platform.OS === "web" ? { outlineStyle: "none" as any } : {}),
+                    }}
+                  />
+                  <PressScale
+                    onPress={() => setShowPassword((s) => !s)}
+                    style={{ padding: 6 }}
+                    scaleTo={0.9}
+                  >
+                    <Icon
+                      name={showPassword ? "eye-off-outline" : "eye-outline"}
+                      size={18}
+                      color={colors.mutedForeground}
+                    />
+                  </PressScale>
+                </View>
               </View>
             )}
 
@@ -217,30 +358,50 @@ export default function AuthScreen() {
                 scaleTo={0.98}
                 style={{ alignSelf: "flex-end", paddingVertical: 4, paddingHorizontal: 4 }}
               >
-                <Text style={{ fontSize: 13, fontFamily: "Nunito_800ExtraBold", color: colors.primary, letterSpacing: -0.2 }}>
+                <Text style={{
+                  fontSize: 13, fontFamily: "Nunito_800ExtraBold",
+                  color: colors.primary, letterSpacing: -0.2,
+                }}>
                   Forgot password?
                 </Text>
               </PressScale>
             )}
 
             {error ? (
-              <Text style={{ fontSize: 13, fontFamily: "Nunito_600SemiBold", color: colors.destructive, textAlign: "center" }}>
-                {error}
-              </Text>
+              <View style={{
+                backgroundColor: colors.destructive + "1A",
+                borderRadius: 14, padding: 12,
+                borderWidth: 1, borderColor: colors.destructive + "55",
+                flexDirection: "row", alignItems: "center", gap: 8,
+              }}>
+                <Icon name="alert-circle" size={16} color={colors.destructive} />
+                <Text style={{
+                  flex: 1, fontSize: 13, fontFamily: "Nunito_600SemiBold",
+                  color: colors.destructive,
+                }}>
+                  {error}
+                </Text>
+              </View>
             ) : null}
 
             {notice ? (
               <View style={{
                 backgroundColor: colors.success + "1F",
                 borderRadius: 14, padding: 12,
-                borderWidth: 1, borderColor: colors.success,
+                borderWidth: 1, borderColor: colors.success + "55",
+                flexDirection: "row", alignItems: "center", gap: 8,
               }}>
-                <Text style={{ fontSize: 13, fontFamily: "Nunito_600SemiBold", color: colors.success, textAlign: "center" }}>
+                <Icon name="checkmark-circle" size={16} color={colors.success} />
+                <Text style={{
+                  flex: 1, fontSize: 13, fontFamily: "Nunito_600SemiBold",
+                  color: colors.success,
+                }}>
                   {notice}
                 </Text>
               </View>
             ) : null}
 
+            {/* Primary CTA */}
             <PressScale
               onPress={handleSubmit}
               disabled={loading}
@@ -254,14 +415,22 @@ export default function AuthScreen() {
                 gap: 10,
                 marginTop: 8,
                 opacity: loading ? 0.7 : 1,
+                shadowColor: colors.foreground,
+                shadowOffset: { width: 0, height: 8 },
+                shadowOpacity: 0.18,
+                shadowRadius: 16,
+                elevation: 4,
               }}
             >
               {loading ? (
                 <ActivityIndicator color={colors.background} />
               ) : (
                 <>
-                  <Text style={{ fontSize: 17, fontFamily: "Nunito_800ExtraBold", color: colors.background }}>
-                    {mode === "signin" ? "Sign in" : mode === "signup" ? "Create account" : "Send reset link"}
+                  <Text style={{
+                    fontSize: 17, fontFamily: "Nunito_800ExtraBold",
+                    color: colors.background, letterSpacing: -0.2,
+                  }}>
+                    {ctaLabel}
                   </Text>
                   <Icon name="arrow-forward" size={18} color={colors.background} />
                 </>
@@ -269,52 +438,74 @@ export default function AuthScreen() {
             </PressScale>
 
             {mode !== "reset" && (
-              <View style={{ flexDirection: "row", alignItems: "center", gap: 12, marginVertical: 12 }}>
+              <View style={{
+                flexDirection: "row", alignItems: "center",
+                gap: 12, marginVertical: 14,
+              }}>
                 <View style={{ flex: 1, height: 1, backgroundColor: colors.border }} />
-                <Text style={{ fontSize: 11, fontFamily: "Nunito_800ExtraBold", color: colors.mutedForeground, letterSpacing: 1.5 }}>
-                  OR
+                <Text style={{
+                  fontSize: 11, fontFamily: "Nunito_800ExtraBold",
+                  color: colors.mutedForeground, letterSpacing: 1.5,
+                }}>
+                  OR CONTINUE WITH
                 </Text>
                 <View style={{ flex: 1, height: 1, backgroundColor: colors.border }} />
               </View>
             )}
 
             {mode !== "reset" && (
-            <PressScale
-              onPress={handleGoogle}
-              disabled={googleLoading || loading}
-              style={{
-                backgroundColor: colors.card,
-                borderRadius: 100,
-                paddingVertical: 18,
-                alignItems: "center",
-                flexDirection: "row",
-                justifyContent: "center",
-                gap: 12,
-                borderWidth: 1.5,
-                borderColor: colors.border,
-                opacity: googleLoading ? 0.7 : 1,
-              }}
-            >
-              {googleLoading ? (
-                <ActivityIndicator color={colors.foreground} />
-              ) : (
-                <>
-                  <Icon name="logo-google" size={20} color={colors.foreground} />
-                  <Text style={{ fontSize: 15, fontFamily: "Nunito_800ExtraBold", color: colors.foreground }}>
-                    Continue with Google
-                  </Text>
-                </>
-              )}
-            </PressScale>
+              <PressScale
+                onPress={handleGoogle}
+                disabled={googleLoading || loading}
+                style={{
+                  backgroundColor: colors.card,
+                  borderRadius: 100,
+                  paddingVertical: 16,
+                  alignItems: "center",
+                  flexDirection: "row",
+                  justifyContent: "center",
+                  gap: 12,
+                  borderWidth: 1.5,
+                  borderColor: colors.border,
+                  opacity: googleLoading ? 0.7 : 1,
+                }}
+              >
+                {googleLoading ? (
+                  <ActivityIndicator color={colors.foreground} />
+                ) : (
+                  <>
+                    <View style={{
+                      width: 26, height: 26, borderRadius: 13,
+                      backgroundColor: "#FFFFFF",
+                      alignItems: "center", justifyContent: "center",
+                    }}>
+                      <Icon name="logo-google" size={16} color="#4285F4" />
+                    </View>
+                    <Text style={{
+                      fontSize: 15, fontFamily: "Nunito_800ExtraBold",
+                      color: colors.foreground, letterSpacing: -0.2,
+                    }}>
+                      Continue with Google
+                    </Text>
+                  </>
+                )}
+              </PressScale>
             )}
 
             {mode === "reset" ? (
               <PressScale
                 onPress={() => switchMode("signin")}
                 scaleTo={0.99}
-                style={{ alignItems: "center", paddingVertical: 14, marginTop: 4 }}
+                style={{
+                  alignItems: "center", paddingVertical: 14, marginTop: 4,
+                  flexDirection: "row", justifyContent: "center", gap: 6,
+                }}
               >
-                <Text style={{ fontSize: 14, fontFamily: "Nunito_800ExtraBold", color: colors.mutedForeground }}>
+                <Icon name="arrow-back" size={16} color={colors.mutedForeground} />
+                <Text style={{
+                  fontSize: 14, fontFamily: "Nunito_800ExtraBold",
+                  color: colors.mutedForeground,
+                }}>
                   Back to sign in
                 </Text>
               </PressScale>
@@ -324,7 +515,10 @@ export default function AuthScreen() {
                 scaleTo={0.99}
                 style={{ alignItems: "center", paddingVertical: 12, marginTop: 4 }}
               >
-                <Text style={{ fontSize: 14, fontFamily: "Nunito_600SemiBold", color: colors.mutedForeground }}>
+                <Text style={{
+                  fontSize: 14, fontFamily: "Nunito_600SemiBold",
+                  color: colors.mutedForeground,
+                }}>
                   {mode === "signin" ? "Don't have an account? " : "Already have an account? "}
                   <Text style={{ color: colors.primary, fontFamily: "Nunito_800ExtraBold" }}>
                     {mode === "signin" ? "Sign up" : "Sign in"}
