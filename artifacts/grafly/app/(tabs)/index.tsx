@@ -15,9 +15,12 @@ import Animated, {
   useSharedValue,
   useAnimatedStyle,
   withTiming,
+  withRepeat,
+  withDelay,
   Easing,
   withSequence,
   FadeIn,
+  interpolate,
 } from "react-native-reanimated";
 import { Icon } from "@/components/Icon";
 import { router } from "expo-router";
@@ -397,6 +400,109 @@ function LevelUpOverlay() {
   );
 }
 
+// Soft, looping drift for the three decorative blob shapes inside each
+// course card. Three independent shared values run on different periods
+// so the motion never lines up — the cards feel quietly alive without
+// any single beat. Per-card index seeds the starting offset so two
+// cards next to each other never breathe in lockstep.
+//
+// Constraints: only withTiming + Easing.out(Easing.cubic). withRepeat
+// in yoyo mode (third arg `true`) gives a smooth back-and-forth using
+// only that single easing curve.
+const SOFT = Easing.out(Easing.cubic);
+function DriftingBlobs({
+  lightTint,
+  deepTint,
+  index,
+}: {
+  lightTint: string;
+  deepTint: string;
+  index: number;
+}) {
+  const t1 = useSharedValue(0);
+  const t2 = useSharedValue(0);
+  const t3 = useSharedValue(0);
+
+  useEffect(() => {
+    // Different periods + per-card delays so motions stay desynced.
+    const phase = (index % 4) * 600;
+    t1.value = withDelay(phase, withRepeat(withTiming(1, { duration: 7200, easing: SOFT }), -1, true));
+    t2.value = withDelay(phase + 300, withRepeat(withTiming(1, { duration: 9000, easing: SOFT }), -1, true));
+    t3.value = withDelay(phase + 800, withRepeat(withTiming(1, { duration: 11200, easing: SOFT }), -1, true));
+  }, [index, t1, t2, t3]);
+
+  // Top-right large blob: soft drift down-left, slight scale up.
+  const blob1 = useAnimatedStyle(() => ({
+    transform: [
+      { translateX: interpolate(t1.value, [0, 1], [0, -10]) },
+      { translateY: interpolate(t1.value, [0, 1], [0, 8]) },
+      { scale: interpolate(t1.value, [0, 1], [1, 1.06]) },
+    ],
+    opacity: interpolate(t1.value, [0, 1], [0.42, 0.5]),
+  }));
+
+  // Mid-right small blob: drift down-right, slight scale down then up.
+  const blob2 = useAnimatedStyle(() => ({
+    transform: [
+      { translateX: interpolate(t2.value, [0, 1], [0, 8]) },
+      { translateY: interpolate(t2.value, [0, 1], [0, -10]) },
+      { scale: interpolate(t2.value, [0, 1], [1, 0.94]) },
+    ],
+    opacity: interpolate(t2.value, [0, 1], [0.22, 0.32]),
+  }));
+
+  // Bottom-left large blob: drift up-right, slight scale up.
+  const blob3 = useAnimatedStyle(() => ({
+    transform: [
+      { translateX: interpolate(t3.value, [0, 1], [0, 12]) },
+      { translateY: interpolate(t3.value, [0, 1], [0, -8]) },
+      { scale: interpolate(t3.value, [0, 1], [1, 1.05]) },
+    ],
+    opacity: interpolate(t3.value, [0, 1], [0.48, 0.55]),
+  }));
+
+  return (
+    <>
+      <Animated.View
+        pointerEvents="none"
+        style={[
+          {
+            position: "absolute",
+            top: -90, right: -70,
+            width: 240, height: 240, borderRadius: 120,
+            backgroundColor: lightTint,
+          },
+          blob1,
+        ]}
+      />
+      <Animated.View
+        pointerEvents="none"
+        style={[
+          {
+            position: "absolute",
+            top: 30, right: -40,
+            width: 140, height: 140, borderRadius: 70,
+            backgroundColor: lightTint,
+          },
+          blob2,
+        ]}
+      />
+      <Animated.View
+        pointerEvents="none"
+        style={[
+          {
+            position: "absolute",
+            bottom: -70, left: -50,
+            width: 180, height: 180, borderRadius: 90,
+            backgroundColor: deepTint,
+          },
+          blob3,
+        ]}
+      />
+    </>
+  );
+}
+
 export default function HomeScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
@@ -667,37 +773,10 @@ export default function HomeScreen() {
                   />
 
                   {/* Layer 2: soft curved blob shapes — large rounded forms
-                      reading as cinematic depth, mirroring the reference */}
-                  <View
-                    pointerEvents="none"
-                    style={{
-                      position: "absolute",
-                      top: -90, right: -70,
-                      width: 240, height: 240, borderRadius: 120,
-                      backgroundColor: lightTint,
-                      opacity: 0.45,
-                    }}
-                  />
-                  <View
-                    pointerEvents="none"
-                    style={{
-                      position: "absolute",
-                      top: 30, right: -40,
-                      width: 140, height: 140, borderRadius: 70,
-                      backgroundColor: lightTint,
-                      opacity: 0.25,
-                    }}
-                  />
-                  <View
-                    pointerEvents="none"
-                    style={{
-                      position: "absolute",
-                      bottom: -70, left: -50,
-                      width: 180, height: 180, borderRadius: 90,
-                      backgroundColor: deepTint,
-                      opacity: 0.5,
-                    }}
-                  />
+                      reading as cinematic depth, mirroring the reference.
+                      DriftingBlobs gives them a slow, looped, organic
+                      motion so the cards feel alive without distracting. */}
+                  <DriftingBlobs lightTint={lightTint} deepTint={deepTint} index={index} />
 
                   {/* Layer 3: faint Figma-style grid overlay (kept very subtle) */}
                   <View pointerEvents="none" style={StyleSheet.absoluteFill}>
