@@ -17,6 +17,7 @@ import { useColors } from "@/hooks/useColors";
 import { useGame } from "@/context/GameContext";
 import { COURSES, type SkillNode, type Course } from "@/constants/lessons";
 import { PressScale } from "@/components/PressScale";
+import { getContrastOn } from "@/constants/contrast";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 const NODE_SIZE = 68;
@@ -34,35 +35,6 @@ function getNodeX(pos: NodePosition): number {
 }
 
 const TIER_PALETTE = ["#00A4FA", "#FF7BD0", "#E3ED43", "#FFB800", "#22DD88", "#A78BFA"];
-
-// Returns a readable foreground color for text/icons rendered on top of `hex`.
-// Compares WCAG relative-luminance contrast ratios for the dark navy and white
-// candidates, then picks the higher one. This keeps mid-saturation colors like
-// blue (#00A4FA) and pink (#FF7BD0) readable, not just the very-light ones.
-function relLuminance(hex: string): number {
-  const c = hex.replace("#", "").slice(0, 6);
-  if (c.length < 6) return 1;
-  const toLin = (v: number) => {
-    const s = v / 255;
-    return s <= 0.03928 ? s / 12.92 : Math.pow((s + 0.055) / 1.055, 2.4);
-  };
-  const r = toLin(parseInt(c.slice(0, 2), 16));
-  const g = toLin(parseInt(c.slice(2, 4), 16));
-  const b = toLin(parseInt(c.slice(4, 6), 16));
-  return 0.2126 * r + 0.7152 * g + 0.0722 * b;
-}
-function contrastRatio(a: string, b: string): number {
-  const la = relLuminance(a);
-  const lb = relLuminance(b);
-  const hi = Math.max(la, lb);
-  const lo = Math.min(la, lb);
-  return (hi + 0.05) / (lo + 0.05);
-}
-function getContrastOn(hex: string): string {
-  const navy = "#21263F";
-  const white = "#FFFFFF";
-  return contrastRatio(navy, hex) >= contrastRatio(white, hex) ? navy : white;
-}
 
 function tierColor(idx: number, fallback: string): string {
   if (idx === 0) return fallback;
