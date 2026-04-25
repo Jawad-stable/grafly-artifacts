@@ -579,7 +579,7 @@ export default function CritiqueScreen() {
         ) : (
           <View
             style={{
-              paddingHorizontal: 16,
+              paddingHorizontal: 14,
               paddingTop: 8,
               paddingBottom: composerLift,
               backgroundColor: colors.background,
