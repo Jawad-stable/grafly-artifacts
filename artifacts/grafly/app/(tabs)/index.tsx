@@ -9,6 +9,7 @@ import {
   Image,
   Dimensions,
   FlatList,
+  Pressable,
 } from "react-native";
 import Animated, {
   useSharedValue,
@@ -399,7 +400,7 @@ function LevelUpOverlay() {
 export default function HomeScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
-  const { state } = useGame();
+  const { state, dispatch } = useGame();
 
   // Onboarding redirects are handled declaratively by AuthGate in _layout.tsx
 
@@ -500,42 +501,66 @@ export default function HomeScreen() {
           </Text>
         </Animated.View>
 
-        {/* Pro upgrade banner — editorial card */}
-        {!state.isPro && (
+        {/* Pro upgrade banner — editorial card. Hidden once the user
+            taps the small X (persisted via proBannerDismissed). */}
+        {!state.isPro && !state.proBannerDismissed && (
           <Animated.View entering={FadeIn.delay(140)} style={{ paddingHorizontal: 24, marginTop: 22 }}>
-            <PressScale
-              onPress={() => router.push("/paywall" as any)}
-              style={{
-                backgroundColor: colors.card, borderRadius: 22,
-                paddingVertical: 14, paddingHorizontal: 16,
-                flexDirection: "row", alignItems: "center", gap: 12,
-                borderWidth: 1, borderColor: colors.border,
-              }}
-            >
-              <View style={{
-                width: 38, height: 38, borderRadius: 19,
-                backgroundColor: colors.accent,
-                alignItems: "center", justifyContent: "center",
-              }}>
-                <Icon name="diamond" size={18} color={colors.accentForeground} />
-              </View>
-              <View style={{ flex: 1 }}>
-                <Text style={{ fontSize: 14, fontFamily: "Nunito_800ExtraBold", color: colors.foreground }}>
-                  Upgrade Pro
-                </Text>
-                <Text style={{ fontSize: 11, fontFamily: "Nunito_600SemiBold", color: colors.mutedForeground }}>
-                  Unlimited critique, no ads, all courses
-                </Text>
-              </View>
-              <View style={{
-                backgroundColor: colors.foreground, borderRadius: 100,
-                paddingHorizontal: 14, paddingVertical: 7,
-              }}>
-                <Text style={{ fontSize: 12, fontFamily: "Nunito_800ExtraBold", color: colors.background }}>
-                  Upgrade
-                </Text>
-              </View>
-            </PressScale>
+            <View style={{ position: "relative" }}>
+              <PressScale
+                onPress={() => router.push("/paywall" as any)}
+                style={{
+                  backgroundColor: colors.card, borderRadius: 22,
+                  paddingVertical: 14,
+                  // Extra right padding so the upgrade pill never sits
+                  // under the dismiss X in the corner.
+                  paddingLeft: 16, paddingRight: 36,
+                  flexDirection: "row", alignItems: "center", gap: 12,
+                  borderWidth: 1, borderColor: colors.border,
+                }}
+              >
+                <View style={{
+                  width: 38, height: 38, borderRadius: 19,
+                  backgroundColor: colors.accent,
+                  alignItems: "center", justifyContent: "center",
+                }}>
+                  <Icon name="diamond" size={18} color={colors.accentForeground} />
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Text style={{ fontSize: 14, fontFamily: "Nunito_800ExtraBold", color: colors.foreground }}>
+                    Upgrade Pro
+                  </Text>
+                  <Text style={{ fontSize: 11, fontFamily: "Nunito_600SemiBold", color: colors.mutedForeground }}>
+                    Unlimited critique, no ads, all courses
+                  </Text>
+                </View>
+                <View style={{
+                  backgroundColor: colors.foreground, borderRadius: 100,
+                  paddingHorizontal: 14, paddingVertical: 7,
+                }}>
+                  <Text style={{ fontSize: 12, fontFamily: "Nunito_800ExtraBold", color: colors.background }}>
+                    Upgrade
+                  </Text>
+                </View>
+              </PressScale>
+              {/* Dismiss X — sibling of the PressScale and absolutely
+                  positioned, so its tap is captured first by the touch
+                  responder and never bubbles to the upgrade press. */}
+              <Pressable
+                onPress={() => dispatch({ type: "DISMISS_PRO_BANNER" })}
+                hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                accessibilityRole="button"
+                accessibilityLabel="Dismiss Pro upgrade banner"
+                style={{
+                  position: "absolute",
+                  top: 8, right: 8,
+                  width: 22, height: 22, borderRadius: 11,
+                  alignItems: "center", justifyContent: "center",
+                  backgroundColor: colors.muted,
+                }}
+              >
+                <Icon name="close" size={12} color={colors.mutedForeground} />
+              </Pressable>
+            </View>
           </Animated.View>
         )}
 

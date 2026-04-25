@@ -38,6 +38,9 @@ export interface GameState {
   themeMode: "light" | "dark";
   handle: string;
   profilePic: string;
+  // True once the user has tapped the X on the home screen Pro upgrade
+  // banner. Persisted, so the banner stays dismissed across reloads.
+  proBannerDismissed: boolean;
 }
 
 function getWeekStart(): string {
@@ -92,6 +95,7 @@ type Action =
   | { type: "PURCHASE_SHIELD" }
   | { type: "ACTIVATE_BOOSTER" }
   | { type: "SET_PRO"; isPro: boolean }
+  | { type: "DISMISS_PRO_BANNER" }
   | { type: "DISMISS_XP_POPUP" }
   | { type: "DISMISS_LEVEL_UP" }
   | { type: "SET_THEME"; mode: "light" | "dark" }
@@ -127,6 +131,7 @@ const initialState: GameState = {
   themeMode: "light",
   handle: "",
   profilePic: "",
+  proBannerDismissed: false,
 };
 
 function stripUIState(state: GameState) {
@@ -229,6 +234,8 @@ function reducer(state: GameState, action: Action): GameState {
     }
     case "SET_PRO":
       return { ...state, isPro: action.isPro };
+    case "DISMISS_PRO_BANNER":
+      return { ...state, proBannerDismissed: true };
     case "DISMISS_XP_POPUP":
       return { ...state, showXPPopup: false, xpPopupAmount: 0 };
     case "DISMISS_LEVEL_UP":
