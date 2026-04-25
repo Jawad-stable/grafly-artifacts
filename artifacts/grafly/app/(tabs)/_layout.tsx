@@ -6,6 +6,7 @@ import {
   Pressable,
   StyleSheet,
   View,
+  useWindowDimensions,
 } from "react-native";
 import Animated, {
   useSharedValue,
@@ -153,13 +154,22 @@ export default function TabLayout() {
   const { state } = useGame();
   const isLight = state.themeMode === "light";
 
+  // Live viewport width — recomputes when the device rotates or the
+  // browser window resizes. Using useWindowDimensions instead of the
+  // static Dimensions snapshot guarantees the bar re-centers as the
+  // viewport changes (important on web inside a resizable iframe).
+  const { width: SCREEN_W } = useWindowDimensions();
+
   // Floating pill. The width is the SAME shared constant the critique
   // composer uses (BOTTOM_BAR_WIDTH from constants/layout.ts), so the nav
-  // and the input pill are always exactly the same width — no left/right
-  // pinning, no maxWidth, no marginHorizontal, no transforms.
+  // and the input pill are always exactly the same width.
   const tabBarHeight = 70;
   const tabBottom = Math.max(insets.bottom + 8, 22);
   const pillRadius = 35;
+  // Explicit pixel offset for true horizontal centering on the actual
+  // current viewport. Clamped to >= 0 so the bar never sits off-screen
+  // on viewports narrower than BOTTOM_BAR_WIDTH.
+  const tabBarLeft = Math.max((SCREEN_W - BOTTOM_BAR_WIDTH) / 2, 0);
 
   return (
     <Tabs
@@ -179,8 +189,7 @@ export default function TabLayout() {
           // children in React Native. BOTTOM_BAR_WIDTH is shared with
           // the composer pill so the two stay flush.
           width: BOTTOM_BAR_WIDTH,
-          left: "50%",
-          marginLeft: -(BOTTOM_BAR_WIDTH / 2),
+          left: tabBarLeft,
           flexDirection: "row",
           borderRadius: pillRadius,
           height: tabBarHeight,
