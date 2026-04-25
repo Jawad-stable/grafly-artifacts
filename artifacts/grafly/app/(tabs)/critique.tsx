@@ -602,6 +602,8 @@ export default function CritiqueScreen() {
                 placeholder="Message Grafly..."
                 placeholderTextColor={colors.mutedForeground}
                 multiline
+                textAlign="center"
+                textAlignVertical="center"
                 style={{
                   flex: 1,
                   paddingTop: Platform.OS === "ios" ? 8 : 6,
@@ -611,6 +613,7 @@ export default function CritiqueScreen() {
                   lineHeight: 20,
                   fontFamily: "Nunito_600SemiBold",
                   color: colors.foreground,
+                  textAlign: "center",
                   maxHeight: 140,
                   minHeight: 28,
                   ...(Platform.OS === "web" ? { outlineStyle: "none" as any } : {}),
