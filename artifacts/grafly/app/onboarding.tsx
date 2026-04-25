@@ -854,7 +854,7 @@ export default function OnboardingScreen() {
               )}
 
               {q.type === "true_false" && (
-                <View style={{ flexDirection: "row", gap: 12 }}>
+                <View style={{ flexDirection: "row", gap: 12, width: "100%", alignSelf: "stretch" }}>
                   {[true, false].map((val) => {
                     let borderColor = colors.border;
                     let bg = colors.card;
@@ -870,7 +870,11 @@ export default function OnboardingScreen() {
                         onPress={() => handleAnswer(val)}
                         disabled={showFeedback}
                         style={{
-                          flex: 1,
+                          flexBasis: 0,
+                          flexGrow: 1,
+                          flexShrink: 1,
+                          minWidth: 0,
+                          minHeight: 96,
                           borderRadius: 18,
                           paddingVertical: 26,
                           alignItems: "center",
@@ -898,43 +902,41 @@ export default function OnboardingScreen() {
                 position: "absolute", left: 0, right: 0, bottom: 0,
                 paddingHorizontal: 20, paddingTop: 18,
                 paddingBottom: padBottom + 20,
-                backgroundColor: lastWasCorrect ? colors.success + "18" : colors.destructive + "18",
+                backgroundColor: (lastWasCorrect ? colors.success : colors.destructive) + "E6",
                 borderTopLeftRadius: 28, borderTopRightRadius: 28,
-                borderTopWidth: 1,
-                borderTopColor: lastWasCorrect ? colors.success : colors.destructive,
               }}
             >
               <View style={{ flexDirection: "row", alignItems: "center", gap: 10, marginBottom: 8 }}>
                 <Icon
                   name={lastWasCorrect ? "checkmark-circle" : "close-circle"}
                   size={22}
-                  color={lastWasCorrect ? colors.success : colors.destructive}
+                  color={colors.destructiveForeground}
                 />
                 <Text style={{
                   fontSize: 16, fontFamily: "Nunito_800ExtraBold",
-                  color: lastWasCorrect ? colors.success : colors.destructive,
+                  color: colors.destructiveForeground,
                 }}>
                   {lastWasCorrect ? "Nice work!" : "Not quite"}
                 </Text>
               </View>
               <Text style={{
                 fontSize: 14, fontFamily: "Nunito_600SemiBold",
-                color: colors.foreground, lineHeight: 20, marginBottom: 14,
+                color: colors.destructiveForeground, lineHeight: 20, marginBottom: 14,
               }}>
                 {q.explanation}
               </Text>
               <PressScale
                 style={{
-                  backgroundColor: colors.foreground,
+                  backgroundColor: colors.destructiveForeground,
                   borderRadius: 100, paddingVertical: 16, alignItems: "center",
                   flexDirection: "row", justifyContent: "center", gap: 8,
                 }}
                 onPress={handleContinueQuestion}
               >
-                <Text style={{ fontSize: 16, fontFamily: "Nunito_800ExtraBold", color: colors.background }}>
+                <Text style={{ fontSize: 16, fontFamily: "Nunito_800ExtraBold", color: lastWasCorrect ? colors.success : colors.destructive }}>
                   {currentQ + 1 >= PLACEMENT_QUESTIONS.length ? "See results" : "Continue"}
                 </Text>
-                <Icon name="arrow-forward" size={18} color={colors.background} />
+                <Icon name="arrow-forward" size={18} color={lastWasCorrect ? colors.success : colors.destructive} />
               </PressScale>
             </Animated.View>
           )}
