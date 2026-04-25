@@ -1,4 +1,5 @@
 import { BlurView } from "expo-blur";
+import { LinearGradient } from "expo-linear-gradient";
 import { Tabs } from "expo-router";
 import React, { useEffect } from "react";
 import {
@@ -205,44 +206,81 @@ export default function TabLayout() {
           shadowRadius: 32,
         },
         tabBarBackground: () => (
-          <View style={StyleSheet.absoluteFill}>
+          // Liquid-glass treatment for the floating nav. Layers from
+          // back to front:
+          //  1. Strong BlurView (refractive base — blurs whatever is
+          //     behind the bar)
+          //  2. Translucent tint (just enough fill to keep contrast)
+          //  3. Top→bottom gradient sheen (the "dome" highlight that
+          //     sells the glass illusion)
+          //  4. Hairline top edge highlight (specular reflection)
+          //  5. Hairline bottom edge shadow (meniscus / depth)
+          //  6. Outer rounded border (refraction edge)
+          <View style={[StyleSheet.absoluteFill, { borderRadius: pillRadius, overflow: "hidden" }]}>
             <BlurView
-              intensity={Platform.OS === "ios" ? 70 : 95}
+              intensity={Platform.OS === "ios" ? 90 : 110}
               tint={isLight ? "light" : "dark"}
-              style={[
-                StyleSheet.absoluteFill,
-                { borderRadius: pillRadius, overflow: "hidden" },
-              ]}
+              style={StyleSheet.absoluteFill}
             />
+            {/* Translucent fill — kept low so the blur reads through */}
             <View
               style={[
                 StyleSheet.absoluteFill,
                 {
                   backgroundColor: isLight
-                    ? colors.foreground + "F2"
-                    : colors.card + "F2",
-                  borderRadius: pillRadius,
-                  borderWidth: 1,
-                  borderColor: isLight
-                    ? colors.primaryForeground + "1F"
-                    : "#FFFFFF12",
+                    ? "#FFFFFF66"
+                    : colors.card + "59",
                 },
               ]}
             />
-            {/* Subtle inner highlight along the top edge for depth */}
+            {/* Glass dome sheen — bright at the top, fades to nothing */}
+            <LinearGradient
+              pointerEvents="none"
+              colors={
+                isLight
+                  ? ["#FFFFFFB3", "#FFFFFF26", "#FFFFFF00", "#FFFFFF1A"]
+                  : ["#FFFFFF40", "#FFFFFF14", "#FFFFFF00", "#FFFFFF14"]
+              }
+              locations={[0, 0.45, 0.8, 1]}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 0, y: 1 }}
+              style={StyleSheet.absoluteFill}
+            />
+            {/* Hairline top specular highlight */}
             <View
               pointerEvents="none"
               style={{
                 position: "absolute",
                 top: 0,
-                left: 16,
-                right: 16,
+                left: 14,
+                right: 14,
                 height: 1,
-                backgroundColor: isLight
-                  ? colors.primaryForeground + "26"
-                  : "#FFFFFF1F",
-                borderRadius: 1,
+                backgroundColor: isLight ? "#FFFFFFE6" : "#FFFFFF80",
               }}
+            />
+            {/* Hairline bottom shadow (meniscus) for depth */}
+            <View
+              pointerEvents="none"
+              style={{
+                position: "absolute",
+                bottom: 0,
+                left: 14,
+                right: 14,
+                height: 1,
+                backgroundColor: isLight ? "#0000001A" : "#00000059",
+              }}
+            />
+            {/* Outer refraction border */}
+            <View
+              pointerEvents="none"
+              style={[
+                StyleSheet.absoluteFill,
+                {
+                  borderRadius: pillRadius,
+                  borderWidth: 1,
+                  borderColor: isLight ? "#FFFFFFCC" : "#FFFFFF26",
+                },
+              ]}
             />
           </View>
         ),
