@@ -14,7 +14,6 @@ import {
 } from "react-native";
 import { KeyboardAvoidingView } from "react-native-keyboard-controller";
 import Animated, { FadeIn, FadeInDown, FadeInUp, Easing } from "react-native-reanimated";
-import { LinearGradient } from "expo-linear-gradient";
 import { Icon } from "@/components/Icon";
 import { router } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -26,6 +25,9 @@ import {
 } from "@/services/aiCritique";
 import { pickRandomLocalDesign, type LocalDesign } from "@/data/localDesigns";
 import { PressScale } from "@/components/PressScale";
+import { GraflyMascot } from "@/components/GraflyMascot";
+
+const SMOOTH = Easing.out(Easing.cubic);
 
 const XP_PER_SESSION = 20;
 const COINS_PER_SESSION = 8;
@@ -33,8 +35,6 @@ const MIN_USER_TURNS_FOR_REWARD = 3;
 const TYPEWRITER_SPEED_MS = 14;
 
 const { width: SCREEN_W, height: SCREEN_H } = Dimensions.get("window");
-const HERO_HEIGHT_FULL = Math.min(Math.round(SCREEN_H * 0.46), 460);
-const HERO_HEIGHT_COMPACT = Math.min(Math.round(SCREEN_H * 0.22), 200);
 
 const OPENER_TEMPLATES: Array<(title: string) => string> = [
   (t) => `What is the first thing your eye lands on in "${t}", and why do you think the designer made that choice?`,
@@ -129,7 +129,8 @@ export default function CritiqueScreen() {
   const tabBarBottomOffset = 12;
   const composerLift = tabBarHeight + tabBarBottomOffset + 12;
 
-  const heroHeight = chatStarted ? HERO_HEIGHT_COMPACT : HERO_HEIGHT_FULL;
+  const heroCardImageHeight = Math.min(Math.round(SCREEN_H * 0.34), 340);
+  const sessionsLeft = Math.max(0, maxSessions - sessionsDone);
 
   function loadNewDesign() {
     setLoadingDesign(true);
@@ -233,108 +234,82 @@ export default function CritiqueScreen() {
             paddingHorizontal: 12, paddingVertical: 8,
             borderRadius: 100, backgroundColor: colors.card,
             borderWidth: 1, borderColor: colors.border,
+            flexDirection: "row", alignItems: "center", gap: 6,
           }}>
+            <Icon
+              name={state.isPro ? "infinite" : "flash"}
+              size={13}
+              color={state.isPro ? colors.success : colors.accent}
+            />
             <Text style={{
               fontSize: 12, fontFamily: "Nunito_800ExtraBold",
               color: colors.foreground, letterSpacing: -0.2,
             }}>
-              {state.isPro ? "Unlimited" : `${Math.max(0, maxSessions - sessionsDone)} left`}
+              {state.isPro ? "Unlimited" : `${sessionsLeft} left`}
             </Text>
           </View>
 
           <PressScale
             onPress={loadNewDesign}
             style={{
-              width: 44, height: 44, borderRadius: 22,
-              backgroundColor: colors.foreground,
+              width: 40, height: 40, borderRadius: 100,
+              backgroundColor: colors.card,
+              borderWidth: 1, borderColor: colors.border,
               alignItems: "center", justifyContent: "center",
             }}
           >
-            <Icon name="shuffle" size={20} color={colors.background} />
+            <Icon name="shuffle" size={18} color={colors.foreground} />
           </PressScale>
         </Animated.View>
 
-        {/* Full-bleed hero design image */}
-        {design && (
+        {/* Compact pinned design pill (chat started) */}
+        {design && chatStarted && (
           <Animated.View
-            key={chatStarted ? "compact" : "full"}
-            entering={FadeIn.duration(320)}
-            style={{ width: SCREEN_W, height: heroHeight, position: "relative" }}
+            entering={FadeInDown.duration(420).easing(SMOOTH)}
+            style={{ paddingHorizontal: 20, paddingTop: 4, paddingBottom: 8 }}
           >
-            <Pressable onPress={() => setImageOpen(true)} style={{ width: "100%", height: "100%" }}>
+            <Pressable
+              onPress={() => setImageOpen(true)}
+              style={{
+                backgroundColor: colors.card,
+                borderRadius: 18,
+                borderWidth: 1,
+                borderColor: colors.border,
+                padding: 10,
+                flexDirection: "row",
+                alignItems: "center",
+                gap: 12,
+              }}
+            >
               <Image
                 source={design.source}
-                style={{ width: "100%", height: "100%", backgroundColor: colors.muted }}
+                style={{ width: 52, height: 52, borderRadius: 12, backgroundColor: colors.muted }}
                 resizeMode="cover"
               />
-              {/* Top gradient for the EXPAND pill legibility */}
-              <LinearGradient
-                colors={["rgba(0,0,0,0.55)", "rgba(0,0,0,0)"]}
-                style={{
-                  position: "absolute", left: 0, right: 0, top: 0,
-                  height: 90,
-                }}
-              />
-              {/* Strong bottom gradient for title legibility */}
-              <LinearGradient
-                colors={[
-                  "rgba(0,0,0,0)",
-                  "rgba(0,0,0,0.55)",
-                  "rgba(0,0,0,0.92)",
-                ]}
-                locations={[0, 0.45, 1]}
-                style={{
-                  position: "absolute", left: 0, right: 0, bottom: 0,
-                  height: chatStarted ? "80%" : "60%",
-                }}
-              />
-              {/* Top-right expand pill */}
-              <View style={{
-                position: "absolute", top: 14, right: 14,
-                paddingHorizontal: 12, paddingVertical: 7, borderRadius: 100,
-                backgroundColor: "rgba(0,0,0,0.55)",
-                flexDirection: "row", alignItems: "center", gap: 6,
-              }}>
-                <Icon name="expand-outline" size={14} color="#FFFFFF" />
+              <View style={{ flex: 1 }}>
                 <Text style={{
-                  fontSize: 11, fontFamily: "Nunito_800ExtraBold",
-                  color: "#FFFFFF", letterSpacing: 0.8,
-                }}>
-                  EXPAND
-                </Text>
-              </View>
-              {/* Bottom title overlay */}
-              <View style={{
-                position: "absolute", left: 0, right: 0, bottom: 0,
-                paddingHorizontal: 22, paddingBottom: 18, paddingTop: 24,
-              }}>
-                <Text style={{
-                  fontSize: 11, fontFamily: "Nunito_800ExtraBold",
-                  color: "#FFFFFFCC", letterSpacing: 1.5, marginBottom: 4,
+                  fontSize: 10, fontFamily: "Nunito_800ExtraBold",
+                  color: colors.mutedForeground, letterSpacing: 1.4, marginBottom: 2,
                 }}>
                   TODAY'S DESIGN
                 </Text>
                 <Text
-                  numberOfLines={chatStarted ? 1 : 2}
+                  numberOfLines={1}
                   style={{
-                    fontSize: chatStarted ? 18 : 24,
-                    fontFamily: "Nunito_800ExtraBold",
-                    color: "#FFFFFF", letterSpacing: -0.5, lineHeight: chatStarted ? 22 : 28,
+                    fontSize: 14, fontFamily: "Nunito_800ExtraBold",
+                    color: colors.foreground, letterSpacing: -0.3,
                   }}
                 >
                   {design.title}
                 </Text>
-                {!chatStarted && (
-                  <Text
-                    numberOfLines={2}
-                    style={{
-                      fontSize: 13, fontFamily: "Nunito_600SemiBold",
-                      color: "#FFFFFFCC", marginTop: 4, lineHeight: 18,
-                    }}
-                  >
-                    {design.description}
-                  </Text>
-                )}
+              </View>
+              <View style={{
+                width: 32, height: 32, borderRadius: 100,
+                backgroundColor: colors.background,
+                borderWidth: 1, borderColor: colors.border,
+                alignItems: "center", justifyContent: "center",
+              }}>
+                <Icon name="expand-outline" size={14} color={colors.foreground} />
               </View>
             </Pressable>
           </Animated.View>
@@ -353,13 +328,144 @@ export default function CritiqueScreen() {
             </View>
           )}
 
+          {/* Full hero card (chat not started) */}
+          {design && !chatStarted && !loadingDesign && (
+            <>
+              {/* Eyebrow row matching tree.tsx pattern */}
+              <Animated.View
+                entering={FadeInDown.duration(440).easing(SMOOTH).delay(60)}
+                style={{ flexDirection: "row", alignItems: "center", gap: 10, marginBottom: 14, marginTop: -4 }}
+              >
+                <View style={{
+                  paddingHorizontal: 10, paddingVertical: 5, borderRadius: 100,
+                  backgroundColor: colors.accent + "26",
+                }}>
+                  <Text style={{
+                    fontSize: 11, fontFamily: "Nunito_800ExtraBold",
+                    color: colors.accent, letterSpacing: 1.4,
+                  }}>
+                    TODAY'S DESIGN
+                  </Text>
+                </View>
+                <View style={{ flex: 1, height: 1, backgroundColor: colors.border }} />
+                <Text style={{
+                  fontSize: 11, fontFamily: "Nunito_800ExtraBold",
+                  color: colors.mutedForeground, letterSpacing: 1.2,
+                }}>
+                  DAILY DROP
+                </Text>
+              </Animated.View>
+
+              {/* Image-on-top card */}
+              <Animated.View
+                entering={FadeInDown.duration(560).easing(SMOOTH).delay(120)}
+                style={{
+                  backgroundColor: colors.card,
+                  borderRadius: 24,
+                  borderWidth: 1,
+                  borderColor: colors.border,
+                  overflow: "hidden",
+                  shadowColor: "#000",
+                  shadowOffset: { width: 0, height: 12 },
+                  shadowOpacity: 0.08,
+                  shadowRadius: 22,
+                  elevation: 6,
+                }}
+              >
+                <Pressable onPress={() => setImageOpen(true)}>
+                  <View style={{ width: "100%", height: heroCardImageHeight, position: "relative" }}>
+                    <Image
+                      source={design.source}
+                      style={{ width: "100%", height: "100%", backgroundColor: colors.muted }}
+                      resizeMode="cover"
+                    />
+                    {/* Refined expand pill */}
+                    <View style={{
+                      position: "absolute", top: 12, right: 12,
+                      paddingHorizontal: 11, paddingVertical: 7, borderRadius: 100,
+                      backgroundColor: "rgba(0,0,0,0.55)",
+                      flexDirection: "row", alignItems: "center", gap: 6,
+                    }}>
+                      <Icon name="expand-outline" size={13} color="#FFFFFF" />
+                      <Text style={{
+                        fontSize: 10, fontFamily: "Nunito_800ExtraBold",
+                        color: "#FFFFFF", letterSpacing: 0.8,
+                      }}>
+                        EXPAND
+                      </Text>
+                    </View>
+                  </View>
+                </Pressable>
+                {/* Card body */}
+                <View style={{ padding: 18 }}>
+                  <Text style={{
+                    fontSize: 20, fontFamily: "Nunito_800ExtraBold",
+                    color: colors.foreground, letterSpacing: -0.5, lineHeight: 24,
+                  }}>
+                    {design.title}
+                  </Text>
+                  <Text style={{
+                    fontSize: 13, fontFamily: "Nunito_600SemiBold",
+                    color: colors.mutedForeground, marginTop: 6, lineHeight: 19,
+                  }}>
+                    {design.description}
+                  </Text>
+                  {/* Hint footer */}
+                  <View style={{
+                    marginTop: 14, paddingTop: 14,
+                    borderTopWidth: 1, borderTopColor: colors.border,
+                    flexDirection: "row", alignItems: "center", gap: 8,
+                  }}>
+                    <Icon name="flash" size={14} color={colors.accent} />
+                    <Text style={{
+                      fontSize: 12, fontFamily: "Nunito_600SemiBold",
+                      color: colors.mutedForeground, flex: 1,
+                    }}>
+                      Chat with Grafly to earn +{XP_PER_SESSION} XP
+                    </Text>
+                  </View>
+                </View>
+              </Animated.View>
+
+              {/* Mentor identity row above the opener */}
+              <Animated.View
+                entering={FadeInDown.duration(480).easing(SMOOTH).delay(220)}
+                style={{ flexDirection: "row", alignItems: "center", gap: 10, marginTop: 22, marginBottom: 6 }}
+              >
+                <View style={{
+                  width: 32, height: 32, borderRadius: 100,
+                  backgroundColor: colors.primary + "1A",
+                  borderWidth: 1, borderColor: colors.primary + "40",
+                  alignItems: "center", justifyContent: "center",
+                  overflow: "hidden",
+                }}>
+                  <GraflyMascot state="idle" size={28} />
+                </View>
+                <View>
+                  <Text style={{
+                    fontSize: 13, fontFamily: "Nunito_800ExtraBold",
+                    color: colors.foreground, letterSpacing: -0.2,
+                  }}>
+                    Grafly
+                  </Text>
+                  <Text style={{
+                    fontSize: 10, fontFamily: "Nunito_800ExtraBold",
+                    color: colors.mutedForeground, letterSpacing: 1,
+                  }}>
+                    DESIGN MENTOR
+                  </Text>
+                </View>
+              </Animated.View>
+            </>
+          )}
+
           {messages.map((m, i) => (
             <Animated.View
               key={i}
-              entering={FadeInUp.duration(220)}
+              entering={FadeInUp.duration(360).easing(SMOOTH)}
               style={{
                 alignSelf: m.role === "user" ? "flex-end" : "flex-start",
-                maxWidth: "86%",
+                maxWidth: "88%",
                 backgroundColor: m.role === "user" ? colors.primary : colors.card,
                 paddingHorizontal: 16,
                 paddingVertical: 12,
