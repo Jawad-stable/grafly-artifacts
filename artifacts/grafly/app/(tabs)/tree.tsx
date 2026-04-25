@@ -12,15 +12,15 @@ import Animated, { FadeIn, FadeInDown } from "react-native-reanimated";
 import { Icon } from "@/components/Icon";
 import { router, useLocalSearchParams } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import Svg, { Path } from "react-native-svg";
+import Svg, { Path, Defs, LinearGradient, Stop, Circle } from "react-native-svg";
 import { useColors } from "@/hooks/useColors";
 import { useGame } from "@/context/GameContext";
 import { COURSES, type SkillNode, type Course } from "@/constants/lessons";
 import { PressScale } from "@/components/PressScale";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
-const NODE_SIZE = 64;
-const VERTICAL_GAP = 110;
+const NODE_SIZE = 68;
+const VERTICAL_GAP = 118;
 
 const POSITIONS = ["left", "center", "right"] as const;
 type NodePosition = (typeof POSITIONS)[number];
@@ -31,6 +31,13 @@ function getNodeX(pos: NodePosition): number {
   if (pos === "left") return center - 100;
   if (pos === "right") return center + 100;
   return center;
+}
+
+const TIER_PALETTE = ["#00A4FA", "#FF7BD0", "#E3ED43", "#FFB800", "#22DD88", "#A78BFA"];
+
+function tierColor(idx: number, fallback: string): string {
+  if (idx === 0) return fallback;
+  return TIER_PALETTE[idx % TIER_PALETTE.length];
 }
 
 function CoursesButton({ onPress }: { onPress: () => void }) {
@@ -247,13 +254,14 @@ function CoursePickerModal({
 }
 
 function NodeItem({
-  node, course, isCompleted, isLocked, posX, onPress,
+  node, course, isCompleted, isLocked, posX, onPress, tint,
 }: {
   node: SkillNode; course: Course; isCompleted: boolean;
-  isLocked: boolean; posX: number; onPress: () => void;
+  isLocked: boolean; posX: number; onPress: () => void; tint: string;
 }) {
   const colors = useColors();
-  const nodeColor = isCompleted ? colors.success : isLocked ? colors.muted : course.color;
+  const fillColor = isCompleted ? colors.success : isLocked ? colors.muted : tint;
+  const haloSize = NODE_SIZE + 24;
 
   return (
     <View style={{
@@ -262,36 +270,59 @@ function NodeItem({
       width: NODE_SIZE + 80,
       alignItems: "center",
     }}>
-      <PressScale
-        onPress={onPress}
-        disabled={isLocked}
-        style={{
-          width: NODE_SIZE, height: NODE_SIZE,
-          borderRadius: NODE_SIZE / 2,
-          backgroundColor: isLocked ? colors.muted + "30" : isCompleted ? colors.success : colors.card,
-          borderWidth: 2,
-          borderColor: isLocked ? colors.border : nodeColor,
-          alignItems: "center", justifyContent: "center",
-        }}
-      >
-        {isCompleted
-          ? <Icon name="checkmark" size={28} color={colors.primaryForeground} />
-          : isLocked
-          ? <Icon name="lock-closed" size={20} color={colors.mutedForeground} />
-          : <Icon name={node.icon as any} size={26} color={nodeColor} />
-        }
-      </PressScale>
-      <Text style={{
-        fontSize: 11,
-        fontFamily: "Nunito_800ExtraBold",
-        color: isLocked ? colors.mutedForeground : colors.foreground,
-        marginTop: 10,
-        textAlign: "center",
-        maxWidth: 100,
-        letterSpacing: -0.1,
-      }} numberOfLines={2}>
-        {node.title}
-      </Text>
+      <View style={{ width: haloSize, height: haloSize, alignItems: "center", justifyContent: "center" }}>
+        {!isLocked && (
+          <View style={{
+            position: "absolute",
+            width: haloSize, height: haloSize, borderRadius: haloSize / 2,
+            backgroundColor: fillColor + "26",
+          }} />
+        )}
+        <PressScale
+          onPress={onPress}
+          disabled={isLocked}
+          style={{
+            width: NODE_SIZE, height: NODE_SIZE,
+            borderRadius: NODE_SIZE / 2,
+            backgroundColor: isLocked ? colors.muted + "33" : fillColor,
+            borderWidth: isLocked ? 2 : 3,
+            borderColor: isLocked ? colors.border : "#FFFFFF",
+            alignItems: "center", justifyContent: "center",
+            shadowColor: isLocked ? "transparent" : fillColor,
+            shadowOffset: { width: 0, height: 6 },
+            shadowOpacity: isLocked ? 0 : 0.35,
+            shadowRadius: 12,
+            elevation: isLocked ? 0 : 6,
+          }}
+        >
+          {isCompleted
+            ? <Icon name="checkmark" size={30} color="#FFFFFF" />
+            : isLocked
+            ? <Icon name="lock-closed" size={22} color={colors.mutedForeground} />
+            : <Icon name={node.icon as any} size={28} color="#FFFFFF" />
+          }
+        </PressScale>
+      </View>
+      <View style={{
+        marginTop: 8,
+        paddingHorizontal: 10,
+        paddingVertical: 5,
+        borderRadius: 100,
+        backgroundColor: isLocked ? "transparent" : fillColor + "1A",
+        borderWidth: isLocked ? 1 : 0,
+        borderColor: colors.border,
+      }}>
+        <Text style={{
+          fontSize: 11,
+          fontFamily: "Nunito_800ExtraBold",
+          color: isLocked ? colors.mutedForeground : colors.foreground,
+          textAlign: "center",
+          maxWidth: 110,
+          letterSpacing: -0.1,
+        }} numberOfLines={2}>
+          {node.title}
+        </Text>
+      </View>
     </View>
   );
 }
@@ -543,28 +574,46 @@ export default function TreeScreen() {
           entering={FadeIn.duration(220)}
           style={{ paddingHorizontal: 24 }}
         >
-          {/* Editorial course summary */}
+          {/* Vibrant filled course summary */}
           <View style={{
-            backgroundColor: colors.card,
-            borderRadius: 24,
+            backgroundColor: course.color,
+            borderRadius: 28,
             padding: 22,
             marginBottom: 28,
-            borderWidth: 1,
-            borderColor: colors.border,
+            overflow: "hidden",
+            shadowColor: course.color,
+            shadowOffset: { width: 0, height: 12 },
+            shadowOpacity: 0.28,
+            shadowRadius: 20,
+            elevation: 8,
           }}>
+            {/* Decorative blobs */}
+            <View style={{
+              position: "absolute", right: -40, top: -40,
+              width: 160, height: 160, borderRadius: 80,
+              backgroundColor: "#FFFFFF22",
+            }} />
+            <View style={{
+              position: "absolute", right: 30, bottom: -50,
+              width: 110, height: 110, borderRadius: 55,
+              backgroundColor: colors.accent + "55",
+            }} />
+
             <View style={{ flexDirection: "row", alignItems: "center", gap: 14, marginBottom: 16 }}>
               <View style={{
-                width: 52, height: 52, borderRadius: 16,
-                backgroundColor: course.color + "1F",
+                width: 56, height: 56, borderRadius: 18,
+                backgroundColor: "#FFFFFF22",
+                borderWidth: 1.5,
+                borderColor: "#FFFFFF44",
                 alignItems: "center", justifyContent: "center",
               }}>
-                <Icon name={course.icon as any} size={26} color={course.color} />
+                <Icon name={course.icon as any} size={28} color="#FFFFFF" />
               </View>
               <View style={{ flex: 1 }}>
                 <Text style={{
                   fontSize: 11,
                   fontFamily: "Nunito_800ExtraBold",
-                  color: course.color,
+                  color: "#FFFFFFCC",
                   letterSpacing: 1.6,
                   marginBottom: 3,
                   textTransform: "uppercase",
@@ -572,79 +621,143 @@ export default function TreeScreen() {
                   Course
                 </Text>
                 <Text style={{
-                  fontSize: 19,
+                  fontSize: 20,
                   fontFamily: "Nunito_800ExtraBold",
-                  color: colors.foreground,
+                  color: "#FFFFFF",
                   letterSpacing: -0.5,
-                  lineHeight: 22,
+                  lineHeight: 24,
                 }}>
                   {course.title}
                 </Text>
               </View>
-              <Text style={{
-                fontSize: 30,
-                fontFamily: "Nunito_800ExtraBold",
-                color: colors.foreground,
-                letterSpacing: -1,
+              <View style={{
+                paddingHorizontal: 12,
+                paddingVertical: 8,
+                borderRadius: 14,
+                backgroundColor: "#FFFFFF",
               }}>
-                {courseProgress}%
-              </Text>
+                <Text style={{
+                  fontSize: 22,
+                  fontFamily: "Nunito_800ExtraBold",
+                  color: course.color,
+                  letterSpacing: -0.6,
+                }}>
+                  {courseProgress}%
+                </Text>
+              </View>
             </View>
             <Text style={{
               fontSize: 13,
               fontFamily: "Nunito_600SemiBold",
-              color: colors.mutedForeground,
+              color: "#FFFFFFDD",
               lineHeight: 19,
               marginBottom: 18,
             }}>
               {course.description}
             </Text>
-            {/* Thin progress bar */}
+            {/* Vibrant progress bar */}
             <View style={{
-              height: 4,
+              height: 8,
               borderRadius: 100,
-              backgroundColor: colors.border,
+              backgroundColor: "#00000026",
               overflow: "hidden",
             }}>
               <View style={{
                 height: "100%",
                 width: `${courseProgress}%`,
-                backgroundColor: course.color,
+                backgroundColor: colors.accent,
                 borderRadius: 100,
               }} />
             </View>
-            <Text style={{
-              fontSize: 11,
-              fontFamily: "Nunito_800ExtraBold",
-              color: colors.mutedForeground,
-              letterSpacing: 1.2,
-              marginTop: 12,
-            }}>
-              {completedInCourse} OF {totalInCourse} LESSONS
-            </Text>
+            <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginTop: 12 }}>
+              <Text style={{
+                fontSize: 11,
+                fontFamily: "Nunito_800ExtraBold",
+                color: "#FFFFFFCC",
+                letterSpacing: 1.2,
+              }}>
+                {completedInCourse} OF {totalInCourse} LESSONS
+              </Text>
+              <View style={{ flexDirection: "row", alignItems: "center", gap: 4 }}>
+                <Icon name="flame" size={14} color={colors.accent} />
+                <Text style={{
+                  fontSize: 12,
+                  fontFamily: "Nunito_800ExtraBold",
+                  color: "#FFFFFF",
+                  letterSpacing: 0.4,
+                }}>
+                  KEEP GOING
+                </Text>
+              </View>
+            </View>
           </View>
 
           {/* Section eyebrow above tree */}
-          <Text style={{
-            fontSize: 11,
-            fontFamily: "Nunito_800ExtraBold",
-            color: colors.mutedForeground,
-            letterSpacing: 1.4,
-            marginBottom: 12,
-          }}>
-            THE PATH
-          </Text>
+          <View style={{ flexDirection: "row", alignItems: "center", gap: 10, marginBottom: 14 }}>
+            <View style={{
+              paddingHorizontal: 10, paddingVertical: 5, borderRadius: 100,
+              backgroundColor: course.color + "26",
+            }}>
+              <Text style={{
+                fontSize: 11, fontFamily: "Nunito_800ExtraBold",
+                color: course.color, letterSpacing: 1.4,
+              }}>
+                THE PATH
+              </Text>
+            </View>
+            <View style={{ flex: 1, height: 1, backgroundColor: colors.border }} />
+            <Text style={{
+              fontSize: 11, fontFamily: "Nunito_800ExtraBold",
+              color: colors.mutedForeground, letterSpacing: 1.2,
+            }}>
+              {nodes.length} STAGES
+            </Text>
+          </View>
 
           {/* Winding node tree */}
           <Animated.View
             entering={FadeInDown.duration(280).delay(60)}
-            style={{ height: treeHeight, position: "relative", alignSelf: "center", width: innerW }}
+            style={{ height: treeHeight + 90, position: "relative", alignSelf: "center", width: innerW }}
           >
+            {/* START badge */}
+            <View style={{
+              position: "absolute", top: 0, left: 0, right: 0, alignItems: "center", zIndex: 2,
+            }}>
+              <View style={{
+                paddingHorizontal: 14, paddingVertical: 8, borderRadius: 100,
+                backgroundColor: course.color,
+                flexDirection: "row", alignItems: "center", gap: 6,
+                shadowColor: course.color, shadowOffset: { width: 0, height: 6 },
+                shadowOpacity: 0.35, shadowRadius: 10, elevation: 5,
+              }}>
+                <Icon name="rocket" size={14} color="#FFFFFF" />
+                <Text style={{
+                  fontSize: 11, fontFamily: "Nunito_800ExtraBold",
+                  color: "#FFFFFF", letterSpacing: 1.4,
+                }}>
+                  START
+                </Text>
+              </View>
+            </View>
+
             <Svg
               width={innerW}
               height={treeHeight}
-              style={{ position: "absolute", top: 0, left: 0 }}
+              style={{ position: "absolute", top: 40, left: 0 }}
             >
+              <Defs>
+                {nodes.map((node, idx) => {
+                  if (idx === nodes.length - 1) return null;
+                  const cFrom = isNodeCompleted(node) ? colors.success : tierColor(idx, course.color);
+                  const cTo = isNodeCompleted(nodes[idx + 1]) ? colors.success : tierColor(idx + 1, course.color);
+                  return (
+                    <LinearGradient key={`g-${node.id}`} id={`grad-${node.id}`} x1="0" y1="0" x2="0" y2="1">
+                      <Stop offset="0" stopColor={cFrom} stopOpacity="0.9" />
+                      <Stop offset="1" stopColor={cTo} stopOpacity="0.9" />
+                    </LinearGradient>
+                  );
+                })}
+              </Defs>
               {nodes.map((node, idx) => {
                 if (idx === nodes.length - 1) return null;
                 const posA = POSITIONS[idx % 3];
@@ -655,13 +768,16 @@ export default function TreeScreen() {
                 const y2 = (idx + 1) * VERTICAL_GAP + NODE_SIZE / 2 + 30;
                 const cpY = (y1 + y2) / 2;
                 const isCompleted = isNodeCompleted(node);
+                const nextLocked = isNodeLocked(nodes[idx + 1]) && !isNodeCompleted(nodes[idx + 1]);
+                const dimmed = nextLocked && !isCompleted;
                 return (
                   <Path
                     key={node.id}
                     d={`M ${x1} ${y1} C ${x1} ${cpY} ${x2} ${cpY} ${x2} ${y2}`}
-                    stroke={isCompleted ? colors.success : colors.border}
-                    strokeWidth={2}
-                    strokeDasharray={isCompleted ? undefined : "6,6"}
+                    stroke={dimmed ? colors.border : `url(#grad-${node.id})`}
+                    strokeWidth={dimmed ? 2 : 5}
+                    strokeDasharray={dimmed ? "6,6" : undefined}
+                    strokeLinecap="round"
                     fill="none"
                   />
                 );
@@ -673,10 +789,11 @@ export default function TreeScreen() {
               const posX = getNodeX(pos);
               const completed = isNodeCompleted(node);
               const locked = isNodeLocked(node);
+              const tint = tierColor(idx, course.color);
               return (
                 <View
                   key={node.id}
-                  style={{ position: "absolute", top: idx * VERTICAL_GAP + 30, left: 0, right: 0, alignItems: "center" }}
+                  style={{ position: "absolute", top: idx * VERTICAL_GAP + 70, left: 0, right: 0, alignItems: "center" }}
                 >
                   <NodeItem
                     node={node}
@@ -684,11 +801,34 @@ export default function TreeScreen() {
                     isCompleted={completed}
                     isLocked={locked}
                     posX={posX}
+                    tint={tint}
                     onPress={() => { setSelectedNode(node); setSheetVisible(true); }}
                   />
                 </View>
               );
             })}
+
+            {/* FINISH badge */}
+            <View style={{
+              position: "absolute", bottom: 0, left: 0, right: 0, alignItems: "center", zIndex: 2,
+            }}>
+              <View style={{
+                paddingHorizontal: 14, paddingVertical: 8, borderRadius: 100,
+                backgroundColor: courseProgress === 100 ? colors.success : colors.foreground,
+                flexDirection: "row", alignItems: "center", gap: 6,
+                shadowColor: courseProgress === 100 ? colors.success : colors.foreground,
+                shadowOffset: { width: 0, height: 6 },
+                shadowOpacity: 0.3, shadowRadius: 10, elevation: 5,
+              }}>
+                <Icon name="trophy" size={14} color={courseProgress === 100 ? "#FFFFFF" : colors.background} />
+                <Text style={{
+                  fontSize: 11, fontFamily: "Nunito_800ExtraBold",
+                  color: courseProgress === 100 ? "#FFFFFF" : colors.background, letterSpacing: 1.4,
+                }}>
+                  FINISH
+                </Text>
+              </View>
+            </View>
           </Animated.View>
         </Animated.View>
       </ScrollView>
