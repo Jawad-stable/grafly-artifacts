@@ -70,10 +70,10 @@ function TabPill({
   const { state } = useGame();
   const isLight = state.themeMode === "light";
 
-  // Active = soft tinted primary pill, hugging icon + label. No focus-state
-  // motion — the pill simply renders in its active or inactive form so the
-  // highlight always sits perfectly centered around the content.
-  const activeBg = colors.primary + (isLight ? "1F" : "26");
+  // Vertical layout: icon on top, label directly below. Active = primary
+  // color icon + small label underneath. Inactive = muted icon + a tiny
+  // dot in place of the label so every cell stays the same height and
+  // the icons never jump when switching tabs. No focus-state motion.
   const activeFg = colors.primary;
   const inactiveIcon = isLight
     ? colors.primaryForeground + "B3"
@@ -81,29 +81,27 @@ function TabPill({
 
   return (
     <View style={styles.itemWrap}>
-      <View
-        style={[
-          styles.pill,
-          focused
-            ? { backgroundColor: activeBg, paddingHorizontal: 14 }
-            : { backgroundColor: "transparent", paddingHorizontal: 0 },
-        ]}
-      >
-        <Icon
-          name={name}
-          size={22}
-          color={focused ? activeFg : inactiveIcon}
-          weight={focused ? "fill" : "bold"}
+      <Icon
+        name={name}
+        size={22}
+        color={focused ? activeFg : inactiveIcon}
+        weight={focused ? "fill" : "bold"}
+      />
+      {focused ? (
+        <AText
+          numberOfLines={1}
+          style={[styles.label, { color: activeFg }]}
+        >
+          {label}
+        </AText>
+      ) : (
+        <View
+          style={[
+            styles.dot,
+            { backgroundColor: inactiveIcon, opacity: 0.35 },
+          ]}
         />
-        {focused && (
-          <AText
-            numberOfLines={1}
-            style={[styles.label, { color: activeFg }]}
-          >
-            {label}
-          </AText>
-        )}
-      </View>
+      )}
     </View>
   );
 }
@@ -229,19 +227,17 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     paddingHorizontal: 4,
-  },
-  pill: {
-    height: 40,
-    minWidth: 40,
-    borderRadius: 100,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 8,
+    gap: 4,
   },
   label: {
     fontFamily: "Nunito_800ExtraBold",
-    fontSize: 13,
-    letterSpacing: 0.2,
+    fontSize: 10,
+    letterSpacing: 0.4,
+    lineHeight: 12,
+  },
+  dot: {
+    width: 4,
+    height: 4,
+    borderRadius: 2,
   },
 });
