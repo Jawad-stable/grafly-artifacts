@@ -856,13 +856,15 @@ export default function OnboardingScreen() {
               {q.type === "true_false" && (
                 <View style={{ flexDirection: "row", gap: 12, width: "100%", alignSelf: "stretch" }}>
                   {[true, false].map((val) => {
+                    const isCorrectAnswer = showFeedback && val === q.correctBool;
+                    const isWrongPick = showFeedback && answerSelected === val && val !== q.correctBool;
                     let borderColor = colors.border;
                     let bg = colors.card;
                     let textColor = colors.foreground;
-                    if (showFeedback && val === q.correctBool) {
-                      borderColor = colors.success; bg = colors.success + "20"; textColor = colors.success;
-                    } else if (showFeedback && answerSelected === val && val !== q.correctBool) {
-                      borderColor = colors.destructive; bg = colors.destructive + "20"; textColor = colors.destructive;
+                    if (isCorrectAnswer) {
+                      borderColor = colors.success; bg = colors.success + "18"; textColor = colors.success;
+                    } else if (isWrongPick) {
+                      borderColor = colors.destructive; bg = colors.destructive + "18"; textColor = colors.destructive;
                     }
                     return (
                       <PressScale
@@ -874,17 +876,22 @@ export default function OnboardingScreen() {
                           flexGrow: 1,
                           flexShrink: 1,
                           minWidth: 0,
-                          minHeight: 96,
-                          borderRadius: 18,
-                          paddingVertical: 26,
+                          minHeight: 120,
+                          borderRadius: 22,
+                          paddingVertical: 32,
+                          paddingHorizontal: 12,
                           alignItems: "center",
                           justifyContent: "center",
+                          gap: 10,
                           borderWidth: 2,
                           borderColor,
                           backgroundColor: bg,
                         }}
                       >
-                        <Text style={{ fontSize: 22, fontFamily: "Nunito_800ExtraBold", color: textColor }}>
+                        {(isCorrectAnswer || isWrongPick) ? (
+                          <Icon name={isCorrectAnswer ? "checkmark-circle" : "close-circle"} size={30} color={textColor} />
+                        ) : null}
+                        <Text style={{ fontSize: 22, fontFamily: "Nunito_800ExtraBold", color: textColor, letterSpacing: 0.3 }}>
                           {val ? "True" : "False"}
                         </Text>
                       </PressScale>

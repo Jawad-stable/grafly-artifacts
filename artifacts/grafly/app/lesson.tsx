@@ -550,11 +550,12 @@ export default function LessonScreen() {
         return;
       }
     }
+  }
 
-    setTimeout(() => {
-      setMascotState("think");
-      advance(correct);
-    }, 900);
+  function handleNext() {
+    if (!answered || isCorrect === null) return;
+    setMascotState("think");
+    advance(isCorrect);
   }
 
   function advance(wasCorrect: boolean) {
@@ -784,6 +785,29 @@ export default function LessonScreen() {
               <Text style={{ fontSize: 14, fontFamily: "Nunito_600SemiBold", color: colors.destructiveForeground, lineHeight: 20 }}>
                 {currentQ.explanation}
               </Text>
+            </Animated.View>
+          )}
+
+          {/* Next button — user controls when to advance */}
+          {answered && (isCorrect || state.hearts > 0) && (
+            <Animated.View entering={FadeIn} style={{ marginTop: 20 }}>
+              <PressScale
+                onPress={handleNext}
+                style={{
+                  backgroundColor: isCorrect ? colors.success : colors.primary,
+                  borderRadius: 100,
+                  paddingVertical: 18,
+                  flexDirection: "row",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: 10,
+                }}
+              >
+                <Text style={{ fontSize: 16, fontFamily: "Nunito_800ExtraBold", color: colors.primaryForeground, letterSpacing: 0.4 }}>
+                  {questionIdx + 1 >= totalQuestions ? "Finish" : "Next"}
+                </Text>
+                <Icon name="arrow-forward" size={18} color={colors.primaryForeground} />
+              </PressScale>
             </Animated.View>
           )}
         </ScrollView>
