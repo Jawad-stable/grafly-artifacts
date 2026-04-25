@@ -19,6 +19,7 @@ import { useColors } from "@/hooks/useColors";
 import { useAuth } from "@/context/AuthContext";
 import { GraflyMascot } from "@/components/GraflyMascot";
 import { PressScale } from "@/components/PressScale";
+import { GoogleLogo } from "@/components/GoogleLogo";
 
 type Mode = "signin" | "signup" | "reset";
 
@@ -464,32 +465,26 @@ export default function AuthScreen() {
                 onPress={handleGoogle}
                 disabled={googleLoading || loading}
                 style={{
-                  backgroundColor: colors.card,
+                  backgroundColor: "#FFFFFF",
                   borderRadius: 100,
                   paddingVertical: 16,
                   alignItems: "center",
                   flexDirection: "row",
                   justifyContent: "center",
                   gap: 12,
-                  borderWidth: 1.5,
-                  borderColor: colors.border,
+                  borderWidth: 1,
+                  borderColor: "#DADCE0",
                   opacity: googleLoading ? 0.7 : 1,
                 }}
               >
                 {googleLoading ? (
-                  <ActivityIndicator color={colors.foreground} />
+                  <ActivityIndicator color="#3C4043" />
                 ) : (
                   <>
-                    <View style={{
-                      width: 26, height: 26, borderRadius: 13,
-                      backgroundColor: "#FFFFFF",
-                      alignItems: "center", justifyContent: "center",
-                    }}>
-                      <Icon name="logo-google" size={16} color="#4285F4" />
-                    </View>
+                    <GoogleLogo size={20} />
                     <Text style={{
                       fontSize: 15, fontFamily: "Nunito_800ExtraBold",
-                      color: colors.foreground, letterSpacing: -0.2,
+                      color: "#3C4043", letterSpacing: -0.2,
                     }}>
                       Continue with Google
                     </Text>
