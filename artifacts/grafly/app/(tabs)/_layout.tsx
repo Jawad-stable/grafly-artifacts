@@ -152,12 +152,13 @@ export default function TabLayout() {
   const { state } = useGame();
   const isLight = state.themeMode === "light";
 
-  // Floating pill: pinned to the screen edges with 14 px of horizontal
-  // breathing room so it lines up flush with the critique composer and
-  // chat content padding.
+  // Floating pill: 90% of screen width, centered, with a hard max so it
+  // never stretches on tablets, plus a guaranteed marginHorizontal so it
+  // never touches the left/right edges.
   const tabBarHeight = 70;
   const tabBottom = Math.max(insets.bottom + 8, 22);
   const pillRadius = 35;
+  const maxBarWidth = 380;
 
   return (
     <Tabs
@@ -170,12 +171,13 @@ export default function TabLayout() {
         tabBarStyle: {
           position: "absolute",
           bottom: tabBottom,
-          // Pinned to left/right with 14 px of breathing room — the same
-          // horizontal padding the critique composer + chat content use,
-          // so the tab pill lines up flush with the input bar above it.
-          left: 14,
-          right: 14,
           flexDirection: "row",
+          // 90% of screen width, capped on wide screens, centered, with a
+          // guaranteed horizontal margin so it never touches the edges.
+          width: "90%",
+          maxWidth: maxBarWidth,
+          alignSelf: "center",
+          marginHorizontal: 16,
           borderRadius: pillRadius,
           height: tabBarHeight,
           paddingTop: 0,
