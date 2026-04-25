@@ -459,55 +459,59 @@ export default function CritiqueScreen() {
             </>
           )}
 
-          {messages.map((m, i) => (
-            <Animated.View
-              key={i}
-              entering={FadeInUp.duration(360).easing(SMOOTH)}
-              style={{
-                alignSelf: m.role === "user" ? "flex-end" : "flex-start",
-                maxWidth: "88%",
-                backgroundColor: m.role === "user" ? colors.primary : colors.card,
-                paddingHorizontal: 16,
-                paddingVertical: 12,
-                borderRadius: 22,
-                borderBottomRightRadius: m.role === "user" ? 6 : 22,
-                borderBottomLeftRadius: m.role === "assistant" ? 6 : 22,
-                borderWidth: m.role === "assistant" ? 1 : 0,
-                borderColor: colors.border,
-                shadowColor: m.role === "user" ? colors.primary : "#000",
-                shadowOffset: { width: 0, height: 2 },
-                shadowOpacity: m.role === "user" ? 0.15 : 0.04,
-                shadowRadius: 6,
-                elevation: m.role === "user" ? 3 : 1,
-              }}
-            >
-              {m.role === "assistant" ? (
-                <TypewriterText
-                  text={m.content}
-                  active={i === animateIndex}
-                  onTick={() => scrollRef.current?.scrollToEnd({ animated: false })}
-                  onDone={() => setAnimateIndex(-1)}
-                  style={{
-                    fontSize: 14,
-                    lineHeight: 21,
-                    fontFamily: "Nunito_600SemiBold",
-                    color: colors.foreground,
-                  }}
-                />
-              ) : (
-                <Text
-                  style={{
-                    fontSize: 14,
-                    lineHeight: 21,
-                    fontFamily: "Nunito_600SemiBold",
-                    color: colors.primaryForeground,
-                  }}
-                >
-                  {m.content}
-                </Text>
-              )}
-            </Animated.View>
-          ))}
+          {messages.map((m, i) => {
+            const isUser = m.role === "user";
+            const bubbleBg = isUser ? "#00A4FA" : "#FFFFFF";
+            const bubbleFg = isUser ? "#FFFFFF" : "#21263F";
+            return (
+              <Animated.View
+                key={i}
+                entering={FadeInUp.duration(360).easing(SMOOTH)}
+                style={{
+                  alignSelf: isUser ? "flex-end" : "flex-start",
+                  maxWidth: "88%",
+                  backgroundColor: bubbleBg,
+                  paddingHorizontal: 16,
+                  paddingVertical: 12,
+                  borderRadius: 22,
+                  borderBottomRightRadius: isUser ? 6 : 22,
+                  borderBottomLeftRadius: !isUser ? 6 : 22,
+                  borderWidth: 0,
+                  shadowColor: isUser ? "#00A4FA" : "#000",
+                  shadowOffset: { width: 0, height: 2 },
+                  shadowOpacity: isUser ? 0.15 : 0.06,
+                  shadowRadius: 6,
+                  elevation: isUser ? 3 : 1,
+                }}
+              >
+                {!isUser ? (
+                  <TypewriterText
+                    text={m.content}
+                    active={i === animateIndex}
+                    onTick={() => scrollRef.current?.scrollToEnd({ animated: false })}
+                    onDone={() => setAnimateIndex(-1)}
+                    style={{
+                      fontSize: 14,
+                      lineHeight: 21,
+                      fontFamily: "Nunito_600SemiBold",
+                      color: bubbleFg,
+                    }}
+                  />
+                ) : (
+                  <Text
+                    style={{
+                      fontSize: 14,
+                      lineHeight: 21,
+                      fontFamily: "Nunito_600SemiBold",
+                      color: bubbleFg,
+                    }}
+                  >
+                    {m.content}
+                  </Text>
+                )}
+              </Animated.View>
+            );
+          })}
 
           {sending && (
             <View
