@@ -483,65 +483,12 @@ export default function HomeScreen() {
                         opacity: 0.4,
                       }}
                     />
-                    {/* Dashed selection box */}
-                    <View
-                      style={{
-                        position: "absolute",
-                        width: 144, height: 144, borderRadius: 16,
-                        borderWidth: 1,
-                        borderColor: handleStroke,
-                        borderStyle: "dashed",
-                      }}
-                    />
-                    {/* 4 yellow square corner handles */}
-                    {[
-                      { top: 0, left: 0 },
-                      { top: 0, right: 0 },
-                      { bottom: 0, left: 0 },
-                      { bottom: 0, right: 0 },
-                    ].map((pos, i) => (
-                      <View
-                        key={`c${i}`}
-                        style={{
-                          position: "absolute",
-                          width: 9, height: 9,
-                          backgroundColor: accent,
-                          borderWidth: 1,
-                          borderColor: textColor,
-                          shadowColor: accent,
-                          shadowOffset: { width: 0, height: 0 },
-                          shadowOpacity: 0.9,
-                          shadowRadius: 5,
-                          elevation: 4,
-                          ...pos,
-                        }}
-                      />
-                    ))}
-                    {/* 4 midpoint circles (top, bottom, left, right) */}
-                    {[
-                      { top: 0, left: 72 },
-                      { bottom: 0, left: 72 },
-                      { top: 72, left: 0 },
-                      { top: 72, right: 0 },
-                    ].map((pos, i) => (
-                      <View
-                        key={`m${i}`}
-                        style={{
-                          position: "absolute",
-                          width: 8, height: 8, borderRadius: 4,
-                          backgroundColor: textColor,
-                          borderWidth: 1,
-                          borderColor: handleStroke,
-                          ...pos,
-                        }}
-                      />
-                    ))}
                     {/* The mascot itself */}
                     <GraflyMascot state={mascotState} size={120} />
                   </View>
 
-                  {/* Layer 5b: small UI sprinkles INSIDE the selection box —
-                      mini card mockup + accent blob beside the mascot */}
+                  {/* Layer 5b: small UI sprinkles beside the mascot —
+                      mini card mockup + accent blob */}
                   {/* Mini UI card mockup */}
                   <View
                     pointerEvents="none"
