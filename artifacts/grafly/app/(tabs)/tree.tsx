@@ -730,10 +730,10 @@ export default function TreeScreen() {
                 shadowColor: course.color, shadowOffset: { width: 0, height: 6 },
                 shadowOpacity: 0.35, shadowRadius: 10, elevation: 5,
               }}>
-                <Icon name="rocket" size={14} color="#FFFFFF" />
+                <Icon name="rocket-outline" size={14} color={colors.primaryForeground} />
                 <Text style={{
                   fontSize: 11, fontFamily: "Nunito_800ExtraBold",
-                  color: "#FFFFFF", letterSpacing: 1.4,
+                  color: colors.primaryForeground, letterSpacing: 1.4,
                 }}>
                   START
                 </Text>

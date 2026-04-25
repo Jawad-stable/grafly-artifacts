@@ -106,10 +106,12 @@ export type IconName =
   | "infinite-outline"
   | "layers-outline"
   | "lock-closed"
+  | "lock-closed-outline"
   | "lock-open"
   | "log-out-outline"
   | "logo-google"
   | "mail"
+  | "mail-outline"
   | "medal"
   | "moon"
   | "pencil"
@@ -121,6 +123,7 @@ export type IconName =
   | "rocket-outline"
   | "scale-outline"
   | "shield-checkmark"
+  | "shield-checkmark-outline"
   | "shuffle"
   | "star"
   | "star-outline"
@@ -180,10 +183,12 @@ const MAP: Record<IconName, PhosphorComp> = {
   "infinite-outline": InfinityIcon,
   "layers-outline": Stack,
   "lock-closed": Lock,
+  "lock-closed-outline": Lock,
   "lock-open": LockOpen,
   "log-out-outline": SignOut,
   "logo-google": GoogleLogo,
   "mail": Envelope,
+  "mail-outline": Envelope,
   "medal": Medal,
   "moon": Moon,
   "pencil": Pencil,
@@ -195,6 +200,7 @@ const MAP: Record<IconName, PhosphorComp> = {
   "rocket-outline": Rocket,
   "scale-outline": Scales,
   "shield-checkmark": ShieldCheck,
+  "shield-checkmark-outline": ShieldCheck,
   "shuffle": Shuffle,
   "star": Star,
   "star-outline": Star,

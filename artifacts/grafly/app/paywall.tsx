@@ -66,7 +66,8 @@ export default function PaywallScreen() {
     await new Promise((r) => setTimeout(r, 1200));
     dispatch({ type: "SET_PRO", isPro: true });
     setPurchasing(false);
-    router.back();
+    if (router.canGoBack()) router.back();
+    else router.replace("/");
   }
 
   const activePlan = PLANS.find((p) => p.id === selectedPlan)!;
@@ -101,7 +102,10 @@ export default function PaywallScreen() {
             GRAFLY PRO
           </Text>
           <TouchableOpacity
-            onPress={() => router.back()}
+            onPress={() => {
+              if (router.canGoBack()) router.back();
+              else router.replace("/");
+            }}
             hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
             style={{
               width: 36,

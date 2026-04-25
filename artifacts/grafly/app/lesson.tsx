@@ -500,7 +500,13 @@ export default function LessonScreen() {
         <Text style={{ fontSize: 18, fontFamily: "Nunito_800ExtraBold", color: colors.foreground, marginTop: 20 }}>
           Lesson not found
         </Text>
-        <TouchableOpacity onPress={() => router.back()} style={{ marginTop: 20 }}>
+        <TouchableOpacity
+          onPress={() => {
+            if (router.canGoBack()) router.back();
+            else router.replace("/");
+          }}
+          style={{ marginTop: 20 }}
+        >
           <Text style={{ fontSize: 16, fontFamily: "Nunito_600SemiBold", color: colors.primary }}>Go Back</Text>
         </TouchableOpacity>
       </View>
@@ -690,7 +696,10 @@ export default function LessonScreen() {
       <View style={{ paddingTop: paddingTop + 8, paddingHorizontal: 24, paddingBottom: 12 }}>
         <View style={{ flexDirection: "row", alignItems: "center", gap: 14 }}>
           <PressScale
-            onPress={() => router.back()}
+            onPress={() => {
+              if (router.canGoBack()) router.back();
+              else router.replace("/");
+            }}
             style={{ width: 38, height: 38, borderRadius: 100, backgroundColor: colors.card, alignItems: "center", justifyContent: "center" }}
           >
             <Icon name="close" size={20} color={colors.foreground} />

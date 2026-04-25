@@ -40,7 +40,10 @@ export default function CoursesScreen() {
       >
         <View style={{ flexDirection: "row", alignItems: "center", gap: 14, marginBottom: 14 }}>
           <PressScale
-            onPress={() => router.back()}
+            onPress={() => {
+              if (router.canGoBack()) router.back();
+              else router.replace("/");
+            }}
             hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
             style={{ width: 40, height: 40, borderRadius: 100, backgroundColor: colors.card, alignItems: "center", justifyContent: "center" }}
           >

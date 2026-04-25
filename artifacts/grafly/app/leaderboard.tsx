@@ -270,7 +270,10 @@ export default function LeaderboardScreen() {
       >
         <View style={{ flexDirection: "row", alignItems: "center", gap: 12, marginBottom: 16 }}>
           <PressScale
-            onPress={() => router.back()}
+            onPress={() => {
+              if (router.canGoBack()) router.back();
+              else router.replace("/");
+            }}
             hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
             style={{
               width: 40,
