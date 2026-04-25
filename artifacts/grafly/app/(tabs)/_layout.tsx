@@ -90,21 +90,18 @@ function TabPill({
 
   const pillStyle = useAnimatedStyle(() => ({
     opacity: progress.value,
-    transform: [
-      { scaleX: 0.6 + progress.value * 0.4 },
-    ],
   }));
 
   const labelStyle = useAnimatedStyle(() => ({
     opacity: progress.value,
-    marginLeft: progress.value * 6,
-    maxWidth: progress.value * 90,
+    marginLeft: progress.value * 8,
+    maxWidth: progress.value * 100,
   }));
 
   // Animate horizontal padding so inactive tabs don't reserve
   // label space (compact icon-only on narrow widths).
   const contentStyle = useAnimatedStyle(() => ({
-    paddingHorizontal: 4 + progress.value * 8,
+    paddingHorizontal: 12 + progress.value * 4,
   }));
 
   const iconColor = focused ? activeFg : inactiveIcon;
@@ -152,8 +149,8 @@ export default function TabLayout() {
   const insets = useSafeAreaInsets();
   const { state } = useGame();
   const bottomInset = insets.bottom;
-  const tabBarHeight = 64;
-  const tabBottom = Math.max(bottomInset, Platform.OS === "web" ? 18 : 14);
+  const tabBarHeight = 60;
+  const tabBottom = Math.max(bottomInset, 16);
   const isLight = state.themeMode === "light";
   const pillRadius = tabBarHeight / 2;
 
@@ -168,24 +165,25 @@ export default function TabLayout() {
         tabBarStyle: {
           position: "absolute",
           bottom: tabBottom,
-          left: 14,
-          right: 14,
+          left: 16,
+          right: 16,
           borderRadius: pillRadius,
           height: tabBarHeight,
+          paddingTop: 0,
           paddingBottom: 0,
-          paddingHorizontal: 6,
+          paddingHorizontal: 8,
           backgroundColor: "transparent",
           borderTopWidth: 0,
-          elevation: 14,
+          elevation: 10,
           shadowColor: "#000",
-          shadowOffset: { width: 0, height: 12 },
-          shadowOpacity: isLight ? 0.18 : 0.45,
-          shadowRadius: 28,
+          shadowOffset: { width: 0, height: 8 },
+          shadowOpacity: isLight ? 0.12 : 0.35,
+          shadowRadius: 20,
         },
         tabBarBackground: () => (
           <View style={StyleSheet.absoluteFill}>
             <BlurView
-              intensity={90}
+              intensity={80}
               tint={isLight ? "light" : "dark"}
               style={[
                 StyleSheet.absoluteFill,
@@ -198,27 +196,14 @@ export default function TabLayout() {
                 {
                   backgroundColor: isLight
                     ? colors.foreground + "F2"
-                    : colors.card + "D9",
+                    : colors.card + "E6",
                   borderRadius: pillRadius,
                   borderWidth: 1,
                   borderColor: isLight
-                    ? "#FFFFFF14"
-                    : colors.border + "55",
+                    ? colors.primaryForeground + "1A"
+                    : colors.border + "66",
                 },
               ]}
-            />
-            {/* Hairline highlight on top edge for depth */}
-            <View
-              pointerEvents="none"
-              style={{
-                position: "absolute",
-                top: 0,
-                left: 24,
-                right: 24,
-                height: 1,
-                backgroundColor: isLight ? "#FFFFFF22" : "#FFFFFF12",
-                borderRadius: 1,
-              }}
             />
           </View>
         ),
@@ -276,17 +261,16 @@ export default function TabLayout() {
 const styles = StyleSheet.create({
   itemWrap: {
     flex: 1,
-    height: 44,
+    height: 60,
     alignItems: "center",
     justifyContent: "center",
   },
   pillWrap: {
-    height: 40,
+    height: 44,
     minWidth: 44,
     alignItems: "center",
     justifyContent: "center",
     position: "relative",
-    paddingHorizontal: 4,
   },
   pillBg: {
     position: "absolute",
@@ -294,13 +278,13 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
-    borderRadius: 999,
+    borderRadius: 22,
   },
   pillContent: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    height: 40,
+    height: 44,
   },
   labelBox: {
     overflow: "hidden",
@@ -308,7 +292,7 @@ const styles = StyleSheet.create({
   },
   label: {
     fontFamily: "Nunito_800ExtraBold",
-    fontSize: 12,
+    fontSize: 13,
     letterSpacing: 0.2,
   },
 });
