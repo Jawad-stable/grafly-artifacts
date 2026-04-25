@@ -30,6 +30,25 @@ import { AText } from "@/components/AText";
 import { PressScale } from "@/components/PressScale";
 import { LinearGradient } from "expo-linear-gradient";
 import { BlurView } from "expo-blur";
+import { relLuminance } from "@/constants/contrast";
+
+// Mix a hex color toward white (amount > 0) or black (amount < 0).
+// Used to derive a 3-stop gradient from each course's base color so
+// every card keeps its own hue while sharing the same depth treatment.
+function tintHex(hex: string, amount: number): string {
+  const c = hex.replace("#", "").slice(0, 6);
+  if (c.length < 6) return hex;
+  const r = parseInt(c.slice(0, 2), 16);
+  const g = parseInt(c.slice(2, 4), 16);
+  const b = parseInt(c.slice(4, 6), 16);
+  const mix = (v: number) =>
+    amount >= 0
+      ? Math.round(v + (255 - v) * amount)
+      : Math.round(v * (1 + amount));
+  const toHex = (v: number) =>
+    Math.max(0, Math.min(255, v)).toString(16).padStart(2, "0");
+  return `#${toHex(mix(r))}${toHex(mix(g))}${toHex(mix(b))}`;
+}
 
 function getGreeting(name: string): string {
   const hour = new Date().getHours();
@@ -309,91 +328,138 @@ export default function HomeScreen() {
               const mascotStates = ["think", "celebrate", "idle", "correct", "oops"] as const;
               const mascotState = mascotStates[index % mascotStates.length];
 
-              // Grafly-style design treatment: layered blue, soft glow,
-              // faint Figma-style grid, dashed selection box around mascot,
-              // glowing yellow accent nodes, and a glassmorphism footer.
-              const accentYellow = "#FFD84D";
+              // Per-course palette derived from the course's own base color
+              // so every card stays distinct (blue, yellow, pink, etc.) while
+              // sharing the same Grafly visual language.
+              const baseColor = course.color;
+              const lightTint = tintHex(baseColor, 0.32);
+              const darkTint = tintHex(baseColor, -0.28);
+              const deepTint = tintHex(baseColor, -0.45);
+
+              // Light cards (yellow) need dark text + dark accent for contrast.
+              const isLightCard = relLuminance(baseColor) > 0.55;
+              const textColor = isLightCard ? "#1A1A2E" : "#FFFFFF";
+              const textSoft = isLightCard ? "#1A1A2EB0" : "#FFFFFFB8";
+              const textMuted = isLightCard ? "#1A1A2E80" : "#FFFFFFB0";
+              const accent = isLightCard ? "#FF7BD0" : "#FFD84D"; // pink on light, yellow elsewhere
+              const pillBg = isLightCard ? "#1A1A2E1F" : "#FFFFFF26";
+              const lineColor = isLightCard ? "#1A1A2E14" : "#FFFFFF14";
+              const handleStroke = isLightCard ? "#1A1A2E80" : "#FFFFFF80";
+
               const courseLabel = `COURSE ${String(index + 1).padStart(2, "0")}`;
 
               return (
                 <PressScale
                   onPress={() => router.push({ pathname: "/(tabs)/tree", params: { courseId: course.id } })}
                   style={{
-                    width: cardW, height: 290, borderRadius: 24,
-                    backgroundColor: "#0088d7",
+                    width: cardW, height: 320, borderRadius: 24,
+                    backgroundColor: baseColor,
                     overflow: "hidden",
-                    shadowColor: "#0088d7",
+                    shadowColor: baseColor,
                     shadowOffset: { width: 0, height: 14 },
-                    shadowOpacity: 0.28,
+                    shadowOpacity: 0.3,
                     shadowRadius: 24,
                     elevation: 7,
                   }}
                 >
-                  {/* Layer 1: layered blue gradient base */}
+                  {/* Layer 1: per-course 3-stop gradient (light → base → dark) */}
                   <LinearGradient
                     pointerEvents="none"
-                    colors={["#35c2ff", "#0088d7", "#006fbd"]}
+                    colors={[lightTint, baseColor, darkTint]}
                     locations={[0, 0.55, 1]}
                     start={{ x: 0, y: 0 }}
                     end={{ x: 0.6, y: 1 }}
                     style={StyleSheet.absoluteFill}
                   />
 
-                  {/* Layer 2: soft cinematic radial glow top-right.
-                      A blurred high-radius circle approximates a radial
-                      highlight in React Native (no native radial gradient). */}
+                  {/* Layer 2: soft curved blob shapes — large rounded forms
+                      reading as cinematic depth, mirroring the reference */}
                   <View
                     pointerEvents="none"
                     style={{
                       position: "absolute",
-                      top: -70, right: -50,
-                      width: 200, height: 200, borderRadius: 100,
-                      backgroundColor: "#7DDCFF",
-                      opacity: 0.35,
+                      top: -90, right: -70,
+                      width: 240, height: 240, borderRadius: 120,
+                      backgroundColor: lightTint,
+                      opacity: 0.45,
                     }}
                   />
                   <View
                     pointerEvents="none"
                     style={{
                       position: "absolute",
-                      bottom: -60, left: -40,
-                      width: 160, height: 160, borderRadius: 80,
-                      backgroundColor: "#0a4a82",
-                      opacity: 0.4,
+                      top: 30, right: -40,
+                      width: 140, height: 140, borderRadius: 70,
+                      backgroundColor: lightTint,
+                      opacity: 0.25,
+                    }}
+                  />
+                  <View
+                    pointerEvents="none"
+                    style={{
+                      position: "absolute",
+                      bottom: -70, left: -50,
+                      width: 180, height: 180, borderRadius: 90,
+                      backgroundColor: deepTint,
+                      opacity: 0.5,
                     }}
                   />
 
-                  {/* Layer 3: faint Figma-style grid overlay */}
+                  {/* Layer 3: faint Figma-style grid overlay (kept very subtle) */}
                   <View pointerEvents="none" style={StyleSheet.absoluteFill}>
-                    {[36, 72, 108, 144, 180, 216, 252].map((y) => (
+                    {[40, 80, 120, 160, 200, 240, 280].map((y) => (
                       <View
                         key={`h${y}`}
                         style={{
                           position: "absolute", left: 0, right: 0, top: y,
                           height: StyleSheet.hairlineWidth,
-                          backgroundColor: "#FFFFFF14",
+                          backgroundColor: lineColor,
                         }}
                       />
                     ))}
-                    {[36, 72, 108, 144, 180, 216, 252].map((x) => (
+                    {[40, 80, 120, 160, 200, 240, 280].map((x) => (
                       <View
                         key={`v${x}`}
                         style={{
                           position: "absolute", top: 0, bottom: 0, left: x,
                           width: StyleSheet.hairlineWidth,
-                          backgroundColor: "#FFFFFF14",
+                          backgroundColor: lineColor,
                         }}
                       />
                     ))}
                   </View>
 
-                  {/* Layer 4: mascot with Figma-style selection ring,
-                      yellow corner nodes, and a soft halo behind. */}
+                  {/* Layer 4: 9-dot pattern, top-right corner — small static
+                      tool-palette flourish. Sits above where the mascot ends. */}
                   <View
                     pointerEvents="none"
                     style={{
                       position: "absolute",
-                      right: -2, bottom: 56,
+                      top: 24, right: 22,
+                      width: 22,
+                      flexDirection: "row", flexWrap: "wrap",
+                      gap: 5,
+                    }}
+                  >
+                    {Array.from({ length: 9 }).map((_, i) => (
+                      <View
+                        key={i}
+                        style={{
+                          width: 4, height: 4, borderRadius: 2,
+                          backgroundColor: textMuted,
+                        }}
+                      />
+                    ))}
+                  </View>
+
+                  {/* Layer 5: mascot with Figma-style selection ring,
+                      yellow square corner handles, white midpoint circles,
+                      and a soft glow halo behind. */}
+                  <View
+                    pointerEvents="none"
+                    style={{
+                      position: "absolute",
+                      right: -2, bottom: 78,
                       width: 132, height: 132,
                       alignItems: "center", justifyContent: "center",
                     }}
@@ -403,34 +469,36 @@ export default function HomeScreen() {
                       style={{
                         position: "absolute",
                         width: 116, height: 116, borderRadius: 58,
-                        backgroundColor: "#7DDCFF",
-                        opacity: 0.28,
+                        backgroundColor: lightTint,
+                        opacity: 0.4,
                       }}
                     />
-                    {/* Dashed Figma selection box */}
+                    {/* Dashed selection box */}
                     <View
                       style={{
                         position: "absolute",
-                        width: 122, height: 122, borderRadius: 16,
+                        width: 124, height: 124, borderRadius: 14,
                         borderWidth: 1,
-                        borderColor: "#FFFFFF80",
+                        borderColor: handleStroke,
                         borderStyle: "dashed",
                       }}
                     />
-                    {/* Glowing yellow corner nodes (Figma resize handles) */}
+                    {/* 4 yellow square corner handles */}
                     {[
-                      { top: -3, left: -3 },
-                      { top: -3, right: -3 },
-                      { bottom: -3, left: -3 },
-                      { bottom: -3, right: -3 },
+                      { top: -4, left: -4 },
+                      { top: -4, right: -4 },
+                      { bottom: -4, left: -4 },
+                      { bottom: -4, right: -4 },
                     ].map((pos, i) => (
                       <View
-                        key={i}
+                        key={`c${i}`}
                         style={{
                           position: "absolute",
-                          width: 7, height: 7, borderRadius: 4,
-                          backgroundColor: accentYellow,
-                          shadowColor: accentYellow,
+                          width: 8, height: 8,
+                          backgroundColor: accent,
+                          borderWidth: 1,
+                          borderColor: textColor,
+                          shadowColor: accent,
                           shadowOffset: { width: 0, height: 0 },
                           shadowOpacity: 0.9,
                           shadowRadius: 5,
@@ -439,72 +507,160 @@ export default function HomeScreen() {
                         }}
                       />
                     ))}
+                    {/* 4 white midpoint circles (top, bottom, left, right) */}
+                    {[
+                      { top: -4, left: 58 },
+                      { bottom: -4, left: 58 },
+                      { top: 58, left: -4 },
+                      { top: 58, right: -4 },
+                    ].map((pos, i) => (
+                      <View
+                        key={`m${i}`}
+                        style={{
+                          position: "absolute",
+                          width: 8, height: 8, borderRadius: 4,
+                          backgroundColor: textColor,
+                          borderWidth: 1,
+                          borderColor: handleStroke,
+                          ...pos,
+                        }}
+                      />
+                    ))}
                     {/* The mascot itself */}
                     <GraflyMascot state={mascotState} size={108} />
                   </View>
 
-                  {/* Layer 4b: thin glowing connector line from text block
-                      towards the mascot — a single alignment guide */}
+                  {/* Layer 5b: small UI sprinkles around the mascot —
+                      mini card mockup + accent blob, lifted from the reference */}
+                  {/* Mini UI card mockup */}
                   <View
                     pointerEvents="none"
                     style={{
                       position: "absolute",
-                      top: 96, left: 22, width: cardW * 0.42,
-                      height: StyleSheet.hairlineWidth,
-                      backgroundColor: accentYellow + "55",
+                      right: 110, bottom: 116,
+                      width: 30, height: 24, borderRadius: 5,
+                      backgroundColor: textColor + "1F",
+                      borderWidth: 1,
+                      borderColor: textColor + "40",
+                      padding: 4,
+                    }}
+                  >
+                    <View style={{ width: 14, height: 2, borderRadius: 1, backgroundColor: textColor + "66" }} />
+                    <View style={{ width: 9, height: 2, borderRadius: 1, backgroundColor: textColor + "44", marginTop: 2 }} />
+                    <View
+                      style={{
+                        position: "absolute", bottom: 4, right: 4,
+                        width: 6, height: 6, borderRadius: 3,
+                        backgroundColor: textColor + "55",
+                      }}
+                    />
+                  </View>
+
+                  {/* Soft accent blob beside the mascot */}
+                  <View
+                    pointerEvents="none"
+                    style={{
+                      position: "absolute",
+                      right: 96, bottom: 98,
+                      width: 24, height: 18, borderRadius: 12,
+                      backgroundColor: accent,
+                      opacity: 0.85,
+                      transform: [{ rotate: "-12deg" }],
+                      shadowColor: accent,
+                      shadowOffset: { width: 0, height: 0 },
+                      shadowOpacity: 0.6,
+                      shadowRadius: 6,
+                      elevation: 3,
                     }}
                   />
 
-                  {/* Layer 5: top text block (preserved structure) */}
+                  {/* A single floating "?" near the mascot's head */}
+                  <Text
+                    style={{
+                      position: "absolute",
+                      right: 28, top: 78,
+                      fontSize: 13,
+                      fontFamily: "Nunito_800ExtraBold",
+                      color: textMuted,
+                    }}
+                  >
+                    ?
+                  </Text>
+
+                  {/* Layer 6: top text block — pill eyebrow, big 2-line title,
+                      yellow underline accent, refined subtitle */}
                   <View style={{ paddingHorizontal: 22, paddingTop: 22 }}>
-                    {/* Refined eyebrow: minimal grid icon + "COURSE NN" */}
-                    <View style={{ flexDirection: "row", alignItems: "center", gap: 7 }}>
-                      <Icon
-                        name="grid-outline"
-                        size={11}
-                        color="#FFFFFFB0"
-                      />
+                    {/* Eyebrow as a pill */}
+                    <View
+                      style={{
+                        alignSelf: "flex-start",
+                        flexDirection: "row",
+                        alignItems: "center",
+                        gap: 7,
+                        paddingHorizontal: 11,
+                        paddingVertical: 5,
+                        borderRadius: 100,
+                        backgroundColor: pillBg,
+                      }}
+                    >
+                      <Icon name="grid-outline" size={11} color={textColor} />
                       <Text
                         style={{
                           fontSize: 10,
                           fontFamily: "Nunito_800ExtraBold",
-                          color: "#FFFFFFB0",
-                          letterSpacing: 1.8,
+                          color: textColor,
+                          letterSpacing: 1.6,
                         }}
                       >
                         {courseLabel}
                       </Text>
                     </View>
 
-                    {/* Premium title: bolder, tighter, soft text shadow */}
+                    {/* Big two-line title with subtle text shadow */}
                     <Text
-                      numberOfLines={1}
+                      numberOfLines={2}
                       style={{
-                        fontSize: 26,
-                        lineHeight: 30,
+                        fontSize: 30,
+                        lineHeight: 34,
                         marginTop: 14,
                         fontFamily: "Nunito_800ExtraBold",
-                        color: "#FFFFFF",
-                        letterSpacing: -0.8,
-                        textShadowColor: "#00000033",
+                        color: textColor,
+                        letterSpacing: -0.9,
+                        textShadowColor: "#00000026",
                         textShadowOffset: { width: 0, height: 1 },
                         textShadowRadius: 4,
+                        maxWidth: "70%",
                       }}
                     >
                       {course.title}
                     </Text>
 
-                    {/* Refined subtitle: lighter, cleaner, never overlaps mascot */}
+                    {/* Yellow underline accent */}
+                    <View
+                      style={{
+                        width: 38,
+                        height: 3,
+                        marginTop: 7,
+                        borderRadius: 2,
+                        backgroundColor: accent,
+                        shadowColor: accent,
+                        shadowOffset: { width: 0, height: 0 },
+                        shadowOpacity: 0.7,
+                        shadowRadius: 4,
+                        elevation: 2,
+                      }}
+                    />
+
+                    {/* Subtitle */}
                     <Text
-                      numberOfLines={2}
+                      numberOfLines={3}
                       style={{
                         fontSize: 13,
                         lineHeight: 18,
-                        marginTop: 8,
+                        marginTop: 12,
                         fontFamily: "Nunito_600SemiBold",
-                        color: "#FFFFFFB0",
-                        maxWidth: "62%",
-                        height: 36,
+                        color: textSoft,
+                        maxWidth: "60%",
                       }}
                     >
                       {course.description}
@@ -514,29 +670,8 @@ export default function HomeScreen() {
                   {/* Spacer pushes footer to the bottom */}
                   <View style={{ flex: 1 }} />
 
-                  {/* Layer 6: glassmorphism footer with thin progress bar */}
+                  {/* Layer 7: glassmorphism footer with thin progress bar */}
                   <View>
-                    {/* Thin progress line at the very top of the strip */}
-                    <View
-                      style={{
-                        height: 2,
-                        backgroundColor: "#FFFFFF1F",
-                        overflow: "hidden",
-                      }}
-                    >
-                      <View
-                        style={{
-                          width: `${Math.max(progress, 0)}%`,
-                          height: "100%",
-                          backgroundColor: accentYellow,
-                          shadowColor: accentYellow,
-                          shadowOffset: { width: 0, height: 0 },
-                          shadowOpacity: 0.9,
-                          shadowRadius: 4,
-                        }}
-                      />
-                    </View>
-
                     {/* Glass strip */}
                     <View
                       style={{
@@ -551,35 +686,57 @@ export default function HomeScreen() {
                     >
                       <BlurView
                         intensity={Platform.OS === "ios" ? 30 : 50}
-                        tint="dark"
+                        tint={isLightCard ? "light" : "dark"}
                         style={StyleSheet.absoluteFill}
                       />
                       <View
                         style={[
                           StyleSheet.absoluteFill,
-                          { backgroundColor: "#0a4a8266" },
+                          { backgroundColor: deepTint + "66" },
                         ]}
                       />
                       <Text
                         style={{
-                          fontSize: 11,
+                          fontSize: 12,
                           fontFamily: "Nunito_800ExtraBold",
-                          color: "#FFFFFFEE",
+                          color: textColor,
                           letterSpacing: 0.4,
                         }}
                       >
-                        {completedCount}/{totalLessons} lessons
+                        <Text>{completedCount}/{totalLessons}</Text>
+                        <Text style={{ color: textMuted, fontFamily: "Nunito_600SemiBold" }}>  lessons</Text>
                       </Text>
                       <Text
                         style={{
-                          fontSize: 11,
+                          fontSize: 12,
                           fontFamily: "Nunito_800ExtraBold",
-                          color: "#FFFFFF",
+                          color: textColor,
                           letterSpacing: 0.4,
                         }}
                       >
                         {progress}%
                       </Text>
+                    </View>
+
+                    {/* Thin progress line at the very bottom edge */}
+                    <View
+                      style={{
+                        height: 3,
+                        backgroundColor: textColor + "1F",
+                        overflow: "hidden",
+                      }}
+                    >
+                      <View
+                        style={{
+                          width: `${Math.max(progress, 0)}%`,
+                          height: "100%",
+                          backgroundColor: accent,
+                          shadowColor: accent,
+                          shadowOffset: { width: 0, height: 0 },
+                          shadowOpacity: 0.9,
+                          shadowRadius: 4,
+                        }}
+                      />
                     </View>
                   </View>
                 </PressScale>
