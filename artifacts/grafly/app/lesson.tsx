@@ -77,7 +77,12 @@ function TrueFalse({
 }) {
   const colors = useColors();
   return (
-    <View style={{ flexDirection: "row", gap: 12, width: "100%", alignSelf: "stretch" }}>
+    <View style={{
+      flexDirection: "row",
+      gap: 8,
+      marginHorizontal: -24,
+      alignSelf: "stretch",
+    }}>
       {[true, false].map((val) => {
         const isCorrectAnswer = answered && val === question.correctBool;
         const isWrongPick = answered && val === selectedBool && val !== question.correctBool;
