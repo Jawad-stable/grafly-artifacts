@@ -497,15 +497,7 @@ export default function CritiqueScreen() {
                 entering={FadeInDown.duration(480).easing(SMOOTH).delay(220)}
                 style={{ flexDirection: "row", alignItems: "center", gap: 10, marginTop: 22, marginBottom: 6 }}
               >
-                <View style={{
-                  width: 32, height: 32, borderRadius: 100,
-                  backgroundColor: colors.primary + "1A",
-                  borderWidth: 1, borderColor: colors.primary + "40",
-                  alignItems: "center", justifyContent: "center",
-                  overflow: "hidden",
-                }}>
-                  <AiBot size={22} />
-                </View>
+                <AiBot size={32} />
                 <View>
                   <Text style={{
                     fontSize: 13, fontFamily: "Nunito_800ExtraBold",
