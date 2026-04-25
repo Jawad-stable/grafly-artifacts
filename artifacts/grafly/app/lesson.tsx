@@ -79,9 +79,9 @@ function TrueFalse({
   return (
     <View style={{
       flexDirection: "row",
-      gap: 8,
-      marginHorizontal: -24,
       alignSelf: "stretch",
+      width: "100%",
+      gap: 14,
     }}>
       {[true, false].map((val) => {
         const isCorrectAnswer = answered && val === question.correctBool;
@@ -102,10 +102,7 @@ function TrueFalse({
           <TouchableOpacity
             key={String(val)}
             style={{
-              flexBasis: 0,
-              flexGrow: 1,
-              flexShrink: 1,
-              minWidth: 0,
+              flex: 1,
               backgroundColor: bg,
               borderRadius: 22,
               paddingVertical: 32,
@@ -115,7 +112,7 @@ function TrueFalse({
               alignItems: "center",
               justifyContent: "center",
               gap: 10,
-              minHeight: 120,
+              minHeight: 130,
             }}
             onPress={() => !answered && onAnswer(val)}
             disabled={answered}

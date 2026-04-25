@@ -856,9 +856,9 @@ export default function OnboardingScreen() {
               {q.type === "true_false" && (
                 <View style={{
                   flexDirection: "row",
-                  gap: 8,
-                  marginHorizontal: -24,
                   alignSelf: "stretch",
+                  width: "100%",
+                  gap: 14,
                 }}>
                   {[true, false].map((val) => {
                     const isCorrectAnswer = showFeedback && val === q.correctBool;
@@ -877,11 +877,8 @@ export default function OnboardingScreen() {
                         onPress={() => handleAnswer(val)}
                         disabled={showFeedback}
                         style={{
-                          flexBasis: 0,
-                          flexGrow: 1,
-                          flexShrink: 1,
-                          minWidth: 0,
-                          minHeight: 120,
+                          flex: 1,
+                          minHeight: 130,
                           borderRadius: 22,
                           paddingVertical: 32,
                           paddingHorizontal: 12,
