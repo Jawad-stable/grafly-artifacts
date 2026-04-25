@@ -14,24 +14,18 @@ import Animated, {
   Easing,
 } from "react-native-reanimated";
 import { Icon, type IconName } from "@/components/Icon";
+import { AText } from "@/components/AText";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useColors } from "@/hooks/useColors";
 import { useGame } from "@/context/GameContext";
-interface TabBarButtonProps {
-  children?: React.ReactNode;
-  onPress?: (e: any) => void;
-  style?: any;
-  accessibilityState?: { selected?: boolean };
-}
 
-// Crisp, deliberate press feedback for tab buttons.
-// Scales subtly down on press in, springs back on release.
-// No overshoot, no bounce — feels intentional, not cartoony.
-function SpringTabButton({
-  children,
-  onPress,
-  style,
-}: TabBarButtonProps) {
+// Subtle press feedback for tab buttons.
+// Soft scale-in, calm release, no overshoot.
+// Forwards all React Navigation tab button props (accessibility,
+// onLongPress, testID, etc) to the underlying Pressable so selected
+// state is announced and long-press / blur behavior keeps working.
+function PressTabButton(props: any) {
+  const { children, onPressIn, onPressOut, style, ...rest } = props;
   const scale = useSharedValue(1);
   const animStyle = useAnimatedStyle(() => ({
     transform: [{ scale: scale.value }],
@@ -39,56 +33,111 @@ function SpringTabButton({
 
   return (
     <Pressable
-      onPressIn={() => {
-        scale.value = withTiming(0.92, {
-          duration: 80,
-          easing: Easing.out(Easing.quad),
-        });
-      }}
-      onPressOut={() => {
-        scale.value = withTiming(1, {
-          duration: 180,
+      {...rest}
+      onPressIn={(e) => {
+        scale.value = withTiming(0.94, {
+          duration: 90,
           easing: Easing.out(Easing.cubic),
         });
+        onPressIn?.(e);
       }}
-      onPress={(e) => onPress?.(e)}
-      style={style}
+      onPressOut={(e) => {
+        scale.value = withTiming(1, {
+          duration: 200,
+          easing: Easing.out(Easing.cubic),
+        });
+        onPressOut?.(e);
+      }}
+      style={[style, { flex: 1 }]}
     >
-      <Animated.View style={animStyle}>{children}</Animated.View>
+      <Animated.View style={[{ flex: 1 }, animStyle]}>
+        {children}
+      </Animated.View>
     </Pressable>
   );
 }
 
-function TabIcon({
+function TabPill({
   name,
+  label,
   focused,
 }: {
   name: IconName;
+  label: string;
   focused: boolean;
 }) {
   const colors = useColors();
   const { state } = useGame();
   const isLight = state.themeMode === "light";
-  // On light theme the bar is near-black, so use bright pill + white inactive icons
-  const activePillBg = isLight ? colors.accent : colors.primary + "22";
-  const activeIcon = isLight ? colors.accentForeground : colors.primary;
-  const inactiveIcon = isLight ? colors.primaryForeground + "99" : colors.mutedForeground;
+
+  // Active = filled primary pill with white icon + white label.
+  // Inactive = muted icon only.
+  const activeBg = colors.primary;
+  const activeFg = colors.primaryForeground;
+  const inactiveIcon = isLight
+    ? colors.primaryForeground + "B3"
+    : colors.mutedForeground;
+
+  const progress = useSharedValue(focused ? 1 : 0);
+
+  React.useEffect(() => {
+    progress.value = withTiming(focused ? 1 : 0, {
+      duration: 260,
+      easing: Easing.out(Easing.cubic),
+    });
+  }, [focused, progress]);
+
+  const pillStyle = useAnimatedStyle(() => ({
+    opacity: progress.value,
+    transform: [
+      { scaleX: 0.6 + progress.value * 0.4 },
+    ],
+  }));
+
+  const labelStyle = useAnimatedStyle(() => ({
+    opacity: progress.value,
+    marginLeft: progress.value * 6,
+    maxWidth: progress.value * 90,
+  }));
+
+  // Animate horizontal padding so inactive tabs don't reserve
+  // label space (compact icon-only on narrow widths).
+  const contentStyle = useAnimatedStyle(() => ({
+    paddingHorizontal: 4 + progress.value * 8,
+  }));
+
+  const iconColor = focused ? activeFg : inactiveIcon;
+
   return (
-    <View style={styles.iconWrap}>
-      {focused && (
-        <View
+    <View style={styles.itemWrap}>
+      <View style={styles.pillWrap}>
+        <Animated.View
           style={[
-            styles.activePill,
-            { backgroundColor: activePillBg },
+            styles.pillBg,
+            { backgroundColor: activeBg },
+            pillStyle,
           ]}
         />
-      )}
-      <Icon
-        name={name}
-        size={24}
-        color={focused ? activeIcon : inactiveIcon}
-        weight={focused ? "fill" : "bold"}
-      />
+        <Animated.View style={[styles.pillContent, contentStyle]}>
+          <Icon
+            name={name}
+            size={22}
+            color={iconColor}
+            weight={focused ? "fill" : "bold"}
+          />
+          <Animated.View style={[styles.labelBox, labelStyle]}>
+            <AText
+              numberOfLines={1}
+              style={[
+                styles.label,
+                { color: activeFg },
+              ]}
+            >
+              {label}
+            </AText>
+          </Animated.View>
+        </Animated.View>
+      </View>
     </View>
   );
 }
@@ -98,8 +147,8 @@ export default function TabLayout() {
   const insets = useSafeAreaInsets();
   const { state } = useGame();
   const bottomPad = Math.max(insets.bottom, Platform.OS === "web" ? 16 : 10);
-  const tabBarHeight = 62 + bottomPad;
-  const tabBottom = Platform.OS === "web" ? 12 : 12;
+  const tabBarHeight = 66 + bottomPad;
+  const tabBottom = 14;
   const isLight = state.themeMode === "light";
 
   return (
@@ -109,44 +158,67 @@ export default function TabLayout() {
         tabBarShowLabel: false,
         tabBarActiveTintColor: colors.primary,
         tabBarInactiveTintColor: colors.mutedForeground,
-        tabBarButton: (props) => <SpringTabButton {...props} />,
+        tabBarButton: (props) => <PressTabButton {...props} />,
         tabBarStyle: {
           position: "absolute",
           bottom: tabBottom,
-          left: 20,
-          right: 20,
-          borderRadius: 32,
+          left: 16,
+          right: 16,
+          borderRadius: 28,
           height: tabBarHeight,
+          paddingBottom: bottomPad,
+          paddingHorizontal: 8,
           backgroundColor: "transparent",
           borderTopWidth: 0,
-          elevation: 0,
+          elevation: 14,
           shadowColor: "#000",
-          shadowOffset: { width: 0, height: 10 },
-          shadowOpacity: 0.4,
-          shadowRadius: 24,
+          shadowOffset: { width: 0, height: 12 },
+          shadowOpacity: isLight ? 0.18 : 0.45,
+          shadowRadius: 28,
         },
         tabBarBackground: () => (
-          <>
+          <View style={StyleSheet.absoluteFill}>
             <BlurView
-              intensity={85}
+              intensity={90}
               tint={isLight ? "light" : "dark"}
-              style={[StyleSheet.absoluteFill, { borderRadius: 32, overflow: "hidden" }]}
+              style={[
+                StyleSheet.absoluteFill,
+                { borderRadius: 28, overflow: "hidden" },
+              ]}
             />
             <View
               style={[
                 StyleSheet.absoluteFill,
                 {
-                  backgroundColor: isLight ? colors.foreground : colors.card + "CC",
-                  borderRadius: 32,
-                  borderWidth: isLight ? 0 : 1,
-                  borderColor: colors.border + "50",
+                  backgroundColor: isLight
+                    ? colors.foreground + "F2"
+                    : colors.card + "D9",
+                  borderRadius: 28,
+                  borderWidth: 1,
+                  borderColor: isLight
+                    ? "#FFFFFF14"
+                    : colors.border + "55",
                 },
               ]}
             />
-          </>
+            {/* Hairline highlight on top edge for depth */}
+            <View
+              pointerEvents="none"
+              style={{
+                position: "absolute",
+                top: 0,
+                left: 18,
+                right: 18,
+                height: 1,
+                backgroundColor: isLight ? "#FFFFFF22" : "#FFFFFF12",
+                borderRadius: 1,
+              }}
+            />
+          </View>
         ),
         tabBarItemStyle: {
-          paddingTop: 10,
+          paddingTop: 8,
+          paddingBottom: 0,
         },
       }}
     >
@@ -154,7 +226,7 @@ export default function TabLayout() {
         name="index"
         options={{
           tabBarIcon: ({ focused }) => (
-            <TabIcon name="home" focused={focused} />
+            <TabPill name="home" label="Home" focused={focused} />
           ),
         }}
       />
@@ -162,7 +234,7 @@ export default function TabLayout() {
         name="tree"
         options={{
           tabBarIcon: ({ focused }) => (
-            <TabIcon name="git-network" focused={focused} />
+            <TabPill name="git-network" label="Learn" focused={focused} />
           ),
         }}
       />
@@ -170,7 +242,7 @@ export default function TabLayout() {
         name="critique"
         options={{
           tabBarIcon: ({ focused }) => (
-            <TabIcon name="color-filter" focused={focused} />
+            <TabPill name="color-filter" label="Critique" focused={focused} />
           ),
         }}
       />
@@ -178,7 +250,7 @@ export default function TabLayout() {
         name="shop"
         options={{
           tabBarIcon: ({ focused }) => (
-            <TabIcon name="cart" focused={focused} />
+            <TabPill name="cart" label="Shop" focused={focused} />
           ),
         }}
       />
@@ -186,7 +258,7 @@ export default function TabLayout() {
         name="profile"
         options={{
           tabBarIcon: ({ focused }) => (
-            <TabIcon name="person-circle" focused={focused} />
+            <TabPill name="person-circle" label="Profile" focused={focused} />
           ),
         }}
       />
@@ -195,17 +267,41 @@ export default function TabLayout() {
 }
 
 const styles = StyleSheet.create({
-  iconWrap: {
-    width: 52,
+  itemWrap: {
+    flex: 1,
+    height: 44,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  pillWrap: {
     height: 40,
+    minWidth: 44,
     alignItems: "center",
     justifyContent: "center",
     position: "relative",
+    paddingHorizontal: 4,
   },
-  activePill: {
+  pillBg: {
     position: "absolute",
-    width: 52,
-    height: 36,
-    borderRadius: 18,
+    top: 0,
+    bottom: 0,
+    left: 0,
+    right: 0,
+    borderRadius: 22,
+  },
+  pillContent: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    height: 40,
+  },
+  labelBox: {
+    overflow: "hidden",
+    flexShrink: 1,
+  },
+  label: {
+    fontFamily: "Nunito_800ExtraBold",
+    fontSize: 12,
+    letterSpacing: 0.2,
   },
 });
