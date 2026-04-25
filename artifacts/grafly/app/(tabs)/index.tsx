@@ -352,8 +352,22 @@ export default function HomeScreen() {
               // so the underline + handles + progress fill remain readable.
               const accent = isLightCard ? NAVY : "#FFD84D";
               const pillBg = isLightCard ? `${NAVY}1F` : "#FFFFFF26";
-              const lineColor = isLightCard ? `${NAVY}14` : "#FFFFFF14";
               const handleStroke = isLightCard ? `${NAVY}80` : "#FFFFFF80";
+
+              // Grid line color is a deliberate complementary hue per card:
+              //   yellow card → blue grid lines
+              //   pink card   → white grid lines
+              //   blue card   → yellow grid lines
+              // Detected from the base color's RGB channels so any new course
+              // color picks a sensible complementary line.
+              const r = parseInt(baseColor.slice(1, 3), 16);
+              const b = parseInt(baseColor.slice(5, 7), 16);
+              const lineHue = isLightCard
+                ? "#00A4FA"   // light/yellow → blue
+                : r > b
+                  ? "#FFFFFF" // pink/warm    → white
+                  : "#FFD84D"; // blue/cool    → yellow
+              const lineColor = `${lineHue}26`; // ~15% opacity, clearly visible
 
               const courseLabel = `COURSE ${String(index + 1).padStart(2, "0")}`;
 
