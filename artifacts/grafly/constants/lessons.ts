@@ -6,11 +6,74 @@ export type QuestionType =
   | "tap_the_element"
   | "arrange_in_order"
   | "drag_to_match"
-  | "fill_in_blank";
+  | "fill_in_blank"
+  | "spot_bad_design"
+  | "choose_better_design"
+  | "drag_drop_layout"
+  | "five_second_test"
+  | "find_the_cta";
 
 export interface MatchPair {
   left: string;
   right: string;
+}
+
+// ---------------------------------------------------------------------------
+// Scene DSL — lightweight, declarative descriptions of in-lesson UI samples.
+// Rendered with React Native primitives by components/LessonScenes.tsx so the
+// course needs zero new image assets while still feeling like real screens.
+// ---------------------------------------------------------------------------
+
+export type SceneBlock =
+  | { kind: "title"; text: string; size?: number; color?: string; align?: "left" | "center"; weight?: "bold" | "black" | "regular" }
+  | { kind: "subtitle"; text: string; size?: number; color?: string; opacity?: number; align?: "left" | "center" }
+  | { kind: "body"; text: string; size?: number; color?: string; opacity?: number; align?: "left" | "center"; lines?: number }
+  | { kind: "button"; text: string; bg: string; fg: string; large?: boolean; outline?: boolean; tapId?: string; rounded?: number }
+  | { kind: "tag"; text: string; bg: string; fg: string }
+  | { kind: "image"; bg: string; height: number; emoji?: string; rounded?: number; tapId?: string }
+  | { kind: "spacer"; size: number }
+  | { kind: "row"; gap?: number; align?: "center" | "start" | "end" | "between"; children: SceneBlock[] }
+  | { kind: "card"; bg?: string; padding?: number; border?: string; rounded?: number; children: SceneBlock[] }
+  | { kind: "divider"; color?: string }
+  | { kind: "stat"; label: string; value: string; bg?: string; fg?: string };
+
+export interface ScreenSpec {
+  bg: string;
+  padding?: number;
+  blocks: SceneBlock[];
+}
+
+export type Scene =
+  | { kind: "good_vs_bad"; good: ScreenSpec; bad: ScreenSpec; goodNote: string; badNote: string }
+  | { kind: "spot_bad"; screen: ScreenSpec; targetTapId: string; prompt?: string }
+  | {
+      kind: "ab_compare";
+      left: ScreenSpec;
+      right: ScreenSpec;
+      correctIndex: 0 | 1;
+      prompt?: string;
+      leftLabel?: string;
+      rightLabel?: string;
+    }
+  | {
+      kind: "drag_layout";
+      cards: { id: string; label: string; sub?: string; tone?: string }[];
+      correctOrder: string[];
+      prompt?: string;
+    }
+  | {
+      kind: "five_sec";
+      screen: ScreenSpec;
+      followUp: { question: string; options: string[]; correctIndex: number; explanation: string };
+      durationMs?: number;
+    }
+  | { kind: "find_cta"; screen: ScreenSpec; correctTapId: string; prompt?: string }
+  | { kind: "preview"; screen: ScreenSpec };
+
+export interface LessonIntro {
+  headline: string;
+  body: string;
+  scene?: Scene;
 }
 
 export interface Question {
@@ -27,6 +90,7 @@ export interface Question {
   blanks?: string[];
   acceptedAnswers?: string[];
   template?: string;
+  scene?: Scene;
 }
 
 export interface Lesson {
@@ -37,6 +101,7 @@ export interface Lesson {
   coinReward: number;
   questions: Question[];
   critiquePrompt?: string;
+  intro?: LessonIntro;
 }
 
 export interface SkillNode {
