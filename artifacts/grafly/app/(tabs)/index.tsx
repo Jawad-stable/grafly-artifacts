@@ -29,6 +29,7 @@ import { GraflyMascot } from "@/components/GraflyMascot";
 import { AText } from "@/components/AText";
 import { PressScale } from "@/components/PressScale";
 import { LinearGradient } from "expo-linear-gradient";
+import { BlurView } from "expo-blur";
 import { relLuminance } from "@/constants/contrast";
 
 // Mix a hex color toward white (amount > 0) or black (amount < 0).
@@ -47,6 +48,244 @@ function tintHex(hex: string, amount: number): string {
   const toHex = (v: number) =>
     Math.max(0, Math.min(255, v)).toString(16).padStart(2, "0");
   return `#${toHex(mix(r))}${toHex(mix(g))}${toHex(mix(b))}`;
+}
+
+// Per-course decorative motifs that hint at what each course teaches.
+// Positioned around the mascot zone (right side) so they read as floating
+// stickers without crowding the title block on the left.
+function TopicSprinkles({
+  courseId,
+  textColor,
+  textMuted,
+  accent,
+}: {
+  courseId: string;
+  textColor: string;
+  textMuted: string;
+  accent: string;
+}) {
+  if (courseId === "design-principles") {
+    // Composition shapes: triangle outline, circle, square — the
+    // foundational primitives of layout / hierarchy / balance.
+    return (
+      <>
+        {/* Triangle (made from rotated square) */}
+        <View
+          pointerEvents="none"
+          style={{
+            position: "absolute",
+            right: 132, bottom: 138,
+            width: 18, height: 18,
+            borderLeftWidth: 1.5, borderTopWidth: 1.5,
+            borderColor: textColor + "AA",
+            transform: [{ rotate: "45deg" }],
+          }}
+        />
+        {/* Outline circle */}
+        <View
+          pointerEvents="none"
+          style={{
+            position: "absolute",
+            right: 156, bottom: 110,
+            width: 16, height: 16, borderRadius: 8,
+            borderWidth: 1.5,
+            borderColor: textColor + "AA",
+          }}
+        />
+        {/* Filled square */}
+        <View
+          pointerEvents="none"
+          style={{
+            position: "absolute",
+            right: 130, bottom: 92,
+            width: 12, height: 12, borderRadius: 2,
+            backgroundColor: textColor + "55",
+          }}
+        />
+        {/* Tiny scale glyph near mascot's head */}
+        <View
+          pointerEvents="none"
+          style={{ position: "absolute", right: 30, top: 88, opacity: 0.55 }}
+        >
+          <Icon name="scale-outline" size={16} color={textMuted} />
+        </View>
+      </>
+    );
+  }
+
+  if (courseId === "typography") {
+    // Letterform sample: big "A" + small "a" + a baseline ruler tick.
+    return (
+      <>
+        {/* Big A */}
+        <Text
+          pointerEvents="none"
+          style={{
+            position: "absolute",
+            right: 128, bottom: 116,
+            fontSize: 38,
+            lineHeight: 38,
+            fontFamily: "Nunito_800ExtraBold",
+            color: textColor,
+            letterSpacing: -1.4,
+          }}
+        >
+          A
+        </Text>
+        {/* Small a */}
+        <Text
+          pointerEvents="none"
+          style={{
+            position: "absolute",
+            right: 110, bottom: 116,
+            fontSize: 22,
+            lineHeight: 22,
+            fontFamily: "Nunito_600SemiBold",
+            color: textColor + "B0",
+          }}
+        >
+          a
+        </Text>
+        {/* Baseline rule under the letters */}
+        <View
+          pointerEvents="none"
+          style={{
+            position: "absolute",
+            right: 102, bottom: 110,
+            width: 50, height: 1.5,
+            backgroundColor: textColor + "55",
+          }}
+        />
+        {/* Tiny baseline tick */}
+        <View
+          pointerEvents="none"
+          style={{
+            position: "absolute",
+            right: 102, bottom: 104,
+            width: 1.5, height: 5,
+            backgroundColor: textColor + "55",
+          }}
+        />
+        {/* Small text icon near mascot's head */}
+        <View
+          pointerEvents="none"
+          style={{ position: "absolute", right: 30, top: 88, opacity: 0.55 }}
+        >
+          <Icon name="text-outline" size={16} color={textMuted} />
+        </View>
+      </>
+    );
+  }
+
+  if (courseId === "ui-design") {
+    // Mini phone frame with status dot, content lines, and a bottom dock.
+    return (
+      <>
+        <View
+          pointerEvents="none"
+          style={{
+            position: "absolute",
+            right: 130, bottom: 108,
+            width: 28, height: 44, borderRadius: 7,
+            backgroundColor: textColor + "1F",
+            borderWidth: 1.2,
+            borderColor: textColor + "55",
+            paddingHorizontal: 4, paddingTop: 6, paddingBottom: 4,
+            justifyContent: "space-between",
+          }}
+        >
+          {/* Notch / status pill */}
+          <View
+            style={{
+              alignSelf: "center",
+              width: 8, height: 2, borderRadius: 1,
+              backgroundColor: textColor + "66",
+            }}
+          />
+          {/* Two content lines */}
+          <View>
+            <View style={{ width: 16, height: 2, borderRadius: 1, backgroundColor: textColor + "77" }} />
+            <View style={{ width: 11, height: 2, borderRadius: 1, backgroundColor: textColor + "55", marginTop: 2 }} />
+          </View>
+          {/* Tab dock */}
+          <View
+            style={{
+              flexDirection: "row",
+              justifyContent: "space-between",
+              alignItems: "center",
+            }}
+          >
+            <View style={{ width: 3, height: 3, borderRadius: 1.5, backgroundColor: textColor + "88" }} />
+            <View style={{ width: 3, height: 3, borderRadius: 1.5, backgroundColor: textColor + "55" }} />
+            <View style={{ width: 3, height: 3, borderRadius: 1.5, backgroundColor: textColor + "55" }} />
+          </View>
+        </View>
+        {/* Tiny phone glyph near mascot's head */}
+        <View
+          pointerEvents="none"
+          style={{ position: "absolute", right: 30, top: 88, opacity: 0.55 }}
+        >
+          <Icon name="phone-portrait-outline" size={16} color={textMuted} />
+        </View>
+      </>
+    );
+  }
+
+  if (courseId === "branding") {
+    // Monogram tile + a small star spark for an identity feel.
+    return (
+      <>
+        {/* Monogram badge */}
+        <View
+          pointerEvents="none"
+          style={{
+            position: "absolute",
+            right: 128, bottom: 122,
+            width: 30, height: 30, borderRadius: 8,
+            backgroundColor: textColor + "1F",
+            borderWidth: 1.2,
+            borderColor: textColor + "55",
+            alignItems: "center", justifyContent: "center",
+          }}
+        >
+          <Text
+            style={{
+              fontSize: 16,
+              fontFamily: "Nunito_800ExtraBold",
+              color: textColor,
+              letterSpacing: -0.6,
+            }}
+          >
+            G
+          </Text>
+        </View>
+        {/* Floating diamond accent */}
+        <View
+          pointerEvents="none"
+          style={{ position: "absolute", right: 156, bottom: 100, opacity: 0.85 }}
+        >
+          <Icon name="diamond-outline" size={14} color={textColor} />
+        </View>
+        {/* Tiny star spark near mascot's head */}
+        <View
+          pointerEvents="none"
+          style={{ position: "absolute", right: 30, top: 88, opacity: 0.7 }}
+        >
+          <Icon name="star" size={14} color={accent} />
+        </View>
+      </>
+    );
+  }
+
+  // Fallback: simple dotted spark for unknown courses
+  return (
+    <View
+      pointerEvents="none"
+      style={{ position: "absolute", right: 30, top: 88, opacity: 0.55 }}
+    >
+      <Icon name="ellipse" size={10} color={textMuted} />
+    </View>
+  );
 }
 
 function getGreeting(name: string): string {
@@ -332,12 +571,11 @@ export default function HomeScreen() {
 
               // Per-course palette derived from the course's own base color
               // so every card stays distinct (blue, yellow, pink, etc.) while
-              // sharing the same Grafly visual language. The premium look
-              // leans on a single subtle tonal gradient + one soft glow,
-              // letting the mascot and typography do the heavy lifting.
+              // sharing the same Grafly visual language.
               const baseColor = course.color;
-              const lightTint = tintHex(baseColor, 0.22);
-              const deepTint = tintHex(baseColor, -0.32);
+              const lightTint = tintHex(baseColor, 0.32);
+              const darkTint = tintHex(baseColor, -0.28);
+              const deepTint = tintHex(baseColor, -0.45);
 
               // Strict rule: every card uses either NAVY (#21263F) or WHITE
               // for text + accents based on the card's luminance, so contrast
@@ -346,11 +584,28 @@ export default function HomeScreen() {
               const NAVY = "#21263F";
               const isLightCard = relLuminance(baseColor) > 0.55;
               const textColor = isLightCard ? NAVY : "#FFFFFF";
-              const textMuted = isLightCard ? `${NAVY}99` : "#FFFFFFB0";
+              const textSoft = isLightCard ? `${NAVY}B0` : "#FFFFFFB8";
+              const textMuted = isLightCard ? `${NAVY}80` : "#FFFFFFB0";
               // Accent: keep yellow on dark cards; on yellow cards, use navy
-              // so the underline + progress fill remain readable.
+              // so the underline + handles + progress fill remain readable.
               const accent = isLightCard ? NAVY : "#FFD84D";
-              const pillBg = isLightCard ? `${NAVY}14` : "#FFFFFF1F";
+              const pillBg = isLightCard ? `${NAVY}1F` : "#FFFFFF26";
+              const handleStroke = isLightCard ? `${NAVY}80` : "#FFFFFF80";
+
+              // Grid line color is a deliberate complementary hue per card:
+              //   yellow card → blue grid lines
+              //   pink card   → white grid lines
+              //   blue card   → yellow grid lines
+              // Detected from the base color's RGB channels so any new course
+              // color picks a sensible complementary line.
+              const r = parseInt(baseColor.slice(1, 3), 16);
+              const b = parseInt(baseColor.slice(5, 7), 16);
+              const lineHue = isLightCard
+                ? "#00A4FA"   // light/yellow → blue
+                : r > b
+                  ? "#FFFFFF" // pink/warm    → white
+                  : "#FFD84D"; // blue/cool    → yellow
+              const lineColor = `${lineHue}26`; // ~15% opacity, clearly visible
 
               const courseLabel = `COURSE ${String(index + 1).padStart(2, "0")}`;
 
@@ -358,63 +613,168 @@ export default function HomeScreen() {
                 <PressScale
                   onPress={() => router.push({ pathname: "/(tabs)/tree", params: { courseId: course.id } })}
                   style={{
-                    width: cardW, height: cardH, borderRadius: 28,
+                    width: cardW, height: cardH, borderRadius: 26,
                     backgroundColor: baseColor,
                     overflow: "hidden",
                     shadowColor: baseColor,
-                    shadowOffset: { width: 0, height: 18 },
-                    shadowOpacity: 0.32,
-                    shadowRadius: 28,
-                    elevation: 8,
+                    shadowOffset: { width: 0, height: 14 },
+                    shadowOpacity: 0.3,
+                    shadowRadius: 24,
+                    elevation: 7,
                   }}
                 >
-                  {/* Layer 1: subtle tonal gradient — single soft sweep from
-                      a lifted top-left toward a slightly deeper bottom-right.
-                      Replaces the busy 3-stop gradient with something that
-                      feels closer to a premium product card. */}
+                  {/* Layer 1: per-course 3-stop gradient (light → base → dark) */}
                   <LinearGradient
                     pointerEvents="none"
-                    colors={[lightTint, baseColor, deepTint]}
-                    locations={[0, 0.6, 1]}
-                    start={{ x: 0.15, y: 0 }}
-                    end={{ x: 0.85, y: 1 }}
+                    colors={[lightTint, baseColor, darkTint]}
+                    locations={[0, 0.55, 1]}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 0.6, y: 1 }}
                     style={StyleSheet.absoluteFill}
                   />
 
-                  {/* Layer 2: a single soft glow behind the mascot. One light
-                      source, no extra blobs — the depth comes from the
-                      gradient + this halo, nothing else. */}
+                  {/* Layer 2: soft curved blob shapes — large rounded forms
+                      reading as cinematic depth, mirroring the reference */}
                   <View
                     pointerEvents="none"
                     style={{
                       position: "absolute",
-                      right: -60, bottom: -40,
+                      top: -90, right: -70,
                       width: 240, height: 240, borderRadius: 120,
                       backgroundColor: lightTint,
-                      opacity: 0.4,
+                      opacity: 0.45,
+                    }}
+                  />
+                  <View
+                    pointerEvents="none"
+                    style={{
+                      position: "absolute",
+                      top: 30, right: -40,
+                      width: 140, height: 140, borderRadius: 70,
+                      backgroundColor: lightTint,
+                      opacity: 0.25,
+                    }}
+                  />
+                  <View
+                    pointerEvents="none"
+                    style={{
+                      position: "absolute",
+                      bottom: -70, left: -50,
+                      width: 180, height: 180, borderRadius: 90,
+                      backgroundColor: deepTint,
+                      opacity: 0.5,
                     }}
                   />
 
-                  {/* Layer 3: mascot, anchored to the bottom-right. No
-                      selection ring, no halo box, no sticker sprinkles —
-                      just the character as the hero element. */}
+                  {/* Layer 3: faint Figma-style grid overlay (kept very subtle) */}
+                  <View pointerEvents="none" style={StyleSheet.absoluteFill}>
+                    {[40, 80, 120, 160, 200, 240, 280].map((y) => (
+                      <View
+                        key={`h${y}`}
+                        style={{
+                          position: "absolute", left: 0, right: 0, top: y,
+                          height: StyleSheet.hairlineWidth,
+                          backgroundColor: lineColor,
+                        }}
+                      />
+                    ))}
+                    {[40, 80, 120, 160, 200, 240, 280].map((x) => (
+                      <View
+                        key={`v${x}`}
+                        style={{
+                          position: "absolute", top: 0, bottom: 0, left: x,
+                          width: StyleSheet.hairlineWidth,
+                          backgroundColor: lineColor,
+                        }}
+                      />
+                    ))}
+                  </View>
+
+                  {/* Layer 4: 9-dot pattern, top-right corner — small static
+                      tool-palette flourish. Sits above where the mascot ends. */}
                   <View
                     pointerEvents="none"
                     style={{
                       position: "absolute",
-                      right: 18, bottom: 78,
-                      width: 132, height: 132,
+                      top: 26, right: 24,
+                      width: 26,
+                      flexDirection: "row", flexWrap: "wrap",
+                      gap: 6,
+                    }}
+                  >
+                    {Array.from({ length: 9 }).map((_, i) => (
+                      <View
+                        key={i}
+                        style={{
+                          width: 4, height: 4, borderRadius: 2,
+                          backgroundColor: textMuted,
+                        }}
+                      />
+                    ))}
+                  </View>
+
+                  {/* Layer 5: mascot with Figma-style selection ring,
+                      yellow square corner handles, white midpoint circles,
+                      and a soft glow halo behind. Larger zone (152) so the
+                      selection box is the visual anchor of the right half. */}
+                  <View
+                    pointerEvents="none"
+                    style={{
+                      position: "absolute",
+                      right: 14, bottom: 90,
+                      width: 152, height: 152,
                       alignItems: "center", justifyContent: "center",
                     }}
                   >
-                    <GraflyMascot state={mascotState} size={130} />
+                    {/* Soft glow halo */}
+                    <View
+                      style={{
+                        position: "absolute",
+                        width: 132, height: 132, borderRadius: 66,
+                        backgroundColor: lightTint,
+                        opacity: 0.4,
+                      }}
+                    />
+                    {/* The mascot itself */}
+                    <GraflyMascot state={mascotState} size={120} />
                   </View>
 
-                  {/* Layer 4: text block — pill eyebrow, big title,
-                      thin accent underline. Subtitle removed for a calmer,
-                      more premium hierarchy. */}
-                  <View style={{ paddingHorizontal: 24, paddingTop: 26 }}>
-                    {/* Eyebrow pill */}
+                  {/* Layer 5b: per-topic sprinkles around the mascot.
+                      Each course gets motifs that hint at what it teaches:
+                        Design Principles → composition shapes
+                        Typography        → letterform "Aa" + baseline
+                        UI Design         → mini phone wireframe
+                        Branding          → monogram + star mark */}
+                  <TopicSprinkles
+                    courseId={course.id}
+                    textColor={textColor}
+                    textMuted={textMuted}
+                    accent={accent}
+                  />
+
+                  {/* Soft accent blob beside the mascot — kept across all
+                      courses as a unifying flourish */}
+                  <View
+                    pointerEvents="none"
+                    style={{
+                      position: "absolute",
+                      right: 118, bottom: 112,
+                      width: 26, height: 20, borderRadius: 13,
+                      backgroundColor: accent,
+                      opacity: 0.9,
+                      transform: [{ rotate: "-12deg" }],
+                      shadowColor: accent,
+                      shadowOffset: { width: 0, height: 0 },
+                      shadowOpacity: 0.6,
+                      shadowRadius: 6,
+                      elevation: 3,
+                    }}
+                  />
+
+                  {/* Layer 6: top text block — pill eyebrow, big 2-line title,
+                      accent underline, refined subtitle */}
+                  <View style={{ paddingHorizontal: 24, paddingTop: 24 }}>
+                    {/* Eyebrow as a pill */}
                     <View
                       style={{
                         alignSelf: "flex-start",
@@ -440,50 +800,85 @@ export default function HomeScreen() {
                       </Text>
                     </View>
 
-                    {/* Title — generous line-height, no text shadow */}
+                    {/* Big two-line title with subtle text shadow */}
                     <Text
                       numberOfLines={2}
                       style={{
-                        fontSize: 28,
-                        lineHeight: 32,
-                        marginTop: 18,
+                        fontSize: 30,
+                        lineHeight: 34,
+                        marginTop: 16,
                         fontFamily: "Nunito_800ExtraBold",
                         color: textColor,
-                        letterSpacing: -0.7,
+                        letterSpacing: -0.9,
+                        textShadowColor: "#00000026",
+                        textShadowOffset: { width: 0, height: 1 },
+                        textShadowRadius: 4,
                         maxWidth: "62%",
                       }}
                     >
                       {course.title}
                     </Text>
 
-                    {/* Thin accent underline */}
+                    {/* Accent underline */}
                     <View
                       style={{
-                        width: 36,
+                        width: 44,
                         height: 3,
-                        marginTop: 14,
+                        marginTop: 10,
                         borderRadius: 2,
                         backgroundColor: accent,
+                        shadowColor: accent,
+                        shadowOffset: { width: 0, height: 0 },
+                        shadowOpacity: 0.7,
+                        shadowRadius: 4,
+                        elevation: 2,
                       }}
                     />
+
+                    {/* Subtitle */}
+                    <Text
+                      numberOfLines={3}
+                      style={{
+                        fontSize: 13,
+                        lineHeight: 18,
+                        marginTop: 14,
+                        fontFamily: "Nunito_600SemiBold",
+                        color: textSoft,
+                        maxWidth: "58%",
+                      }}
+                    >
+                      {course.description}
+                    </Text>
                   </View>
 
-                  {/* Spacer pushes the footer to the bottom */}
+                  {/* Spacer pushes footer to the bottom */}
                   <View style={{ flex: 1 }} />
 
-                  {/* Layer 5: footer — flat tonal strip with lessons + percent
-                      and a hairline progress bar. No blur, no extra shadows. */}
+                  {/* Layer 7: glassmorphism footer with thin progress bar */}
                   <View>
+                    {/* Glass strip */}
                     <View
                       style={{
+                        position: "relative",
                         paddingHorizontal: 22,
                         paddingVertical: 14,
                         flexDirection: "row",
                         alignItems: "center",
                         justifyContent: "space-between",
-                        backgroundColor: deepTint + "66",
+                        overflow: "hidden",
                       }}
                     >
+                      <BlurView
+                        intensity={Platform.OS === "ios" ? 30 : 50}
+                        tint={isLightCard ? "light" : "dark"}
+                        style={StyleSheet.absoluteFill}
+                      />
+                      <View
+                        style={[
+                          StyleSheet.absoluteFill,
+                          { backgroundColor: deepTint + "66" },
+                        ]}
+                      />
                       <Text
                         style={{
                           fontSize: 12,
@@ -507,7 +902,7 @@ export default function HomeScreen() {
                       </Text>
                     </View>
 
-                    {/* Hairline progress bar */}
+                    {/* Thin progress line at the very bottom edge */}
                     <View
                       style={{
                         height: 3,
@@ -520,6 +915,10 @@ export default function HomeScreen() {
                           width: `${Math.max(progress, 0)}%`,
                           height: "100%",
                           backgroundColor: accent,
+                          shadowColor: accent,
+                          shadowOffset: { width: 0, height: 0 },
+                          shadowOpacity: 0.9,
+                          shadowRadius: 4,
                         }}
                       />
                     </View>
