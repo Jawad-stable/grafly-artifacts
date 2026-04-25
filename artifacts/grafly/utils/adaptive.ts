@@ -64,5 +64,33 @@ export function adaptiveQuestions(
     return (indexById.get(a) ?? 0) - (indexById.get(b) ?? 0);
   });
 
-  return kept;
+  return kept.map(shuffleOptions);
+}
+
+/**
+ * Returns a copy of the question with multiple-choice options reshuffled and
+ * the correct index remapped. No-op for question types whose option order is
+ * meaningful (arrange_in_order, drag_to_match, fill_in_blank, etc.).
+ */
+export function shuffleOptions(q: Question): Question {
+  if (!q.options || q.options.length <= 1) return q;
+  if (typeof q.correctIndex !== "number") return q;
+  if (q.type === "arrange_in_order") return q;
+
+  const indices = q.options.map((_, i) => i);
+  for (let i = indices.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [indices[i], indices[j]] = [indices[j], indices[i]];
+  }
+
+  // Skip the rare case where shuffling produced the same order — reroll once.
+  const isUnchanged = indices.every((v, i) => v === i);
+  if (isUnchanged && indices.length > 1) {
+    [indices[0], indices[indices.length - 1]] = [indices[indices.length - 1], indices[0]];
+  }
+
+  const newOptions = indices.map((origIdx) => q.options![origIdx]);
+  const newCorrect = indices.indexOf(q.correctIndex);
+
+  return { ...q, options: newOptions, correctIndex: newCorrect };
 }

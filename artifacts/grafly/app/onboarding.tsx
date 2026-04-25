@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import {
   View,
   Text,
@@ -24,6 +24,7 @@ import { useColors } from "@/hooks/useColors";
 import { useGame } from "@/context/GameContext";
 import { useAuth } from "@/context/AuthContext";
 import type { PlacementLevel } from "@/context/GameContext";
+import { shuffleOptions } from "@/utils/adaptive";
 import { PLACEMENT_QUESTIONS } from "@/constants/lessons";
 import { GraflyMascot } from "@/components/GraflyMascot";
 import { LOGO } from "@/constants/assets";
@@ -170,6 +171,11 @@ export default function OnboardingScreen() {
       );
     }
   }, [currentQ, step]);
+
+  const placementQ = useMemo(
+    () => shuffleOptions(PLACEMENT_QUESTIONS[currentQ]),
+    [currentQ],
+  );
 
   const placementProgressStyle = useAnimatedStyle(() => ({
     width: `${placementProgress.value}%` as any,
@@ -745,7 +751,7 @@ export default function OnboardingScreen() {
   // 5. PLACEMENT TEST
   // ============================================================
   if (step === "placement") {
-    const q = PLACEMENT_QUESTIONS[currentQ];
+    const q = placementQ;
     return (
       <View style={{ flex: 1, backgroundColor: colors.background }}>
         <View style={{ flex: 1, paddingTop: padTop, paddingBottom: padBottom }}>
