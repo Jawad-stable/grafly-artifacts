@@ -439,7 +439,6 @@ const SECTIONS = [
           ["Critique 'limit reached' CTA", "ink"],
           ["Lesson hearts == 0 (forced)",  "danger"],
           ["Profile 'Upgrade to Pro' CTA", "ink"],
-          ["Shop Pro only item tap",       "ink"],
         ],
       },
       {
@@ -585,7 +584,7 @@ class PageBuilder {
 
 async function build() {
   const pdfDoc = await PDFDocument.create();
-  pdfDoc.setTitle("Grafly - User Flow Map");
+  pdfDoc.setTitle("Grafly \u2014 User Flow Map");
   pdfDoc.setAuthor("Grafly Team");
   pdfDoc.setSubject("Printable user flow reference for the Grafly mobile app");
   pdfDoc.setKeywords(["grafly", "user flow", "mobile", "expo", "design"]);
@@ -619,8 +618,8 @@ async function build() {
     b.page.drawText(text, { x, y, size, font, color });
   };
 
-  centerText("GRAFLY", fonts.sansBold, 11, PAGE_H / 2 - 110, C.muted);
-  centerText("User Flow Map", fonts.sansBold, 40, PAGE_H / 2 - 78, C.ink);
+  centerText("PRINTABLE REFERENCE", fonts.sansBold, 11, PAGE_H / 2 - 110, C.muted);
+  centerText("Grafly \u2014 User Flow Map", fonts.sansBold, 34, PAGE_H / 2 - 78, C.ink);
 
   // small underline rule
   {
@@ -809,7 +808,7 @@ function drawFooter(page, fonts, pageNumber) {
     thickness: 0.5,
     color: C.rule,
   });
-  page.drawText("Grafly - User Flow Map", {
+  page.drawText("Grafly \u2014 User Flow Map", {
     x: MARGIN,
     y,
     size: 9,
