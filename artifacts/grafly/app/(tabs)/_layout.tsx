@@ -70,10 +70,11 @@ function TabPill({
   const { state } = useGame();
   const isLight = state.themeMode === "light";
 
-  // Active = filled primary pill with white icon + white label.
-  // Inactive = muted icon only.
-  const activeBg = colors.primary;
-  const activeFg = colors.primaryForeground;
+  // Active = soft tinted primary pill with primary-colored icon + label,
+  // outlined with a hairline primary border. Inactive = muted icon only.
+  const activeBg = colors.primary + (isLight ? "1F" : "26");
+  const activeBorder = colors.primary + (isLight ? "3D" : "55");
+  const activeFg = colors.primary;
   const inactiveIcon = isLight
     ? colors.primaryForeground + "B3"
     : colors.mutedForeground;
@@ -114,7 +115,11 @@ function TabPill({
         <Animated.View
           style={[
             styles.pillBg,
-            { backgroundColor: activeBg },
+            {
+              backgroundColor: activeBg,
+              borderWidth: 1,
+              borderColor: activeBorder,
+            },
             pillStyle,
           ]}
         />
