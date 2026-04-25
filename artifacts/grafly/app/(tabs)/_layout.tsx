@@ -152,13 +152,13 @@ export default function TabLayout() {
   const { state } = useGame();
   const isLight = state.themeMode === "light";
 
-  // Floating pill: 90% of screen width, centered, with a hard max so it
-  // never stretches on tablets, plus a guaranteed marginHorizontal so it
-  // never touches the left/right edges.
+  // Floating pill: pinned to left/right with the same 14 px gutter the
+  // critique composer + chat content use, so the nav lines up flush with
+  // the input bar above it on every screen size.
   const tabBarHeight = 70;
   const tabBottom = Math.max(insets.bottom + 8, 22);
   const pillRadius = 35;
-  const maxBarWidth = 380;
+  const tabBarSideGutter = 14;
 
   return (
     <Tabs
@@ -171,13 +171,12 @@ export default function TabLayout() {
         tabBarStyle: {
           position: "absolute",
           bottom: tabBottom,
+          // Pin to left + right (no width, no maxWidth, no alignSelf, no
+          // marginHorizontal, no transforms) so the nav width is exactly
+          // screen − 2 × gutter — the same value the composer uses above.
+          left: tabBarSideGutter,
+          right: tabBarSideGutter,
           flexDirection: "row",
-          // 90% of screen width, capped on wide screens, centered, with a
-          // guaranteed horizontal margin so it never touches the edges.
-          width: "90%",
-          maxWidth: maxBarWidth,
-          alignSelf: "center",
-          marginHorizontal: 16,
           borderRadius: pillRadius,
           height: tabBarHeight,
           paddingTop: 0,
