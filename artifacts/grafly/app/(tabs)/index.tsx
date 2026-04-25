@@ -3,6 +3,7 @@ import {
   View,
   Text,
   ScrollView,
+  StyleSheet,
   TouchableOpacity,
   Platform,
   Image,
@@ -27,6 +28,7 @@ import { LOGO } from "@/constants/assets";
 import { GraflyMascot } from "@/components/GraflyMascot";
 import { AText } from "@/components/AText";
 import { PressScale } from "@/components/PressScale";
+import { LinearGradient } from "expo-linear-gradient";
 
 function getGreeting(name: string): string {
   const hour = new Date().getHours();
@@ -314,78 +316,137 @@ export default function HomeScreen() {
                     backgroundColor: course.color,
                     overflow: "hidden",
                     shadowColor: course.color,
-                    shadowOffset: { width: 0, height: 10 },
-                    shadowOpacity: 0.16,
-                    shadowRadius: 18,
-                    elevation: 5,
+                    shadowOffset: { width: 0, height: 12 },
+                    shadowOpacity: 0.2,
+                    shadowRadius: 22,
+                    elevation: 6,
                   }}
                 >
-                  {/* Top: category eyebrow (no pill) */}
-                  <View style={{ paddingHorizontal: 18, paddingTop: 16 }}>
+                  {/* Subtle top-to-bottom darkening for depth */}
+                  <LinearGradient
+                    pointerEvents="none"
+                    colors={["#00000000", "#00000026"]}
+                    start={{ x: 0.5, y: 0 }}
+                    end={{ x: 0.5, y: 1 }}
+                    style={{
+                      position: "absolute",
+                      left: 0, right: 0, top: 0, bottom: 0,
+                    }}
+                  />
+
+                  {/* Mascot — sits on the right, slightly muted so it never
+                      competes with the title. Positioned behind the text. */}
+                  <View
+                    pointerEvents="none"
+                    style={{
+                      position: "absolute",
+                      right: -6, bottom: 46,
+                      width: 130, height: 130,
+                      alignItems: "center", justifyContent: "center",
+                      opacity: 0.92,
+                    }}
+                  >
+                    <GraflyMascot state={mascotState} size={108} />
+                  </View>
+
+                  {/* Top text block: eyebrow → title → description.
+                      maxWidth keeps text from running into the mascot. */}
+                  <View style={{ paddingHorizontal: 22, paddingTop: 22 }}>
+                    {/* Eyebrow — small uppercase label, low emphasis */}
                     <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
-                      <Icon name={course.icon as any} size={12} color={colors.primaryForeground + "DD"} />
-                      <Text style={{
-                        fontSize: 10, fontFamily: "Nunito_800ExtraBold",
-                        color: colors.primaryForeground + "DD", letterSpacing: 1.2,
-                      }}>
+                      <Icon
+                        name={course.icon as any}
+                        size={11}
+                        color={colors.primaryForeground + "AA"}
+                      />
+                      <Text
+                        style={{
+                          fontSize: 10,
+                          fontFamily: "Nunito_800ExtraBold",
+                          color: colors.primaryForeground + "AA",
+                          letterSpacing: 1.4,
+                        }}
+                      >
                         {course.title.toUpperCase()}
                       </Text>
                     </View>
-                  </View>
 
-                  {/* Title block — fixed heights so every card matches */}
-                  <View style={{ paddingHorizontal: 18, paddingTop: 10 }}>
+                    {/* Primary title — biggest type, dominant focal point */}
                     <Text
                       numberOfLines={1}
                       style={{
-                        fontSize: 24, fontFamily: "Nunito_800ExtraBold",
-                        color: colors.primaryForeground, lineHeight: 28, letterSpacing: -0.5,
-                        height: 28,
+                        fontSize: 26,
+                        lineHeight: 30,
+                        marginTop: 12,
+                        fontFamily: "Nunito_800ExtraBold",
+                        color: colors.primaryForeground,
+                        letterSpacing: -0.6,
                       }}
                     >
                       {course.title}
                     </Text>
+
+                    {/* Description — softer, capped at 2 lines, kept clear
+                        of the mascot via maxWidth */}
                     <Text
                       numberOfLines={2}
                       style={{
-                        fontSize: 12, fontFamily: "Nunito_600SemiBold",
-                        color: colors.primaryForeground + "CC", marginTop: 6, lineHeight: 17,
-                        height: 34,
+                        fontSize: 13,
+                        lineHeight: 18,
+                        marginTop: 8,
+                        fontFamily: "Nunito_600SemiBold",
+                        color: colors.primaryForeground + "B8",
+                        maxWidth: "68%",
+                        height: 36,
                       }}
                     >
                       {course.description}
                     </Text>
                   </View>
 
-                  {/* Collage block: mascot + accent dot — flexes to fill remaining space */}
-                  <View style={{ flex: 1, marginTop: 8, position: "relative", overflow: "hidden" }}>
-                    {/* Accent dot */}
-                    <View style={{
-                      position: "absolute", left: 22, top: 14,
-                      width: 28, height: 28, borderRadius: 14,
-                      backgroundColor: colors.accent,
-                    }} />
-                    {/* Mascot */}
-                    <View style={{
-                      position: "absolute", right: 6, bottom: -8,
-                      width: 130, height: 130, alignItems: "center", justifyContent: "center",
-                    }}>
-                      <GraflyMascot state={mascotState} size={120} />
-                    </View>
-                  </View>
+                  {/* Spacer pushes footer to the bottom of the card */}
+                  <View style={{ flex: 1 }} />
 
-                  {/* Footer strip with progress */}
-                  <View style={{
-                    paddingHorizontal: 18, paddingVertical: 12,
-                    backgroundColor: colors.accentForeground + "22",
-                    flexDirection: "row", alignItems: "center", justifyContent: "space-between",
-                  }}>
-                    <Text style={{ fontSize: 11, fontFamily: "Nunito_800ExtraBold", color: colors.primaryForeground }}>
-                      {completedCount}/{totalLessons} lessons
-                    </Text>
-                    <Text style={{ fontSize: 11, fontFamily: "Nunito_800ExtraBold", color: colors.primaryForeground }}>
-                      {progress}%
-                    </Text>
+                  {/* Footer with hairline divider — visually separated from
+                      the content above. Subtle dark overlay for depth. */}
+                  <View>
+                    <View
+                      style={{
+                        height: StyleSheet.hairlineWidth,
+                        backgroundColor: colors.primaryForeground + "26",
+                      }}
+                    />
+                    <View
+                      style={{
+                        paddingHorizontal: 22,
+                        paddingVertical: 14,
+                        backgroundColor: "#00000026",
+                        flexDirection: "row",
+                        alignItems: "center",
+                        justifyContent: "space-between",
+                      }}
+                    >
+                      <Text
+                        style={{
+                          fontSize: 11,
+                          fontFamily: "Nunito_800ExtraBold",
+                          color: colors.primaryForeground + "EE",
+                          letterSpacing: 0.2,
+                        }}
+                      >
+                        {completedCount}/{totalLessons} lessons
+                      </Text>
+                      <Text
+                        style={{
+                          fontSize: 11,
+                          fontFamily: "Nunito_800ExtraBold",
+                          color: colors.primaryForeground,
+                          letterSpacing: 0.2,
+                        }}
+                      >
+                        {progress}%
+                      </Text>
+                    </View>
                   </View>
                 </PressScale>
               );
