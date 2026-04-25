@@ -77,25 +77,49 @@ function TrueFalse({
 }) {
   const colors = useColors();
   return (
-    <View style={{ flexDirection: "row", gap: 14 }}>
+    <View style={{ flexDirection: "row", gap: 12, width: "100%", alignSelf: "stretch" }}>
       {[true, false].map((val) => {
+        const isCorrectAnswer = answered && val === question.correctBool;
+        const isWrongPick = answered && val === selectedBool && val !== question.correctBool;
         let borderColor = colors.border;
         let bg = colors.card;
         let textColor = colors.foreground;
-        if (answered) {
-          if (val === question.correctBool) { borderColor = colors.success; bg = colors.success + "18"; textColor = colors.success; }
-          else if (val === selectedBool) { borderColor = colors.destructive; bg = colors.destructive + "18"; textColor = colors.destructive; }
+        if (isCorrectAnswer) {
+          borderColor = colors.success;
+          bg = colors.success + "18";
+          textColor = colors.success;
+        } else if (isWrongPick) {
+          borderColor = colors.destructive;
+          bg = colors.destructive + "18";
+          textColor = colors.destructive;
         }
         return (
           <TouchableOpacity
             key={String(val)}
-            style={{ flex: 1, backgroundColor: bg, borderRadius: colors.radius, paddingVertical: 28, borderWidth: 2, borderColor, alignItems: "center", justifyContent: "center", gap: 8 }}
+            style={{
+              flexBasis: 0,
+              flexGrow: 1,
+              flexShrink: 1,
+              minWidth: 0,
+              backgroundColor: bg,
+              borderRadius: 22,
+              paddingVertical: 32,
+              paddingHorizontal: 12,
+              borderWidth: 2,
+              borderColor,
+              alignItems: "center",
+              justifyContent: "center",
+              gap: 10,
+              minHeight: 120,
+            }}
             onPress={() => !answered && onAnswer(val)}
             disabled={answered}
-            activeOpacity={0.8}
+            activeOpacity={0.85}
           >
-            <Icon name={val ? "checkmark-circle" : "close-circle"} size={32} color={textColor} />
-            <Text style={{ fontSize: 20, fontFamily: "Nunito_800ExtraBold", color: textColor }}>
+            {(isCorrectAnswer || isWrongPick) ? (
+              <Icon name={isCorrectAnswer ? "checkmark-circle" : "close-circle"} size={30} color={textColor} />
+            ) : null}
+            <Text style={{ fontSize: 22, fontFamily: "Nunito_800ExtraBold", color: textColor, letterSpacing: 0.3 }}>
               {val ? "True" : "False"}
             </Text>
           </TouchableOpacity>
