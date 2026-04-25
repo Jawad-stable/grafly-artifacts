@@ -14,16 +14,12 @@ import Animated, {
   Easing,
 } from "react-native-reanimated";
 import { Icon, type IconName } from "@/components/Icon";
-import { AText } from "@/components/AText";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useColors } from "@/hooks/useColors";
 import { useGame } from "@/context/GameContext";
 
 // Subtle press feedback for tab buttons.
 // Soft scale-in, calm release, no overshoot.
-// Forwards all React Navigation tab button props (accessibility,
-// onLongPress, testID, etc) to the underlying Pressable so selected
-// state is announced and long-press / blur behavior keeps working.
 function PressTabButton(props: any) {
   const { children, onPressIn, onPressOut, style, ...rest } = props;
   const scale = useSharedValue(1);
@@ -35,7 +31,7 @@ function PressTabButton(props: any) {
     <Pressable
       {...rest}
       onPressIn={(e) => {
-        scale.value = withTiming(0.94, {
+        scale.value = withTiming(0.92, {
           duration: 90,
           easing: Easing.out(Easing.cubic),
         });
@@ -57,48 +53,38 @@ function PressTabButton(props: any) {
   );
 }
 
-function TabPill({
+// A single tab cell. Icon-only. Active state = filled icon in primary color
+// with a small primary indicator dot directly below it. No labels in the bar
+// — the screen's own header provides the section name.
+function TabIcon({
   name,
-  label,
   focused,
 }: {
   name: IconName;
-  label: string;
   focused: boolean;
 }) {
   const colors = useColors();
   const { state } = useGame();
   const isLight = state.themeMode === "light";
 
-  // Vertical layout: icon on top, label directly below. Active = primary
-  // color icon + small label underneath. Inactive = muted icon + a tiny
-  // dot in place of the label so every cell stays the same height and
-  // the icons never jump when switching tabs. No focus-state motion.
-  const activeFg = colors.primary;
-  const inactiveIcon = isLight
+  const activeColor = colors.primary;
+  const inactiveColor = isLight
     ? colors.primaryForeground + "B3"
     : colors.mutedForeground;
 
   return (
-    <View style={styles.itemWrap}>
+    <View style={styles.cell}>
       <Icon
         name={name}
-        size={22}
-        color={focused ? activeFg : inactiveIcon}
-        weight={focused ? "fill" : "bold"}
+        size={24}
+        color={focused ? activeColor : inactiveColor}
+        weight={focused ? "fill" : "regular"}
       />
-      {focused ? (
-        <AText
-          numberOfLines={1}
-          style={[styles.label, { color: activeFg }]}
-        >
-          {label}
-        </AText>
-      ) : (
+      {focused && (
         <View
           style={[
-            styles.dot,
-            { backgroundColor: inactiveIcon, opacity: 0.35 },
+            styles.indicator,
+            { backgroundColor: activeColor },
           ]}
         />
       )}
@@ -110,10 +96,10 @@ export default function TabLayout() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
   const { state } = useGame();
-  const bottomInset = insets.bottom;
-  const tabBarHeight = 60;
-  const tabBottom = Math.max(bottomInset, 16);
   const isLight = state.themeMode === "light";
+
+  const tabBarHeight = 58;
+  const tabBottom = Math.max(insets.bottom, 16);
   const pillRadius = tabBarHeight / 2;
 
   return (
@@ -127,25 +113,25 @@ export default function TabLayout() {
         tabBarStyle: {
           position: "absolute",
           bottom: tabBottom,
-          left: 16,
-          right: 16,
+          left: 20,
+          right: 20,
           borderRadius: pillRadius,
           height: tabBarHeight,
           paddingTop: 0,
           paddingBottom: 0,
-          paddingHorizontal: 8,
+          paddingHorizontal: 6,
           backgroundColor: "transparent",
           borderTopWidth: 0,
-          elevation: 10,
+          elevation: 12,
           shadowColor: "#000",
-          shadowOffset: { width: 0, height: 8 },
-          shadowOpacity: isLight ? 0.12 : 0.35,
-          shadowRadius: 20,
+          shadowOffset: { width: 0, height: 10 },
+          shadowOpacity: isLight ? 0.1 : 0.4,
+          shadowRadius: 24,
         },
         tabBarBackground: () => (
           <View style={StyleSheet.absoluteFill}>
             <BlurView
-              intensity={80}
+              intensity={Platform.OS === "ios" ? 60 : 90}
               tint={isLight ? "light" : "dark"}
               style={[
                 StyleSheet.absoluteFill,
@@ -163,7 +149,7 @@ export default function TabLayout() {
                   borderWidth: 1,
                   borderColor: isLight
                     ? colors.primaryForeground + "1A"
-                    : colors.border + "66",
+                    : colors.border + "55",
                 },
               ]}
             />
@@ -180,7 +166,7 @@ export default function TabLayout() {
         name="index"
         options={{
           tabBarIcon: ({ focused }) => (
-            <TabPill name="home" label="Home" focused={focused} />
+            <TabIcon name="home" focused={focused} />
           ),
         }}
       />
@@ -188,7 +174,7 @@ export default function TabLayout() {
         name="tree"
         options={{
           tabBarIcon: ({ focused }) => (
-            <TabPill name="git-network" label="Learn" focused={focused} />
+            <TabIcon name="git-network" focused={focused} />
           ),
         }}
       />
@@ -196,7 +182,7 @@ export default function TabLayout() {
         name="critique"
         options={{
           tabBarIcon: ({ focused }) => (
-            <TabPill name="color-filter" label="Critique" focused={focused} />
+            <TabIcon name="color-filter" focused={focused} />
           ),
         }}
       />
@@ -204,7 +190,7 @@ export default function TabLayout() {
         name="shop"
         options={{
           tabBarIcon: ({ focused }) => (
-            <TabPill name="cart" label="Shop" focused={focused} />
+            <TabIcon name="cart" focused={focused} />
           ),
         }}
       />
@@ -212,7 +198,7 @@ export default function TabLayout() {
         name="profile"
         options={{
           tabBarIcon: ({ focused }) => (
-            <TabPill name="person-circle" label="Profile" focused={focused} />
+            <TabIcon name="person-circle" focused={focused} />
           ),
         }}
       />
@@ -221,23 +207,16 @@ export default function TabLayout() {
 }
 
 const styles = StyleSheet.create({
-  itemWrap: {
+  cell: {
     flex: 1,
-    height: 60,
+    height: 58,
     alignItems: "center",
     justifyContent: "center",
-    paddingHorizontal: 4,
-    gap: 4,
+    gap: 5,
   },
-  label: {
-    fontFamily: "Nunito_800ExtraBold",
-    fontSize: 10,
-    letterSpacing: 0.4,
-    lineHeight: 12,
-  },
-  dot: {
-    width: 4,
-    height: 4,
-    borderRadius: 2,
+  indicator: {
+    width: 5,
+    height: 5,
+    borderRadius: 100,
   },
 });
