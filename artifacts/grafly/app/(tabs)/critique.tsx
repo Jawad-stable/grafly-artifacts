@@ -26,6 +26,7 @@ import {
 import { pickRandomLocalDesign, type LocalDesign } from "@/data/localDesigns";
 import { PressScale } from "@/components/PressScale";
 import { GraflyMascot } from "@/components/GraflyMascot";
+import { BOTTOM_BAR_WIDTH } from "@/constants/layout";
 
 const SMOOTH = Easing.out(Easing.cubic);
 
@@ -579,14 +580,18 @@ export default function CritiqueScreen() {
         ) : (
           <View
             style={{
-              paddingHorizontal: 14,
               paddingTop: 8,
               paddingBottom: composerLift,
               backgroundColor: colors.background,
+              alignItems: "center",
             }}
           >
             <View
               style={{
+                // Single shared wrapper width: BOTTOM_BAR_WIDTH from
+                // constants/layout.ts. The bottom tab bar uses the same
+                // constant, so the input pill and the nav line up exactly.
+                width: BOTTOM_BAR_WIDTH,
                 backgroundColor: colors.card,
                 borderRadius: 28,
                 borderWidth: 1,

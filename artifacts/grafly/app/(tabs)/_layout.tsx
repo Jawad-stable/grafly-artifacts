@@ -18,6 +18,7 @@ import { Icon, type IconName } from "@/components/Icon";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useColors } from "@/hooks/useColors";
 import { useGame } from "@/context/GameContext";
+import { BOTTOM_BAR_WIDTH } from "@/constants/layout";
 
 const SMOOTH = Easing.out(Easing.cubic);
 
@@ -152,13 +153,13 @@ export default function TabLayout() {
   const { state } = useGame();
   const isLight = state.themeMode === "light";
 
-  // Floating pill: pinned to left/right with the same 14 px gutter the
-  // critique composer + chat content use, so the nav lines up flush with
-  // the input bar above it on every screen size.
+  // Floating pill. The width is the SAME shared constant the critique
+  // composer uses (BOTTOM_BAR_WIDTH from constants/layout.ts), so the nav
+  // and the input pill are always exactly the same width — no left/right
+  // pinning, no maxWidth, no marginHorizontal, no transforms.
   const tabBarHeight = 70;
   const tabBottom = Math.max(insets.bottom + 8, 22);
   const pillRadius = 35;
-  const tabBarSideGutter = 14;
 
   return (
     <Tabs
@@ -171,11 +172,13 @@ export default function TabLayout() {
         tabBarStyle: {
           position: "absolute",
           bottom: tabBottom,
-          // Pin to left + right (no width, no maxWidth, no alignSelf, no
-          // marginHorizontal, no transforms) so the nav width is exactly
-          // screen − 2 × gutter — the same value the composer uses above.
-          left: tabBarSideGutter,
-          right: tabBarSideGutter,
+          // Single shared wrapper width: BOTTOM_BAR_WIDTH from
+          // constants/layout.ts. The composer wrapper above uses the same
+          // constant, so the input pill and the nav line up flush left
+          // and right. NO left/right, NO maxWidth, NO marginHorizontal,
+          // NO transforms — width is the only horizontal sizing rule.
+          width: BOTTOM_BAR_WIDTH,
+          alignSelf: "center",
           flexDirection: "row",
           borderRadius: pillRadius,
           height: tabBarHeight,
