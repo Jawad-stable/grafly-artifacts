@@ -172,15 +172,15 @@ export default function TabLayout() {
         tabBarStyle: {
           position: "absolute",
           bottom: tabBottom,
-          // Centered horizontally on the screen. `alignSelf` does not
-          // apply to absolutely positioned elements, so we pin both
-          // edges and use `marginHorizontal: "auto"` with a fixed width
-          // (BOTTOM_BAR_WIDTH from constants/layout.ts) to center it.
-          // The composer pill uses the same constant so they line up.
+          // Center horizontally with the classic absolute-positioning
+          // trick: pin to 50%, then pull back by half the width. This
+          // works reliably across iOS, Android and web — `alignSelf`
+          // and `marginHorizontal: "auto"` are not honored on absolute
+          // children in React Native. BOTTOM_BAR_WIDTH is shared with
+          // the composer pill so the two stay flush.
           width: BOTTOM_BAR_WIDTH,
-          left: 0,
-          right: 0,
-          marginHorizontal: "auto",
+          left: "50%",
+          marginLeft: -(BOTTOM_BAR_WIDTH / 2),
           flexDirection: "row",
           borderRadius: pillRadius,
           height: tabBarHeight,
