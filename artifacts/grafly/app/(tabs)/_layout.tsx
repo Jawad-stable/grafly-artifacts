@@ -5,7 +5,6 @@ import {
   Platform,
   Pressable,
   StyleSheet,
-  useWindowDimensions,
   View,
 } from "react-native";
 import Animated, {
@@ -150,33 +149,16 @@ function TabIcon({
 export default function TabLayout() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
-  const { width: screenWidth } = useWindowDimensions();
   const { state } = useGame();
   const isLight = state.themeMode === "light";
 
-  // Responsive sizing with a hard width cap. The bar must never stretch to
-  // screen width and must never touch the left or right edges.
-  // - On phones it sits at ~80% of width.
-  // - On anything wider it is locked at maxBarWidth, and the gutters grow to
-  //   absorb the extra space, keeping it perfectly centered.
-  // - minSideGutter guarantees AT LEAST this many pixels of breathing room
-  //   on every screen size, no matter how narrow.
-  // Note: in React Native, an absolutely positioned tab bar centers most
-  // reliably via equal `left` and `right` insets; this is mathematically
-  // identical to `alignSelf: 'center'` with a fixed width.
-  const minSideGutter = 24;
-  const maxBarWidth = 380;
-  const idealWidth = Math.min(
-    screenWidth * 0.8,
-    maxBarWidth,
-    screenWidth - minSideGutter * 2,
-  );
-  const sideGutter = (screenWidth - idealWidth) / 2;
-
-  const tabBarHeight = 64;
-  // Lift the bar off the bottom edge for a true floating feel.
+  // Floating pill: 90% of screen width, centered, with a hard max so it
+  // never stretches on tablets, plus a guaranteed marginHorizontal so it
+  // never touches the left/right edges.
+  const tabBarHeight = 70;
   const tabBottom = Math.max(insets.bottom + 8, 22);
-  const pillRadius = 34;
+  const pillRadius = 35;
+  const maxBarWidth = 380;
 
   return (
     <Tabs
@@ -189,9 +171,13 @@ export default function TabLayout() {
         tabBarStyle: {
           position: "absolute",
           bottom: tabBottom,
-          // Equal left/right offsets keep the bar perfectly centered.
-          left: sideGutter,
-          right: sideGutter,
+          flexDirection: "row",
+          // 90% of screen width, capped on wide screens, centered, with a
+          // guaranteed horizontal margin so it never touches the edges.
+          width: "90%",
+          maxWidth: maxBarWidth,
+          alignSelf: "center",
+          marginHorizontal: 16,
           borderRadius: pillRadius,
           height: tabBarHeight,
           paddingTop: 0,
