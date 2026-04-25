@@ -587,7 +587,7 @@ export default function CritiqueScreen() {
                 paddingTop: 12,
                 paddingBottom: 12,
                 flexDirection: "row",
-                alignItems: "flex-end",
+                alignItems: "center",
                 gap: 10,
                 shadowColor: "#000",
                 shadowOffset: { width: 0, height: 4 },
@@ -602,7 +602,6 @@ export default function CritiqueScreen() {
                 placeholder="Message Grafly..."
                 placeholderTextColor={colors.mutedForeground}
                 multiline
-                textAlign="center"
                 textAlignVertical="center"
                 style={{
                   flex: 1,
@@ -613,7 +612,6 @@ export default function CritiqueScreen() {
                   lineHeight: 20,
                   fontFamily: "Nunito_600SemiBold",
                   color: colors.foreground,
-                  textAlign: "center",
                   maxHeight: 140,
                   minHeight: 28,
                   ...(Platform.OS === "web" ? { outlineStyle: "none" as any } : {}),
@@ -630,7 +628,6 @@ export default function CritiqueScreen() {
                   borderRadius: 20,
                   alignItems: "center",
                   justifyContent: "center",
-                  marginBottom: 2,
                 }}
               >
                 <Icon
