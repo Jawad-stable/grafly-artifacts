@@ -387,7 +387,7 @@ function NodeSheet({ node, course, isCompleted, isLocked, visible, onClose }: {
           {[
             { val: node.lessons.length, label: "LESSONS", icon: null, iconColor: null },
             { val: totalXP, label: "XP", icon: "flash", iconColor: colors.accent },
-            { val: totalCoins, label: "COINS", icon: "ellipse", iconColor: colors.warning },
+            { val: totalCoins, label: "COINS", icon: "coin", iconColor: colors.warning },
           ].map((s) => (
             <View key={s.label} style={{
               flex: 1,

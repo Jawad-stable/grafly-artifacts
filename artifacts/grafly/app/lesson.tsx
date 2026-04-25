@@ -631,7 +631,7 @@ export default function LessonScreen() {
               </Text>
             </View>
             <View style={{ flex: 1, backgroundColor: colors.card, borderRadius: colors.radius, padding: 20, alignItems: "center", gap: 8 }}>
-              <Icon name="ellipse" size={24} color={colors.warning} />
+              <Icon name="coin" size={26} color={colors.warning} weight="fill" />
               <Text style={{ fontSize: 26, fontFamily: "Nunito_800ExtraBold", color: colors.foreground }}>
                 +{coinsEarned}
               </Text>
