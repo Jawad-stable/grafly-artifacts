@@ -594,7 +594,7 @@ export default function CritiqueScreen() {
             >
               <AiBot size={22} spinning />
               <Text style={{ fontSize: 12, fontFamily: "Nunito_600SemiBold", color: colors.mutedForeground }}>
-                Grafly is Graflying
+                Grafly is Graflying ...
               </Text>
             </View>
           )}
