@@ -1,6 +1,6 @@
 import { BlurView } from "expo-blur";
 import { Tabs } from "expo-router";
-import React from "react";
+import React, { useEffect } from "react";
 import {
   Platform,
   Pressable,
@@ -11,6 +11,7 @@ import Animated, {
   useSharedValue,
   useAnimatedStyle,
   withTiming,
+  withSequence,
   Easing,
 } from "react-native-reanimated";
 import { Icon, type IconName } from "@/components/Icon";
@@ -18,8 +19,10 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useColors } from "@/hooks/useColors";
 import { useGame } from "@/context/GameContext";
 
-// Subtle press feedback for tab buttons.
-// Soft scale-in, calm release, no overshoot.
+const SMOOTH = Easing.out(Easing.cubic);
+
+// Bouncy, soft press feedback for tab buttons.
+// Quick scale-down on press in, slightly slower release on press out.
 function PressTabButton(props: any) {
   const { children, onPressIn, onPressOut, style, ...rest } = props;
   const scale = useSharedValue(1);
@@ -31,17 +34,18 @@ function PressTabButton(props: any) {
     <Pressable
       {...rest}
       onPressIn={(e) => {
-        scale.value = withTiming(0.92, {
-          duration: 90,
-          easing: Easing.out(Easing.cubic),
+        scale.value = withTiming(0.9, {
+          duration: 110,
+          easing: SMOOTH,
         });
         onPressIn?.(e);
       }}
       onPressOut={(e) => {
-        scale.value = withTiming(1, {
-          duration: 200,
-          easing: Easing.out(Easing.cubic),
-        });
+        // Light overshoot back to 1 for a satisfying release.
+        scale.value = withSequence(
+          withTiming(1.04, { duration: 160, easing: SMOOTH }),
+          withTiming(1, { duration: 140, easing: SMOOTH }),
+        );
         onPressOut?.(e);
       }}
       style={[style, { flex: 1 }]}
@@ -53,9 +57,9 @@ function PressTabButton(props: any) {
   );
 }
 
-// A single tab cell. Icon-only. Active state = filled icon in primary color
-// with a small primary indicator dot directly below it. No labels in the bar
-// — the screen's own header provides the section name.
+// A single tab cell. Icon-only. Active state = filled icon in primary color,
+// soft cyan glow halo behind it, slight scale-up, and a small dot indicator
+// directly below. Inactive = muted icon with lower opacity.
 function TabIcon({
   name,
   focused,
@@ -69,25 +73,62 @@ function TabIcon({
 
   const activeColor = colors.primary;
   const inactiveColor = isLight
-    ? colors.primaryForeground + "B3"
-    : colors.mutedForeground;
+    ? colors.primaryForeground + "AA"
+    : "#FFFFFF99";
+
+  const scale = useSharedValue(focused ? 1.12 : 1);
+  const glow = useSharedValue(focused ? 1 : 0);
+
+  useEffect(() => {
+    scale.value = withTiming(focused ? 1.12 : 1, {
+      duration: 260,
+      easing: SMOOTH,
+    });
+    glow.value = withTiming(focused ? 1 : 0, {
+      duration: 260,
+      easing: SMOOTH,
+    });
+  }, [focused]);
+
+  const iconBoxStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: scale.value }],
+  }));
+  const glowStyle = useAnimatedStyle(() => ({
+    opacity: glow.value,
+  }));
 
   return (
     <View style={styles.cell}>
-      <Icon
-        name={name}
-        size={24}
-        color={focused ? activeColor : inactiveColor}
-        weight={focused ? "fill" : "regular"}
-      />
-      {focused && (
-        <View
+      <View style={styles.iconStack}>
+        {/* Soft cyan/primary glow halo behind the active icon */}
+        <Animated.View
+          pointerEvents="none"
           style={[
-            styles.indicator,
-            { backgroundColor: activeColor },
+            styles.glow,
+            {
+              backgroundColor: activeColor + "26",
+              shadowColor: activeColor,
+            },
+            glowStyle,
           ]}
         />
-      )}
+        <Animated.View style={iconBoxStyle}>
+          <Icon
+            name={name}
+            size={24}
+            color={focused ? activeColor : inactiveColor}
+            weight={focused ? "fill" : "regular"}
+          />
+        </Animated.View>
+      </View>
+      {/* Indicator dot directly below the active icon */}
+      <Animated.View
+        style={[
+          styles.indicator,
+          { backgroundColor: activeColor, shadowColor: activeColor },
+          glowStyle,
+        ]}
+      />
     </View>
   );
 }
@@ -98,9 +139,9 @@ export default function TabLayout() {
   const { state } = useGame();
   const isLight = state.themeMode === "light";
 
-  const tabBarHeight = 58;
+  const tabBarHeight = 64;
   const tabBottom = Math.max(insets.bottom, 16);
-  const pillRadius = tabBarHeight / 2;
+  const pillRadius = 32;
 
   return (
     <Tabs
@@ -119,19 +160,19 @@ export default function TabLayout() {
           height: tabBarHeight,
           paddingTop: 0,
           paddingBottom: 0,
-          paddingHorizontal: 6,
+          paddingHorizontal: 14,
           backgroundColor: "transparent",
           borderTopWidth: 0,
-          elevation: 12,
+          elevation: 16,
           shadowColor: "#000",
-          shadowOffset: { width: 0, height: 10 },
-          shadowOpacity: isLight ? 0.1 : 0.4,
-          shadowRadius: 24,
+          shadowOffset: { width: 0, height: 14 },
+          shadowOpacity: isLight ? 0.12 : 0.45,
+          shadowRadius: 28,
         },
         tabBarBackground: () => (
           <View style={StyleSheet.absoluteFill}>
             <BlurView
-              intensity={Platform.OS === "ios" ? 60 : 90}
+              intensity={Platform.OS === "ios" ? 70 : 95}
               tint={isLight ? "light" : "dark"}
               style={[
                 StyleSheet.absoluteFill,
@@ -144,14 +185,29 @@ export default function TabLayout() {
                 {
                   backgroundColor: isLight
                     ? colors.foreground + "F2"
-                    : colors.card + "E6",
+                    : colors.card + "F2",
                   borderRadius: pillRadius,
                   borderWidth: 1,
                   borderColor: isLight
-                    ? colors.primaryForeground + "1A"
-                    : colors.border + "55",
+                    ? colors.primaryForeground + "1F"
+                    : "#FFFFFF12",
                 },
               ]}
+            />
+            {/* Subtle inner highlight along the top edge for depth */}
+            <View
+              pointerEvents="none"
+              style={{
+                position: "absolute",
+                top: 0,
+                left: 16,
+                right: 16,
+                height: 1,
+                backgroundColor: isLight
+                  ? colors.primaryForeground + "26"
+                  : "#FFFFFF1F",
+                borderRadius: 1,
+              }}
             />
           </View>
         ),
@@ -209,14 +265,34 @@ export default function TabLayout() {
 const styles = StyleSheet.create({
   cell: {
     flex: 1,
-    height: 58,
+    height: 64,
     alignItems: "center",
     justifyContent: "center",
     gap: 5,
+  },
+  iconStack: {
+    width: 44,
+    height: 36,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  glow: {
+    position: "absolute",
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.6,
+    shadowRadius: 14,
+    elevation: 6,
   },
   indicator: {
     width: 5,
     height: 5,
     borderRadius: 100,
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.7,
+    shadowRadius: 4,
+    elevation: 3,
   },
 });
