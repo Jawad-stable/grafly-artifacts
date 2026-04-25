@@ -10,9 +10,11 @@ import {
   ActivityIndicator,
   Modal,
   Pressable,
+  Dimensions,
 } from "react-native";
 import { KeyboardAvoidingView } from "react-native-keyboard-controller";
 import Animated, { FadeIn, FadeInDown, FadeInUp, Easing } from "react-native-reanimated";
+import { LinearGradient } from "expo-linear-gradient";
 import { Icon } from "@/components/Icon";
 import { router } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -23,14 +25,16 @@ import {
   type ChatMessage,
 } from "@/services/aiCritique";
 import { pickRandomLocalDesign, type LocalDesign } from "@/data/localDesigns";
-import { GraflyMascot } from "@/components/GraflyMascot";
 import { PressScale } from "@/components/PressScale";
 
 const XP_PER_SESSION = 20;
 const COINS_PER_SESSION = 8;
 const MIN_USER_TURNS_FOR_REWARD = 3;
-// ms per character for the writing animation (lower = faster)
 const TYPEWRITER_SPEED_MS = 14;
+
+const { width: SCREEN_W, height: SCREEN_H } = Dimensions.get("window");
+const HERO_HEIGHT_FULL = Math.min(Math.round(SCREEN_H * 0.46), 460);
+const HERO_HEIGHT_COMPACT = Math.min(Math.round(SCREEN_H * 0.22), 200);
 
 interface TypewriterTextProps {
   text: string;
@@ -94,21 +98,20 @@ export default function CritiqueScreen() {
   const [rewardedThisDesign, setRewardedThisDesign] = useState(false);
 
   const scrollRef = useRef<ScrollView>(null);
-  // Index of the last assistant message that should run the writing animation.
-  // -1 means no animation (e.g. the opener, or messages that already finished).
   const [animateIndex, setAnimateIndex] = useState(-1);
 
   const maxSessions = state.isPro ? Infinity : 2;
   const limitReached = sessionsDone >= maxSessions;
   const userTurnCount = messages.filter((m) => m.role === "user").length;
+  const chatStarted = userTurnCount > 0;
 
   const paddingTop = insets.top + (Platform.OS === "web" ? 67 : 0);
-  // Match the tab bar layout in app/(tabs)/_layout.tsx so the composer
-  // always clears the floating tab bar with breathing room.
   const tabBottomPad = Math.max(insets.bottom, Platform.OS === "web" ? 16 : 10);
   const tabBarHeight = 62 + tabBottomPad;
-  const tabBarBottomOffset = 12; // tabBarStyle.bottom in _layout.tsx
+  const tabBarBottomOffset = 12;
   const composerLift = tabBarHeight + tabBarBottomOffset + 12;
+
+  const heroHeight = chatStarted ? HERO_HEIGHT_COMPACT : HERO_HEIGHT_FULL;
 
   function loadNewDesign() {
     setLoadingDesign(true);
@@ -146,10 +149,8 @@ export default function CritiqueScreen() {
       });
       const updated: ChatMessage[] = [...next, { role: "assistant", content: reply }];
       setMessages(updated);
-      // Animate this freshly arrived assistant message with a writing effect.
       setAnimateIndex(updated.length - 1);
 
-      // Reward XP once per design after MIN_USER_TURNS_FOR_REWARD exchanges
       const newUserTurns = next.filter((m) => m.role === "user").length;
       if (!rewardedThisDesign && newUserTurns >= MIN_USER_TURNS_FOR_REWARD) {
         addXP(XP_PER_SESSION);
@@ -177,91 +178,133 @@ export default function CritiqueScreen() {
         keyboardVerticalOffset={0}
         style={{ flex: 1 }}
       >
-        {/* Editorial header */}
+        {/* Compact editorial header */}
         <Animated.View
           entering={FadeInDown.duration(520).easing(Easing.out(Easing.cubic))}
-          style={{ paddingTop: paddingTop + 12, paddingHorizontal: 24, paddingBottom: 14 }}
+          style={{
+            paddingTop: paddingTop + 10,
+            paddingHorizontal: 20,
+            paddingBottom: 10,
+            flexDirection: "row",
+            alignItems: "center",
+            gap: 12,
+          }}
         >
-          <View style={{ flexDirection: "row", alignItems: "flex-start", justifyContent: "space-between" }}>
-            <View style={{ flex: 1 }}>
-              <Text style={{ fontSize: 13, fontFamily: "Nunito_800ExtraBold", color: colors.mutedForeground, letterSpacing: 1.5, marginBottom: 4 }}>
-                DESIGN CHAT
-              </Text>
-              <Text style={{ fontSize: 38, fontFamily: "Nunito_800ExtraBold", color: colors.foreground, letterSpacing: -1, lineHeight: 42 }}>
-                Critique
-              </Text>
-              <Text style={{ fontSize: 13, fontFamily: "Nunito_600SemiBold", color: colors.mutedForeground, marginTop: 6 }}>
-                {state.isPro ? "Unlimited sessions" : `${Math.max(0, maxSessions - sessionsDone)} of ${maxSessions} sessions left`}
+          <View style={{ flex: 1 }}>
+            <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+              <View style={{
+                width: 8, height: 8, borderRadius: 4,
+                backgroundColor: state.isPro ? colors.success : colors.accent,
+              }} />
+              <Text style={{
+                fontSize: 11, fontFamily: "Nunito_800ExtraBold",
+                color: colors.mutedForeground, letterSpacing: 1.4,
+              }}>
+                AI MENTOR
               </Text>
             </View>
-            <PressScale
-              onPress={loadNewDesign}
-              style={{ backgroundColor: colors.card, padding: 12, borderRadius: 100, marginTop: 16 }}
-            >
-              <Icon name="shuffle" size={20} color={colors.foreground} />
-            </PressScale>
+            <Text style={{
+              fontSize: 30, fontFamily: "Nunito_800ExtraBold",
+              color: colors.foreground, letterSpacing: -0.8, lineHeight: 34,
+              marginTop: 2,
+            }}>
+              Critique
+            </Text>
           </View>
+
+          <View style={{
+            paddingHorizontal: 12, paddingVertical: 8,
+            borderRadius: 100, backgroundColor: colors.card,
+            borderWidth: 1, borderColor: colors.border,
+          }}>
+            <Text style={{
+              fontSize: 12, fontFamily: "Nunito_800ExtraBold",
+              color: colors.foreground, letterSpacing: -0.2,
+            }}>
+              {state.isPro ? "Unlimited" : `${Math.max(0, maxSessions - sessionsDone)} left`}
+            </Text>
+          </View>
+
+          <PressScale
+            onPress={loadNewDesign}
+            style={{
+              width: 44, height: 44, borderRadius: 22,
+              backgroundColor: colors.foreground,
+              alignItems: "center", justifyContent: "center",
+            }}
+          >
+            <Icon name="shuffle" size={20} color={colors.background} />
+          </PressScale>
         </Animated.View>
 
-        {/* Design image card — shrinks to a compact strip once the chat starts */}
+        {/* Full-bleed hero design image */}
         {design && (
           <Animated.View
-            key={userTurnCount > 0 ? "mini" : "full"}
-            entering={FadeIn.duration(260)}
-            style={{ paddingHorizontal: 24, paddingBottom: 12 }}
+            key={chatStarted ? "compact" : "full"}
+            entering={FadeIn.duration(320)}
+            style={{ width: SCREEN_W, height: heroHeight, position: "relative" }}
           >
-            <Pressable
-              onPress={() => setImageOpen(true)}
-              style={{
-                backgroundColor: colors.card,
-                borderRadius: colors.radius,
-                overflow: "hidden",
-                flexDirection: userTurnCount > 0 ? "row" : "column",
-                alignItems: userTurnCount > 0 ? "center" : "stretch",
-              }}
-            >
+            <Pressable onPress={() => setImageOpen(true)} style={{ width: "100%", height: "100%" }}>
               <Image
                 source={design.source}
-                style={
-                  userTurnCount > 0
-                    ? { width: 64, height: 64, backgroundColor: colors.muted }
-                    : { width: "100%", height: 220, backgroundColor: colors.muted }
-                }
+                style={{ width: "100%", height: "100%", backgroundColor: colors.muted }}
                 resizeMode="cover"
               />
-              <View
+              {/* Bottom gradient for legibility */}
+              <LinearGradient
+                colors={["rgba(0,0,0,0)", "rgba(0,0,0,0.85)"]}
                 style={{
-                  flex: 1,
-                  flexDirection: "row",
-                  alignItems: "center",
-                  padding: userTurnCount > 0 ? 10 : 12,
-                  gap: 10,
+                  position: "absolute", left: 0, right: 0, bottom: 0,
+                  height: chatStarted ? "65%" : "45%",
                 }}
-              >
-                <View style={{ flex: 1 }}>
+              />
+              {/* Top-right expand pill */}
+              <View style={{
+                position: "absolute", top: 14, right: 14,
+                paddingHorizontal: 12, paddingVertical: 7, borderRadius: 100,
+                backgroundColor: "rgba(0,0,0,0.55)",
+                flexDirection: "row", alignItems: "center", gap: 6,
+              }}>
+                <Icon name="expand-outline" size={14} color="#FFFFFF" />
+                <Text style={{
+                  fontSize: 11, fontFamily: "Nunito_800ExtraBold",
+                  color: "#FFFFFF", letterSpacing: 0.8,
+                }}>
+                  EXPAND
+                </Text>
+              </View>
+              {/* Bottom title overlay */}
+              <View style={{
+                position: "absolute", left: 0, right: 0, bottom: 0,
+                paddingHorizontal: 22, paddingBottom: 18, paddingTop: 24,
+              }}>
+                <Text style={{
+                  fontSize: 11, fontFamily: "Nunito_800ExtraBold",
+                  color: "#FFFFFFCC", letterSpacing: 1.5, marginBottom: 4,
+                }}>
+                  TODAY'S DESIGN
+                </Text>
+                <Text
+                  numberOfLines={chatStarted ? 1 : 2}
+                  style={{
+                    fontSize: chatStarted ? 18 : 24,
+                    fontFamily: "Nunito_800ExtraBold",
+                    color: "#FFFFFF", letterSpacing: -0.5, lineHeight: chatStarted ? 22 : 28,
+                  }}
+                >
+                  {design.title}
+                </Text>
+                {!chatStarted && (
                   <Text
+                    numberOfLines={2}
                     style={{
-                      fontSize: userTurnCount > 0 ? 13 : 15,
-                      fontFamily: "Nunito_800ExtraBold",
-                      color: colors.foreground,
+                      fontSize: 13, fontFamily: "Nunito_600SemiBold",
+                      color: "#FFFFFFCC", marginTop: 4, lineHeight: 18,
                     }}
-                    numberOfLines={1}
                   >
-                    {design.title}
+                    {design.description}
                   </Text>
-                  <Text
-                    style={{
-                      fontSize: userTurnCount > 0 ? 11 : 12,
-                      fontFamily: "Nunito_600SemiBold",
-                      color: colors.mutedForeground,
-                      marginTop: 2,
-                    }}
-                    numberOfLines={1}
-                  >
-                    Tap to view full size
-                  </Text>
-                </View>
-                <Icon name="expand-outline" size={userTurnCount > 0 ? 18 : 20} color={colors.mutedForeground} />
+                )}
               </View>
             </Pressable>
           </Animated.View>
@@ -271,7 +314,7 @@ export default function CritiqueScreen() {
         <ScrollView
           ref={scrollRef}
           style={{ flex: 1 }}
-          contentContainerStyle={{ paddingHorizontal: 24, paddingBottom: 12, gap: 10 }}
+          contentContainerStyle={{ paddingHorizontal: 20, paddingTop: 14, paddingBottom: 12, gap: 10 }}
           keyboardShouldPersistTaps="handled"
         >
           {loadingDesign && (
@@ -286,13 +329,20 @@ export default function CritiqueScreen() {
               entering={FadeInUp.duration(220)}
               style={{
                 alignSelf: m.role === "user" ? "flex-end" : "flex-start",
-                maxWidth: "85%",
+                maxWidth: "86%",
                 backgroundColor: m.role === "user" ? colors.primary : colors.card,
-                paddingHorizontal: 14,
-                paddingVertical: 10,
-                borderRadius: 18,
-                borderBottomRightRadius: m.role === "user" ? 4 : 18,
-                borderBottomLeftRadius: m.role === "assistant" ? 4 : 18,
+                paddingHorizontal: 16,
+                paddingVertical: 12,
+                borderRadius: 22,
+                borderBottomRightRadius: m.role === "user" ? 6 : 22,
+                borderBottomLeftRadius: m.role === "assistant" ? 6 : 22,
+                borderWidth: m.role === "assistant" ? 1 : 0,
+                borderColor: colors.border,
+                shadowColor: m.role === "user" ? colors.primary : "#000",
+                shadowOffset: { width: 0, height: 2 },
+                shadowOpacity: m.role === "user" ? 0.15 : 0.04,
+                shadowRadius: 6,
+                elevation: m.role === "user" ? 3 : 1,
               }}
             >
               {m.role === "assistant" ? (
@@ -303,7 +353,7 @@ export default function CritiqueScreen() {
                   onDone={() => setAnimateIndex(-1)}
                   style={{
                     fontSize: 14,
-                    lineHeight: 20,
+                    lineHeight: 21,
                     fontFamily: "Nunito_600SemiBold",
                     color: colors.foreground,
                   }}
@@ -312,7 +362,7 @@ export default function CritiqueScreen() {
                 <Text
                   style={{
                     fontSize: 14,
-                    lineHeight: 20,
+                    lineHeight: 21,
                     fontFamily: "Nunito_600SemiBold",
                     color: colors.primaryForeground,
                   }}
@@ -328,12 +378,14 @@ export default function CritiqueScreen() {
               style={{
                 alignSelf: "flex-start",
                 backgroundColor: colors.card,
-                paddingHorizontal: 14,
-                paddingVertical: 12,
-                borderRadius: 18,
-                borderBottomLeftRadius: 4,
+                paddingHorizontal: 16,
+                paddingVertical: 14,
+                borderRadius: 22,
+                borderBottomLeftRadius: 6,
+                borderWidth: 1,
+                borderColor: colors.border,
                 flexDirection: "row",
-                gap: 6,
+                gap: 8,
                 alignItems: "center",
               }}
             >
@@ -345,8 +397,14 @@ export default function CritiqueScreen() {
           )}
 
           {rewardedThisDesign && (
-            <Animated.View entering={FadeIn} style={{ alignSelf: "center", marginTop: 4, backgroundColor: colors.success + "20", paddingHorizontal: 12, paddingVertical: 6, borderRadius: 100 }}>
-              <Text style={{ fontSize: 12, fontFamily: "Nunito_800ExtraBold", color: colors.success }}>
+            <Animated.View entering={FadeIn} style={{
+              alignSelf: "center", marginTop: 6,
+              backgroundColor: colors.success + "20",
+              paddingHorizontal: 14, paddingVertical: 8, borderRadius: 100,
+              flexDirection: "row", alignItems: "center", gap: 6,
+            }}>
+              <Icon name="flash" size={14} color={colors.success} />
+              <Text style={{ fontSize: 12, fontFamily: "Nunito_800ExtraBold", color: colors.success, letterSpacing: 0.2 }}>
                 +{XP_PER_SESSION} XP earned
               </Text>
             </Animated.View>
@@ -355,7 +413,7 @@ export default function CritiqueScreen() {
 
         {/* Composer */}
         {limitReached ? (
-          <View style={{ paddingHorizontal: 24, paddingBottom: composerLift, paddingTop: 8 }}>
+          <View style={{ paddingHorizontal: 20, paddingBottom: composerLift, paddingTop: 8 }}>
             <PressScale
               style={{
                 backgroundColor: colors.foreground,
@@ -377,7 +435,7 @@ export default function CritiqueScreen() {
         ) : (
           <View
             style={{
-              paddingHorizontal: 20,
+              paddingHorizontal: 16,
               paddingTop: 8,
               paddingBottom: composerLift,
               backgroundColor: colors.background,
@@ -395,14 +453,11 @@ export default function CritiqueScreen() {
                 flexDirection: "row",
                 alignItems: "flex-end",
                 gap: 10,
-                ...(Platform.OS === "web"
-                  ? {
-                      shadowColor: "#000",
-                      shadowOffset: { width: 0, height: 2 },
-                      shadowOpacity: 0.06,
-                      shadowRadius: 10,
-                    }
-                  : {}),
+                shadowColor: "#000",
+                shadowOffset: { width: 0, height: 4 },
+                shadowOpacity: 0.08,
+                shadowRadius: 14,
+                elevation: 4,
               }}
             >
               <TextInput
@@ -431,9 +486,9 @@ export default function CritiqueScreen() {
                 style={{
                   backgroundColor:
                     input.trim() && !sending ? colors.foreground : colors.border,
-                  width: 36,
-                  height: 36,
-                  borderRadius: 18,
+                  width: 40,
+                  height: 40,
+                  borderRadius: 20,
                   alignItems: "center",
                   justifyContent: "center",
                   marginBottom: 2,
@@ -456,27 +511,30 @@ export default function CritiqueScreen() {
       <Modal visible={imageOpen} transparent animationType="fade" onRequestClose={() => setImageOpen(false)}>
         <Pressable
           onPress={() => setImageOpen(false)}
-          style={{ flex: 1, backgroundColor: "rgba(0,0,0,0.92)", alignItems: "center", justifyContent: "center", padding: 20 }}
+          style={{ flex: 1, backgroundColor: "rgba(0,0,0,0.95)", alignItems: "center", justifyContent: "center" }}
         >
           {design && (
             <Image
               source={design.source}
-              style={{ width: "100%", height: "80%" }}
+              style={{ width: SCREEN_W, height: SCREEN_H * 0.85 }}
               resizeMode="contain"
             />
           )}
           <TouchableOpacity
             onPress={() => setImageOpen(false)}
-            style={{ position: "absolute", top: insets.top + 12, right: 16, padding: 10, backgroundColor: "rgba(255,255,255,0.15)", borderRadius: 100 }}
+            style={{
+              position: "absolute", top: insets.top + 12, right: 16,
+              padding: 12, backgroundColor: "rgba(255,255,255,0.18)", borderRadius: 100,
+            }}
           >
-            <Icon name="close" size={24} color="#fff" />
+            <Icon name="close" size={22} color="#fff" />
           </TouchableOpacity>
           {design && (
-            <View style={{ position: "absolute", bottom: insets.bottom + 24, left: 24, right: 24 }}>
-              <Text style={{ fontSize: 16, fontFamily: "Nunito_800ExtraBold", color: "#fff", textAlign: "center" }}>
+            <View style={{ position: "absolute", bottom: insets.bottom + 28, left: 24, right: 24 }}>
+              <Text style={{ fontSize: 18, fontFamily: "Nunito_800ExtraBold", color: "#fff", textAlign: "center", letterSpacing: -0.4 }}>
                 {design.title}
               </Text>
-              <Text style={{ fontSize: 13, fontFamily: "Nunito_600SemiBold", color: "rgba(255,255,255,0.7)", textAlign: "center", marginTop: 4 }}>
+              <Text style={{ fontSize: 13, fontFamily: "Nunito_600SemiBold", color: "rgba(255,255,255,0.7)", textAlign: "center", marginTop: 6, lineHeight: 19 }}>
                 {design.description}
               </Text>
             </View>
