@@ -1,9 +1,7 @@
 import React, { useState } from "react";
 import {
   View,
-  Text,
   FlatList,
-  TouchableOpacity,
   Platform,
 } from "react-native";
 import Animated, {
@@ -12,6 +10,7 @@ import Animated, {
   Easing,
 } from "react-native-reanimated";
 import { Icon } from "@/components/Icon";
+import { AText } from "@/components/AText";
 import { router } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useColors } from "@/hooks/useColors";
@@ -37,16 +36,201 @@ const FRIENDS_USERS = [
   { id: "f3", name: "Sam Rivera", weeklyXP: 180, streak: 2, level: 2, division: "bronze" },
 ];
 
-const DIVISION_COLORS: Record<string, string> = {
-  diamond: "#FF7BD0",
-  platinum: "#00A4FA",
-  gold: "#FFB800",
-  silver: "#C0C0C0",
-  bronze: "#CD7F32",
+// Podium ring colors — gold, silver, bronze.
+// Hardcoded to map cleanly to the 1/2/3 medal metaphor that
+// already exists across the app (DIVISION_COLORS, PODIUM_COLORS,
+// CustomTabBar, etc).
+const RANK_RING = {
+  first: "#FFB800",
+  second: "#B6BCD1",
+  third: "#CD7F32",
 };
 
-const PODIUM_ICONS = ["trophy", "medal", "ribbon"];
-const PODIUM_COLORS = ["#FFB800", "#C0C0C0", "#CD7F32"];
+type Rank = keyof typeof RANK_RING;
+
+function avatarPalette(seed: string): { bg: string; fg: string } {
+  // Use the existing palette to color initial avatars consistently.
+  // We hash the seed to pick one of a few brand-aligned tints.
+  const tints = [
+    { bg: "#FFE0EE", fg: "#FF7BD0" },
+    { bg: "#E1F4FF", fg: "#00A4FA" },
+    { bg: "#FFF1C2", fg: "#E89B00" },
+    { bg: "#D7F5E6", fg: "#1FB874" },
+    { bg: "#EAE2FF", fg: "#7B6BFF" },
+    { bg: "#FFE3D6", fg: "#F26B3A" },
+  ];
+  let hash = 0;
+  for (let i = 0; i < seed.length; i++) hash = (hash * 31 + seed.charCodeAt(i)) >>> 0;
+  return tints[hash % tints.length];
+}
+
+function rankPillPalette(rank: number): { bg: string; fg: string } {
+  // Cycle through brand colors so the rank pills feel alive,
+  // but stay inside the project palette. Foregrounds tuned to
+  // keep 13px text comfortably readable on the pastel ground.
+  const cycle = [
+    { bg: "#FFE3D6", fg: "#C84A1F" },
+    { bg: "#FFF1C2", fg: "#A36A00" },
+    { bg: "#FFE0EE", fg: "#C8479A" },
+    { bg: "#E1F4FF", fg: "#0073B0" },
+    { bg: "#D7F5E6", fg: "#138654" },
+    { bg: "#EAE2FF", fg: "#5847CC" },
+  ];
+  return cycle[(rank - 1) % cycle.length];
+}
+
+function PodiumAvatar({
+  user,
+  rank,
+  size,
+}: {
+  user: { name: string };
+  rank: Rank;
+  size: number;
+}) {
+  const palette = avatarPalette(user.name);
+  const ring = RANK_RING[rank];
+  const ringWidth = rank === "first" ? 4 : 3;
+  const innerSize = size - ringWidth * 2;
+
+  return (
+    <View
+      style={{
+        width: size,
+        height: size,
+        borderRadius: size / 2,
+        borderWidth: ringWidth,
+        borderColor: ring,
+        alignItems: "center",
+        justifyContent: "center",
+        backgroundColor: "transparent",
+      }}
+    >
+      <View
+        style={{
+          width: innerSize,
+          height: innerSize,
+          borderRadius: innerSize / 2,
+          backgroundColor: palette.bg,
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+      >
+        <AText
+          style={{
+            fontSize: rank === "first" ? 26 : 22,
+            fontFamily: "Nunito_800ExtraBold",
+            color: palette.fg,
+            letterSpacing: 0.5,
+          }}
+        >
+          {user.name.slice(0, 2).toUpperCase()}
+        </AText>
+      </View>
+    </View>
+  );
+}
+
+function MedalBadge({
+  rank,
+  number,
+}: {
+  rank: Rank;
+  number: number;
+}) {
+  const ring = RANK_RING[rank];
+  return (
+    <View
+      style={{
+        width: 28,
+        height: 28,
+        borderRadius: 14,
+        backgroundColor: ring,
+        alignItems: "center",
+        justifyContent: "center",
+        borderWidth: 3,
+        borderColor: "#FFFFFF",
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.18,
+        shadowRadius: 4,
+        elevation: 3,
+      }}
+    >
+      <AText
+        style={{
+          fontSize: 12,
+          fontFamily: "Nunito_800ExtraBold",
+          color: "#FFFFFF",
+          lineHeight: 14,
+        }}
+      >
+        {number}
+      </AText>
+    </View>
+  );
+}
+
+function PodiumColumn({
+  user,
+  rank,
+  size,
+  highlight,
+}: {
+  user: { name: string; weeklyXP: number } | undefined;
+  rank: Rank;
+  size: number;
+  highlight: boolean;
+}) {
+  const colors = useColors();
+  if (!user) return <View style={{ flex: 1 }} />;
+  const rankNumber = rank === "first" ? 1 : rank === "second" ? 2 : 3;
+
+  return (
+    <View style={{ flex: rank === "first" ? 1.15 : 1, alignItems: "center" }}>
+      <View style={{ alignItems: "center", paddingTop: rank === "first" ? 0 : 18 }}>
+        <View>
+          <PodiumAvatar user={user} rank={rank} size={size} />
+          <View
+            style={{
+              position: "absolute",
+              bottom: -8,
+              alignSelf: "center",
+              left: 0,
+              right: 0,
+              alignItems: "center",
+            }}
+          >
+            <MedalBadge rank={rank} number={rankNumber} />
+          </View>
+        </View>
+        <View style={{ height: 18 }} />
+        <AText
+          numberOfLines={1}
+          style={{
+            fontSize: rank === "first" ? 16 : 14,
+            fontFamily: "Nunito_800ExtraBold",
+            color: highlight ? colors.primary : colors.foreground,
+            textAlign: "center",
+            maxWidth: size + 20,
+          }}
+        >
+          {user.name.split(" ").slice(0, 2).join(" ")}
+        </AText>
+        <AText
+          style={{
+            fontSize: 12,
+            fontFamily: "Nunito_600SemiBold",
+            color: colors.mutedForeground,
+            marginTop: 2,
+          }}
+        >
+          {user.weeklyXP} XP
+        </AText>
+      </View>
+    </View>
+  );
+}
 
 export default function LeaderboardScreen() {
   const colors = useColors();
@@ -54,7 +238,7 @@ export default function LeaderboardScreen() {
   const { state } = useGame();
   const [tab, setTab] = useState<"global" | "friends">("global");
 
-  const paddingTop = insets.top + (Platform.OS === "web" ? 67 : 0);
+  const paddingTop = insets.top + (Platform.OS === "web" ? 60 : 0);
   const paddingBottom = insets.bottom + (Platform.OS === "web" ? 34 : 24);
 
   const displayUsers = tab === "global" ? GLOBAL_USERS : FRIENDS_USERS;
@@ -75,35 +259,76 @@ export default function LeaderboardScreen() {
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.background }}>
-      {/* Editorial header */}
+      {/* Header — back, title with flame, diamonds pill */}
       <Animated.View
         entering={FadeInDown.duration(520).easing(Easing.out(Easing.cubic))}
         style={{
           paddingTop: paddingTop + 12,
-          paddingHorizontal: 24,
-          paddingBottom: 18,
+          paddingHorizontal: 20,
+          paddingBottom: 12,
         }}
       >
-        <View style={{ flexDirection: "row", alignItems: "center", gap: 14, marginBottom: 14 }}>
+        <View style={{ flexDirection: "row", alignItems: "center", gap: 12, marginBottom: 16 }}>
           <PressScale
             onPress={() => router.back()}
             hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
-            style={{ width: 40, height: 40, borderRadius: 100, backgroundColor: colors.card, alignItems: "center", justifyContent: "center" }}
+            style={{
+              width: 40,
+              height: 40,
+              borderRadius: 20,
+              backgroundColor: colors.card,
+              alignItems: "center",
+              justifyContent: "center",
+            }}
           >
             <Icon name="arrow-back" size={20} color={colors.foreground} />
           </PressScale>
-          <View style={{ flex: 1 }}>
-            <Text style={{ fontSize: 13, fontFamily: "Nunito_800ExtraBold", color: colors.mutedForeground, letterSpacing: 1.5 }}>
-              THIS WEEK
-            </Text>
-            <Text style={{ fontSize: 38, fontFamily: "Nunito_800ExtraBold", color: colors.foreground, letterSpacing: -1, lineHeight: 42 }}>
+          <View style={{ flex: 1, flexDirection: "row", alignItems: "center", gap: 6 }}>
+            <AText
+              style={{
+                fontSize: 26,
+                fontFamily: "Nunito_800ExtraBold",
+                color: colors.foreground,
+                letterSpacing: -0.5,
+              }}
+            >
               Leaderboard
-            </Text>
+            </AText>
+            <Icon name="flame" size={22} color={"#F26B3A"} />
+          </View>
+          <View
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+              gap: 6,
+              paddingHorizontal: 12,
+              paddingVertical: 8,
+              backgroundColor: colors.card,
+              borderRadius: 20,
+            }}
+          >
+            <Icon name="diamond" size={16} color={colors.primary} />
+            <AText
+              style={{
+                fontSize: 14,
+                fontFamily: "Nunito_800ExtraBold",
+                color: colors.foreground,
+              }}
+            >
+              {state.weeklyXP}
+            </AText>
           </View>
         </View>
 
-        {/* Tabs — editorial near-black active pill */}
-        <View style={{ flexDirection: "row", backgroundColor: colors.card, borderRadius: 100, padding: 5 }}>
+        {/* Tabs */}
+        <View
+          style={{
+            flexDirection: "row",
+            backgroundColor: colors.card,
+            borderRadius: 100,
+            padding: 5,
+          }}
+        >
           {(["global", "friends"] as const).map((t) => (
             <PressScale
               key={t}
@@ -113,18 +338,20 @@ export default function LeaderboardScreen() {
                 flex: 1,
                 backgroundColor: tab === t ? colors.foreground : "transparent",
                 borderRadius: 100,
-                paddingVertical: 11,
+                paddingVertical: 10,
                 alignItems: "center",
               }}
             >
-              <Text style={{
-                fontSize: 14,
-                fontFamily: "Nunito_800ExtraBold",
-                color: tab === t ? colors.background : colors.mutedForeground,
-                letterSpacing: 0.3,
-              }}>
+              <AText
+                style={{
+                  fontSize: 13,
+                  fontFamily: "Nunito_800ExtraBold",
+                  color: tab === t ? colors.background : colors.mutedForeground,
+                  letterSpacing: 0.3,
+                }}
+              >
                 {t.charAt(0).toUpperCase() + t.slice(1)}
-              </Text>
+              </AText>
             </PressScale>
           ))}
         </View>
@@ -133,236 +360,257 @@ export default function LeaderboardScreen() {
       <FlatList
         data={rest}
         keyExtractor={(item) => item.id}
-        contentContainerStyle={{ paddingBottom: paddingBottom }}
+        contentContainerStyle={{
+          paddingBottom: paddingBottom + (!userInTop3 ? 88 : 0),
+        }}
         showsVerticalScrollIndicator={false}
         ListHeaderComponent={
-          <View style={{ paddingHorizontal: 24 }}>
-            {/* Podium */}
-            <Animated.View entering={FadeIn} style={{ marginBottom: 24 }}>
-              <View style={{ flexDirection: "row", alignItems: "flex-end", justifyContent: "center", gap: 0 }}>
-                {/* 2nd place */}
-                {top3[1] && (
-                  <View style={{ alignItems: "center", flex: 1 }}>
-                    <View style={{
-                      width: 52,
-                      height: 52,
-                      borderRadius: 26,
-                      backgroundColor: PODIUM_COLORS[1] + "25",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      marginBottom: 8,
-                      borderWidth: 2,
-                      borderColor: PODIUM_COLORS[1],
-                    }}>
-                      <Text style={{ fontSize: 18, fontFamily: "Nunito_800ExtraBold", color: PODIUM_COLORS[1] }}>
-                        {top3[1].name.slice(0, 2).toUpperCase()}
-                      </Text>
-                    </View>
-                    <Text style={{ fontSize: 12, fontFamily: "Nunito_800ExtraBold", color: colors.foreground, textAlign: "center", marginBottom: 4 }} numberOfLines={1}>
-                      {top3[1].name}
-                    </Text>
-                    <Text style={{ fontSize: 11, fontFamily: "Nunito_600SemiBold", color: colors.mutedForeground }}>
-                      {top3[1].weeklyXP} XP
-                    </Text>
-                    <View style={{
-                      backgroundColor: PODIUM_COLORS[1] + "20",
-                      height: 60,
-                      width: "100%",
-                      borderTopLeftRadius: 10,
-                      borderTopRightRadius: 10,
-                      marginTop: 10,
-                      alignItems: "center",
-                      justifyContent: "center",
-                    }}>
-                      <Text style={{ fontSize: 22, fontFamily: "Nunito_800ExtraBold", color: PODIUM_COLORS[1] }}>2</Text>
-                    </View>
-                  </View>
-                )}
-
-                {/* 1st place */}
-                {top3[0] && (
-                  <View style={{ alignItems: "center", flex: 1.2 }}>
-                    <Icon name="trophy" size={22} color={PODIUM_COLORS[0]} style={{ marginBottom: 4 }} />
-                    <View style={{
-                      width: 64,
-                      height: 64,
-                      borderRadius: 32,
-                      backgroundColor: PODIUM_COLORS[0] + "25",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      marginBottom: 8,
-                      borderWidth: 3,
-                      borderColor: PODIUM_COLORS[0],
-                    }}>
-                      <Text style={{ fontSize: 22, fontFamily: "Nunito_800ExtraBold", color: PODIUM_COLORS[0] }}>
-                        {top3[0].name.slice(0, 2).toUpperCase()}
-                      </Text>
-                    </View>
-                    <Text style={{ fontSize: 13, fontFamily: "Nunito_800ExtraBold", color: colors.foreground, textAlign: "center", marginBottom: 4 }} numberOfLines={1}>
-                      {top3[0].name}
-                    </Text>
-                    <Text style={{ fontSize: 12, fontFamily: "Nunito_600SemiBold", color: colors.mutedForeground }}>
-                      {top3[0].weeklyXP} XP
-                    </Text>
-                    <View style={{
-                      backgroundColor: PODIUM_COLORS[0] + "20",
-                      height: 88,
-                      width: "100%",
-                      borderTopLeftRadius: 10,
-                      borderTopRightRadius: 10,
-                      marginTop: 10,
-                      alignItems: "center",
-                      justifyContent: "center",
-                    }}>
-                      <Text style={{ fontSize: 28, fontFamily: "Nunito_800ExtraBold", color: PODIUM_COLORS[0] }}>1</Text>
-                    </View>
-                  </View>
-                )}
-
-                {/* 3rd place */}
-                {top3[2] && (
-                  <View style={{ alignItems: "center", flex: 1 }}>
-                    <View style={{
-                      width: 52,
-                      height: 52,
-                      borderRadius: 26,
-                      backgroundColor: PODIUM_COLORS[2] + "25",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      marginBottom: 8,
-                      borderWidth: 2,
-                      borderColor: PODIUM_COLORS[2],
-                    }}>
-                      <Text style={{ fontSize: 18, fontFamily: "Nunito_800ExtraBold", color: PODIUM_COLORS[2] }}>
-                        {top3[2].name.slice(0, 2).toUpperCase()}
-                      </Text>
-                    </View>
-                    <Text style={{ fontSize: 12, fontFamily: "Nunito_800ExtraBold", color: colors.foreground, textAlign: "center", marginBottom: 4 }} numberOfLines={1}>
-                      {top3[2].name}
-                    </Text>
-                    <Text style={{ fontSize: 11, fontFamily: "Nunito_600SemiBold", color: colors.mutedForeground }}>
-                      {top3[2].weeklyXP} XP
-                    </Text>
-                    <View style={{
-                      backgroundColor: PODIUM_COLORS[2] + "20",
-                      height: 44,
-                      width: "100%",
-                      borderTopLeftRadius: 10,
-                      borderTopRightRadius: 10,
-                      marginTop: 10,
-                      alignItems: "center",
-                      justifyContent: "center",
-                    }}>
-                      <Text style={{ fontSize: 22, fontFamily: "Nunito_800ExtraBold", color: PODIUM_COLORS[2] }}>3</Text>
-                    </View>
-                  </View>
-                )}
+          <View style={{ paddingHorizontal: 20 }}>
+            {/* Podium — 2 / 1 / 3 */}
+            <Animated.View
+              entering={FadeIn.duration(420).easing(Easing.out(Easing.cubic))}
+              style={{
+                marginTop: 6,
+                marginBottom: 22,
+                paddingTop: 6,
+                paddingBottom: 8,
+              }}
+            >
+              <View
+                style={{
+                  flexDirection: "row",
+                  alignItems: "flex-end",
+                  justifyContent: "center",
+                }}
+              >
+                <PodiumColumn
+                  user={top3[1]}
+                  rank="second"
+                  size={78}
+                  highlight={top3[1]?.name === state.username}
+                />
+                <PodiumColumn
+                  user={top3[0]}
+                  rank="first"
+                  size={104}
+                  highlight={top3[0]?.name === state.username}
+                />
+                <PodiumColumn
+                  user={top3[2]}
+                  rank="third"
+                  size={78}
+                  highlight={top3[2]?.name === state.username}
+                />
               </View>
             </Animated.View>
+
+            {/* Section divider */}
+            <View
+              style={{
+                height: 1,
+                backgroundColor: colors.border + "60",
+                marginBottom: 14,
+                marginHorizontal: 4,
+              }}
+            />
           </View>
         }
         renderItem={({ item, index }) => {
           const rank = index + 4;
           const isMe = item.id === "me";
-          const divColor = DIVISION_COLORS[item.division ?? "bronze"];
+          const avatar = avatarPalette(item.name);
+          const pill = rankPillPalette(rank);
 
           return (
             <Animated.View
-              entering={FadeInDown.delay(index * 35).duration(420).easing(Easing.out(Easing.cubic))}
+              entering={FadeInDown.delay(index * 30)
+                .duration(380)
+                .easing(Easing.out(Easing.cubic))}
               style={{
-                marginHorizontal: 24,
-                marginBottom: 10,
-                backgroundColor: isMe ? colors.primary + "15" : colors.card,
-                borderRadius: colors.radius,
-                padding: 14,
+                marginHorizontal: 14,
+                marginBottom: 4,
+                paddingVertical: 10,
+                paddingHorizontal: 10,
                 flexDirection: "row",
                 alignItems: "center",
                 gap: 12,
-                borderWidth: isMe ? 1.5 : 0,
+                backgroundColor: isMe ? colors.primary + "15" : "transparent",
+                borderRadius: 18,
+                borderWidth: isMe ? 1.25 : 0,
                 borderColor: isMe ? colors.primary : "transparent",
               }}
             >
-              <Text style={{ fontSize: 15, fontFamily: "Nunito_800ExtraBold", color: colors.mutedForeground, width: 28, textAlign: "center" }}>
-                {rank}
-              </Text>
-              <View style={{
-                width: 40,
-                height: 40,
-                borderRadius: 20,
-                backgroundColor: isMe ? colors.primary + "30" : colors.muted,
-                alignItems: "center",
-                justifyContent: "center",
-              }}>
-                <Text style={{ fontSize: 15, fontFamily: "Nunito_800ExtraBold", color: isMe ? colors.primary : colors.foreground }}>
+              {/* Avatar */}
+              <View
+                style={{
+                  width: 44,
+                  height: 44,
+                  borderRadius: 22,
+                  backgroundColor: avatar.bg,
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                <AText
+                  style={{
+                    fontSize: 16,
+                    fontFamily: "Nunito_800ExtraBold",
+                    color: avatar.fg,
+                  }}
+                >
                   {item.name.slice(0, 2).toUpperCase()}
-                </Text>
+                </AText>
               </View>
+
+              {/* Name + points */}
               <View style={{ flex: 1 }}>
-                <Text style={{ fontSize: 14, fontFamily: "Nunito_800ExtraBold", color: isMe ? colors.primary : colors.foreground }}>
+                <AText
+                  numberOfLines={1}
+                  style={{
+                    fontSize: 15,
+                    fontFamily: "Nunito_800ExtraBold",
+                    color: isMe ? colors.primary : colors.foreground,
+                  }}
+                >
                   {item.name}
                   {isMe ? " (You)" : ""}
-                </Text>
-                <Text style={{ fontSize: 12, fontFamily: "Nunito_600SemiBold", color: colors.mutedForeground }}>
-                  Lv.{item.level} · {item.streak}d streak
-                </Text>
+                </AText>
+                <AText
+                  style={{
+                    fontSize: 12,
+                    fontFamily: "Nunito_600SemiBold",
+                    color: colors.mutedForeground,
+                    marginTop: 1,
+                  }}
+                >
+                  {item.weeklyXP} XP
+                </AText>
               </View>
-              <View style={{ flexDirection: "row", alignItems: "center", gap: 4 }}>
-                <Icon name="flash" size={13} color={colors.accent} />
-                <Text style={{ fontSize: 14, fontFamily: "Nunito_800ExtraBold", color: colors.foreground }}>
-                  {item.weeklyXP}
-                </Text>
+
+              {/* Rank pill */}
+              <View
+                style={{
+                  minWidth: 36,
+                  height: 32,
+                  paddingHorizontal: 10,
+                  borderRadius: 16,
+                  backgroundColor: pill.bg,
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                <AText
+                  style={{
+                    fontSize: 13,
+                    fontFamily: "Nunito_800ExtraBold",
+                    color: pill.fg,
+                    lineHeight: 14,
+                  }}
+                >
+                  {rank}
+                </AText>
               </View>
             </Animated.View>
           );
         }}
-        ListFooterComponent={
-          !userInTop3 ? (
-            <View style={{
-              marginHorizontal: 24,
-              marginTop: 8,
-              marginBottom: paddingBottom,
-              backgroundColor: colors.primary + "15",
-              borderRadius: colors.radius,
-              padding: 14,
+      />
+
+      {/* Sticky "(You)" bar — overlays the bottom so the user
+          always sees their rank without scrolling. */}
+      {!userInTop3 ? (
+        <View
+          pointerEvents="box-none"
+          style={{
+            position: "absolute",
+            left: 0,
+            right: 0,
+            bottom: 0,
+            paddingHorizontal: 14,
+            paddingTop: 8,
+            paddingBottom: insets.bottom + 8,
+            backgroundColor: colors.background,
+          }}
+        >
+          <View
+            style={{
+              paddingVertical: 10,
+              paddingHorizontal: 12,
               flexDirection: "row",
               alignItems: "center",
               gap: 12,
-              borderWidth: 1.5,
+              backgroundColor: colors.primary + "15",
+              borderRadius: 18,
+              borderWidth: 1.25,
               borderColor: colors.primary,
-            }}>
-              <Text style={{ fontSize: 15, fontFamily: "Nunito_800ExtraBold", color: colors.primary, width: 28, textAlign: "center" }}>
-                #{userRank}
-              </Text>
-              <View style={{
-                width: 40,
-                height: 40,
-                borderRadius: 20,
+            }}
+          >
+            <View
+              style={{
+                width: 44,
+                height: 44,
+                borderRadius: 22,
                 backgroundColor: colors.primary + "30",
                 alignItems: "center",
                 justifyContent: "center",
-              }}>
-                <Text style={{ fontSize: 15, fontFamily: "Nunito_800ExtraBold", color: colors.primary }}>
-                  {state.username.slice(0, 2).toUpperCase()}
-                </Text>
-              </View>
-              <View style={{ flex: 1 }}>
-                <Text style={{ fontSize: 14, fontFamily: "Nunito_800ExtraBold", color: colors.primary }}>
-                  {state.username} (You)
-                </Text>
-                <Text style={{ fontSize: 12, fontFamily: "Nunito_600SemiBold", color: colors.mutedForeground }}>
-                  Lv.{state.level} · {state.streak}d streak
-                </Text>
-              </View>
-              <View style={{ flexDirection: "row", alignItems: "center", gap: 4 }}>
-                <Icon name="flash" size={13} color={colors.accent} />
-                <Text style={{ fontSize: 14, fontFamily: "Nunito_800ExtraBold", color: colors.foreground }}>
-                  {state.weeklyXP}
-                </Text>
-              </View>
+              }}
+            >
+              <AText
+                style={{
+                  fontSize: 16,
+                  fontFamily: "Nunito_800ExtraBold",
+                  color: colors.primary,
+                }}
+              >
+                {state.username.slice(0, 2).toUpperCase()}
+              </AText>
             </View>
-          ) : null
-        }
-      />
+            <View style={{ flex: 1 }}>
+              <AText
+                numberOfLines={1}
+                style={{
+                  fontSize: 15,
+                  fontFamily: "Nunito_800ExtraBold",
+                  color: colors.primary,
+                }}
+              >
+                {state.username} (You)
+              </AText>
+              <AText
+                style={{
+                  fontSize: 12,
+                  fontFamily: "Nunito_600SemiBold",
+                  color: colors.mutedForeground,
+                  marginTop: 1,
+                }}
+              >
+                {state.weeklyXP} XP
+              </AText>
+            </View>
+            <View
+              style={{
+                minWidth: 44,
+                height: 32,
+                paddingHorizontal: 10,
+                borderRadius: 16,
+                backgroundColor: colors.primary,
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <AText
+                style={{
+                  fontSize: 13,
+                  fontFamily: "Nunito_800ExtraBold",
+                  color: colors.primaryForeground,
+                  lineHeight: 14,
+                }}
+              >
+                {userRank}
+              </AText>
+            </View>
+          </View>
+        </View>
+      ) : null}
     </View>
   );
 }
