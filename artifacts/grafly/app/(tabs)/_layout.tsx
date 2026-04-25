@@ -71,11 +71,11 @@ function TabPill({
   const isLight = state.themeMode === "light";
 
   // Active = soft tinted primary pill with primary-colored icon + label,
-  // outlined with a hairline primary border. Inactive = muted icon only.
+  // outlined with a hairline primary border. Inactive = muted icon + label.
   const activeBg = colors.primary + (isLight ? "1F" : "26");
   const activeBorder = colors.primary + (isLight ? "3D" : "55");
   const activeFg = colors.primary;
-  const inactiveIcon = isLight
+  const inactiveFg = isLight
     ? colors.primaryForeground + "B3"
     : colors.mutedForeground;
 
@@ -91,23 +91,12 @@ function TabPill({
   const pillStyle = useAnimatedStyle(() => ({
     opacity: progress.value,
     transform: [
-      { scaleX: 0.6 + progress.value * 0.4 },
+      { scale: 0.85 + progress.value * 0.15 },
     ],
   }));
 
-  const labelStyle = useAnimatedStyle(() => ({
-    opacity: progress.value,
-    marginLeft: progress.value * 6,
-    maxWidth: progress.value * 90,
-  }));
-
-  // Animate horizontal padding so inactive tabs don't reserve
-  // label space (compact icon-only on narrow widths).
-  const contentStyle = useAnimatedStyle(() => ({
-    paddingHorizontal: 4 + progress.value * 8,
-  }));
-
-  const iconColor = focused ? activeFg : inactiveIcon;
+  const iconColor = focused ? activeFg : inactiveFg;
+  const labelColor = focused ? activeFg : inactiveFg;
 
   return (
     <View style={styles.itemWrap}>
@@ -123,25 +112,23 @@ function TabPill({
             pillStyle,
           ]}
         />
-        <Animated.View style={[styles.pillContent, contentStyle]}>
+        <View style={styles.pillContent}>
           <Icon
             name={name}
-            size={22}
+            size={20}
             color={iconColor}
             weight={focused ? "fill" : "bold"}
           />
-          <Animated.View style={[styles.labelBox, labelStyle]}>
-            <AText
-              numberOfLines={1}
-              style={[
-                styles.label,
-                { color: activeFg },
-              ]}
-            >
-              {label}
-            </AText>
-          </Animated.View>
-        </Animated.View>
+          <AText
+            numberOfLines={1}
+            style={[
+              styles.label,
+              { color: labelColor },
+            ]}
+          >
+            {label}
+          </AText>
+        </View>
       </View>
     </View>
   );
@@ -151,10 +138,11 @@ export default function TabLayout() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
   const { state } = useGame();
-  const bottomPad = Math.max(insets.bottom, Platform.OS === "web" ? 16 : 10);
-  const tabBarHeight = 66 + bottomPad;
-  const tabBottom = 14;
+  const bottomInset = insets.bottom;
+  const tabBarHeight = 70;
+  const tabBottom = Math.max(bottomInset, Platform.OS === "web" ? 18 : 14);
   const isLight = state.themeMode === "light";
+  const pillRadius = tabBarHeight / 2;
 
   return (
     <Tabs
@@ -167,12 +155,12 @@ export default function TabLayout() {
         tabBarStyle: {
           position: "absolute",
           bottom: tabBottom,
-          left: 16,
-          right: 16,
-          borderRadius: 28,
+          left: 14,
+          right: 14,
+          borderRadius: pillRadius,
           height: tabBarHeight,
-          paddingBottom: bottomPad,
-          paddingHorizontal: 8,
+          paddingBottom: 0,
+          paddingHorizontal: 6,
           backgroundColor: "transparent",
           borderTopWidth: 0,
           elevation: 14,
@@ -188,7 +176,7 @@ export default function TabLayout() {
               tint={isLight ? "light" : "dark"}
               style={[
                 StyleSheet.absoluteFill,
-                { borderRadius: 28, overflow: "hidden" },
+                { borderRadius: pillRadius, overflow: "hidden" },
               ]}
             />
             <View
@@ -198,7 +186,7 @@ export default function TabLayout() {
                   backgroundColor: isLight
                     ? colors.foreground + "F2"
                     : colors.card + "D9",
-                  borderRadius: 28,
+                  borderRadius: pillRadius,
                   borderWidth: 1,
                   borderColor: isLight
                     ? "#FFFFFF14"
@@ -212,8 +200,8 @@ export default function TabLayout() {
               style={{
                 position: "absolute",
                 top: 0,
-                left: 18,
-                right: 18,
+                left: 24,
+                right: 24,
                 height: 1,
                 backgroundColor: isLight ? "#FFFFFF22" : "#FFFFFF12",
                 borderRadius: 1,
@@ -222,8 +210,9 @@ export default function TabLayout() {
           </View>
         ),
         tabBarItemStyle: {
-          paddingTop: 8,
+          paddingTop: 0,
           paddingBottom: 0,
+          height: tabBarHeight,
         },
       }}
     >
@@ -274,39 +263,35 @@ export default function TabLayout() {
 const styles = StyleSheet.create({
   itemWrap: {
     flex: 1,
-    height: 44,
+    height: 58,
     alignItems: "center",
     justifyContent: "center",
   },
   pillWrap: {
-    height: 40,
-    minWidth: 44,
+    height: 56,
+    alignSelf: "stretch",
     alignItems: "center",
     justifyContent: "center",
     position: "relative",
-    paddingHorizontal: 4,
+    paddingHorizontal: 6,
   },
   pillBg: {
     position: "absolute",
-    top: 0,
-    bottom: 0,
-    left: 0,
-    right: 0,
-    borderRadius: 22,
+    top: 2,
+    bottom: 2,
+    left: 4,
+    right: 4,
+    borderRadius: 999,
   },
   pillContent: {
-    flexDirection: "row",
+    flexDirection: "column",
     alignItems: "center",
     justifyContent: "center",
-    height: 40,
-  },
-  labelBox: {
-    overflow: "hidden",
-    flexShrink: 1,
+    gap: 2,
   },
   label: {
     fontFamily: "Nunito_800ExtraBold",
-    fontSize: 12,
-    letterSpacing: 0.2,
+    fontSize: 10,
+    letterSpacing: 0.3,
   },
 });
