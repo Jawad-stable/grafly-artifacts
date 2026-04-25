@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import {
   View,
   Text,
@@ -22,6 +22,7 @@ import { useColors } from "@/hooks/useColors";
 import { useGame } from "@/context/GameContext";
 import { voiceService } from "@/services/voiceService";
 import { COURSES, findNodeById, type Question, type Lesson } from "@/constants/lessons";
+import { adaptiveQuestions } from "@/utils/adaptive";
 import { GraflyMascot } from "@/components/GraflyMascot";
 import { PressScale } from "@/components/PressScale";
 import type { MascotState } from "@/constants/assets";
@@ -484,7 +485,10 @@ export default function LessonScreen() {
   const [mascotState, setMascotState] = useState<MascotState>("idle");
 
   const currentLesson = allLessons[lessonIdx];
-  const questions = currentLesson?.questions ?? [];
+  const questions = useMemo(
+    () => (currentLesson ? adaptiveQuestions(currentLesson, state.placementLevel) : []),
+    [currentLesson, state.placementLevel],
+  );
   const currentQ = questions[questionIdx];
   const totalQuestions = questions.length;
 
