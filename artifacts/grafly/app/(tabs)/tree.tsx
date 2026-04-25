@@ -469,7 +469,7 @@ export default function TreeScreen() {
 
   const course = COURSES[selectedCourseIdx];
   const paddingTop = insets.top + (Platform.OS === "web" ? 67 : 0);
-  const paddingBottom = insets.bottom + (Platform.OS === "web" ? 34 : 100);
+  const paddingBottom = insets.bottom + 100;
 
   // Compute progress for this course
   const allLessonIdsInCourse = course.nodes.flatMap((n) => n.lessons.map((l) => l.id));

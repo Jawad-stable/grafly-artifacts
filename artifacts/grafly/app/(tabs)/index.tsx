@@ -158,7 +158,7 @@ export default function HomeScreen() {
   const userRank = state.weeklyXP >= 1050 ? 3 : state.weeklyXP >= 500 ? 5 : 12;
 
   const paddingTop = insets.top + (Platform.OS === "web" ? 67 : 0);
-  const paddingBottom = insets.bottom + (Platform.OS === "web" ? 34 : 100);
+  const paddingBottom = insets.bottom + 100;
 
   if (!state.onboardingComplete) return null;
 

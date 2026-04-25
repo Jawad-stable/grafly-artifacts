@@ -63,7 +63,7 @@ function TabButton({
           size={24}
           color={isActive ? colors.primary : colors.mutedForeground}
         />
-      </Animated.View>
+      </View>
     </TouchableOpacity>
   );
 }

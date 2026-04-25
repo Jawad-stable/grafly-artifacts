@@ -112,7 +112,7 @@ export default function ShopScreen() {
   const [mascotState, setMascotState] = useState<"idle" | "celebrate" | "oops">("idle");
 
   const paddingTop = insets.top + (Platform.OS === "web" ? 67 : 0);
-  const paddingBottom = insets.bottom + (Platform.OS === "web" ? 34 : 100);
+  const paddingBottom = insets.bottom + 100;
 
   function showToast(msg: string) {
     setToast(msg);

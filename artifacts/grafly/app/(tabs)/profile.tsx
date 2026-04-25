@@ -54,7 +54,7 @@ export default function ProfileScreen() {
   const [nameInput, setNameInput] = useState(state.username);
 
   const paddingTop = insets.top + (Platform.OS === "web" ? 67 : 0);
-  const paddingBottom = insets.bottom + (Platform.OS === "web" ? 34 : 100);
+  const paddingBottom = insets.bottom + 100;
 
   const xpProg = getXPProgress(state.xp);
   const division = getDivision(state.weeklyXP);
