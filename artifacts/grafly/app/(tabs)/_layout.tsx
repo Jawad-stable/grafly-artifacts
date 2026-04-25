@@ -70,12 +70,12 @@ function TabPill({
   const { state } = useGame();
   const isLight = state.themeMode === "light";
 
-  // Active = soft tinted primary pill with primary-colored icon + label,
-  // outlined with a hairline primary border. Inactive = muted icon + label.
+  // Active = soft tinted primary pill with primary-colored icon, label slides
+  // in to the right of the icon as the pill expands. Inactive = icon only.
   const activeBg = colors.primary + (isLight ? "1F" : "26");
   const activeBorder = colors.primary + (isLight ? "3D" : "55");
   const activeFg = colors.primary;
-  const inactiveFg = isLight
+  const inactiveIcon = isLight
     ? colors.primaryForeground + "B3"
     : colors.mutedForeground;
 
@@ -91,12 +91,23 @@ function TabPill({
   const pillStyle = useAnimatedStyle(() => ({
     opacity: progress.value,
     transform: [
-      { scale: 0.85 + progress.value * 0.15 },
+      { scaleX: 0.6 + progress.value * 0.4 },
     ],
   }));
 
-  const iconColor = focused ? activeFg : inactiveFg;
-  const labelColor = focused ? activeFg : inactiveFg;
+  const labelStyle = useAnimatedStyle(() => ({
+    opacity: progress.value,
+    marginLeft: progress.value * 6,
+    maxWidth: progress.value * 90,
+  }));
+
+  // Animate horizontal padding so inactive tabs don't reserve
+  // label space (compact icon-only on narrow widths).
+  const contentStyle = useAnimatedStyle(() => ({
+    paddingHorizontal: 4 + progress.value * 8,
+  }));
+
+  const iconColor = focused ? activeFg : inactiveIcon;
 
   return (
     <View style={styles.itemWrap}>
@@ -112,23 +123,25 @@ function TabPill({
             pillStyle,
           ]}
         />
-        <View style={styles.pillContent}>
+        <Animated.View style={[styles.pillContent, contentStyle]}>
           <Icon
             name={name}
-            size={20}
+            size={22}
             color={iconColor}
             weight={focused ? "fill" : "bold"}
           />
-          <AText
-            numberOfLines={1}
-            style={[
-              styles.label,
-              { color: labelColor },
-            ]}
-          >
-            {label}
-          </AText>
-        </View>
+          <Animated.View style={[styles.labelBox, labelStyle]}>
+            <AText
+              numberOfLines={1}
+              style={[
+                styles.label,
+                { color: activeFg },
+              ]}
+            >
+              {label}
+            </AText>
+          </Animated.View>
+        </Animated.View>
       </View>
     </View>
   );
@@ -139,7 +152,7 @@ export default function TabLayout() {
   const insets = useSafeAreaInsets();
   const { state } = useGame();
   const bottomInset = insets.bottom;
-  const tabBarHeight = 70;
+  const tabBarHeight = 64;
   const tabBottom = Math.max(bottomInset, Platform.OS === "web" ? 18 : 14);
   const isLight = state.themeMode === "light";
   const pillRadius = tabBarHeight / 2;
@@ -263,35 +276,39 @@ export default function TabLayout() {
 const styles = StyleSheet.create({
   itemWrap: {
     flex: 1,
-    height: 58,
+    height: 44,
     alignItems: "center",
     justifyContent: "center",
   },
   pillWrap: {
-    height: 56,
-    alignSelf: "stretch",
+    height: 40,
+    minWidth: 44,
     alignItems: "center",
     justifyContent: "center",
     position: "relative",
-    paddingHorizontal: 6,
+    paddingHorizontal: 4,
   },
   pillBg: {
     position: "absolute",
-    top: 2,
-    bottom: 2,
-    left: 4,
-    right: 4,
+    top: 0,
+    bottom: 0,
+    left: 0,
+    right: 0,
     borderRadius: 999,
   },
   pillContent: {
-    flexDirection: "column",
+    flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    gap: 2,
+    height: 40,
+  },
+  labelBox: {
+    overflow: "hidden",
+    flexShrink: 1,
   },
   label: {
     fontFamily: "Nunito_800ExtraBold",
-    fontSize: 10,
-    letterSpacing: 0.3,
+    fontSize: 12,
+    letterSpacing: 0.2,
   },
 });
