@@ -23,8 +23,9 @@ import { PressScale } from "@/components/PressScale";
 export default function AuthScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
-  const { signIn, signUp, signInWithGoogle } = useAuth();
+  const { signIn, signUp, signInWithGoogle, resetPassword } = useAuth();
   const [googleLoading, setGoogleLoading] = useState(false);
+  const [notice, setNotice] = useState("");
 
   const { state: gameState } = useGame();
   const canSkip = gameState.onboardingComplete;
@@ -42,14 +43,36 @@ export default function AuthScreen() {
     router.replace("/(tabs)");
   };
 
-  const [mode, setMode] = useState<"signin" | "signup">("signin");
+  const [mode, setMode] = useState<"signin" | "signup" | "reset">("signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
+  const switchMode = (next: "signin" | "signup" | "reset") => {
+    setMode(next);
+    setError("");
+    setNotice("");
+  };
+
   const handleSubmit = async () => {
     setError("");
+    setNotice("");
+    if (mode === "reset") {
+      if (!email.trim()) {
+        setError("Please enter your email.");
+        return;
+      }
+      setLoading(true);
+      const { error: err } = await resetPassword(email.trim());
+      setLoading(false);
+      if (err) {
+        setError(err);
+        return;
+      }
+      setNotice("Check your email for a reset link.");
+      return;
+    }
     if (!email.trim() || !password.trim()) {
       setError("Please enter your email and password.");
       return;
@@ -77,7 +100,7 @@ export default function AuthScreen() {
           "Check your email",
           "We sent a confirmation link to " + email.trim() + ". Verify your email and then sign in.\n\nIf the email never arrives, ask the app admin to disable email confirmation in Supabase or set up an SMTP provider.",
         );
-        setMode("signin");
+        switchMode("signin");
       } else {
         // Email confirmation is off — user is signed in immediately
         router.replace("/(tabs)");
@@ -118,15 +141,17 @@ export default function AuthScreen() {
               <GraflyMascot state="idle" size={88} />
             </View>
             <Text style={{ fontSize: 13, fontFamily: "Nunito_800ExtraBold", color: colors.mutedForeground, letterSpacing: 1.5, marginBottom: 6 }}>
-              {mode === "signin" ? "WELCOME BACK" : "JOIN GRAFLY"}
+              {mode === "signin" ? "WELCOME BACK" : mode === "signup" ? "JOIN GRAFLY" : "FORGOT PASSWORD"}
             </Text>
             <Text style={{ fontSize: 44, fontFamily: "Nunito_800ExtraBold", color: colors.foreground, letterSpacing: -1.2, lineHeight: 48 }}>
-              {mode === "signin" ? "Sign in." : "Create your account."}
+              {mode === "signin" ? "Sign in." : mode === "signup" ? "Create your account." : "Reset password."}
             </Text>
             <Text style={{ fontSize: 15, fontFamily: "Nunito_600SemiBold", color: colors.mutedForeground, marginTop: 10, lineHeight: 22 }}>
               {mode === "signin"
                 ? "Pick up your design journey right where you left off."
-                : "Start learning design through bite sized daily lessons."}
+                : mode === "signup"
+                ? "Start learning design through bite sized daily lessons."
+                : "Enter your email and we will send you a reset link."}
             </Text>
           </Animated.View>
 
@@ -158,36 +183,62 @@ export default function AuthScreen() {
               />
             </View>
 
-            <View>
-              <Text style={{ fontSize: 12, fontFamily: "Nunito_800ExtraBold", color: colors.mutedForeground, marginBottom: 8, letterSpacing: 1.2 }}>
-                PASSWORD
-              </Text>
-              <TextInput
-                value={password}
-                onChangeText={setPassword}
-                placeholder="Min. 6 characters"
-                placeholderTextColor={colors.mutedForeground}
-                secureTextEntry
-                autoCapitalize="none"
-                style={{
-                  backgroundColor: colors.card,
-                  borderRadius: 18,
-                  paddingHorizontal: 18,
-                  paddingVertical: 16,
-                  fontSize: 16,
-                  fontFamily: "Nunito_600SemiBold",
-                  color: colors.foreground,
-                  borderWidth: 1.5,
-                  borderColor: colors.border,
-                  ...(Platform.OS === "web" ? { outlineStyle: "none" as any } : {}),
-                }}
-              />
-            </View>
+            {mode !== "reset" && (
+              <View>
+                <Text style={{ fontSize: 12, fontFamily: "Nunito_800ExtraBold", color: colors.mutedForeground, marginBottom: 8, letterSpacing: 1.2 }}>
+                  PASSWORD
+                </Text>
+                <TextInput
+                  value={password}
+                  onChangeText={setPassword}
+                  placeholder="Min. 6 characters"
+                  placeholderTextColor={colors.mutedForeground}
+                  secureTextEntry
+                  autoCapitalize="none"
+                  style={{
+                    backgroundColor: colors.card,
+                    borderRadius: 18,
+                    paddingHorizontal: 18,
+                    paddingVertical: 16,
+                    fontSize: 16,
+                    fontFamily: "Nunito_600SemiBold",
+                    color: colors.foreground,
+                    borderWidth: 1.5,
+                    borderColor: colors.border,
+                    ...(Platform.OS === "web" ? { outlineStyle: "none" as any } : {}),
+                  }}
+                />
+              </View>
+            )}
+
+            {mode === "signin" && (
+              <PressScale
+                onPress={() => switchMode("reset")}
+                scaleTo={0.98}
+                style={{ alignSelf: "flex-end", paddingVertical: 4, paddingHorizontal: 4 }}
+              >
+                <Text style={{ fontSize: 13, fontFamily: "Nunito_800ExtraBold", color: colors.primary, letterSpacing: -0.2 }}>
+                  Forgot password?
+                </Text>
+              </PressScale>
+            )}
 
             {error ? (
               <Text style={{ fontSize: 13, fontFamily: "Nunito_600SemiBold", color: colors.destructive, textAlign: "center" }}>
                 {error}
               </Text>
+            ) : null}
+
+            {notice ? (
+              <View style={{
+                backgroundColor: colors.success + "1F",
+                borderRadius: 14, padding: 12,
+                borderWidth: 1, borderColor: colors.success,
+              }}>
+                <Text style={{ fontSize: 13, fontFamily: "Nunito_600SemiBold", color: colors.success, textAlign: "center" }}>
+                  {notice}
+                </Text>
+              </View>
             ) : null}
 
             <PressScale
@@ -210,21 +261,24 @@ export default function AuthScreen() {
               ) : (
                 <>
                   <Text style={{ fontSize: 17, fontFamily: "Nunito_800ExtraBold", color: colors.background }}>
-                    {mode === "signin" ? "Sign in" : "Create account"}
+                    {mode === "signin" ? "Sign in" : mode === "signup" ? "Create account" : "Send reset link"}
                   </Text>
                   <Ionicons name="arrow-forward" size={18} color={colors.background} />
                 </>
               )}
             </PressScale>
 
-            <View style={{ flexDirection: "row", alignItems: "center", gap: 12, marginVertical: 12 }}>
-              <View style={{ flex: 1, height: 1, backgroundColor: colors.border }} />
-              <Text style={{ fontSize: 11, fontFamily: "Nunito_800ExtraBold", color: colors.mutedForeground, letterSpacing: 1.5 }}>
-                OR
-              </Text>
-              <View style={{ flex: 1, height: 1, backgroundColor: colors.border }} />
-            </View>
+            {mode !== "reset" && (
+              <View style={{ flexDirection: "row", alignItems: "center", gap: 12, marginVertical: 12 }}>
+                <View style={{ flex: 1, height: 1, backgroundColor: colors.border }} />
+                <Text style={{ fontSize: 11, fontFamily: "Nunito_800ExtraBold", color: colors.mutedForeground, letterSpacing: 1.5 }}>
+                  OR
+                </Text>
+                <View style={{ flex: 1, height: 1, backgroundColor: colors.border }} />
+              </View>
+            )}
 
+            {mode !== "reset" && (
             <PressScale
               onPress={handleGoogle}
               disabled={googleLoading || loading}
@@ -252,19 +306,32 @@ export default function AuthScreen() {
                 </>
               )}
             </PressScale>
+            )}
 
-            <PressScale
-              onPress={() => { setMode(mode === "signin" ? "signup" : "signin"); setError(""); }}
-              scaleTo={0.99}
-              style={{ alignItems: "center", paddingVertical: 12, marginTop: 4 }}
-            >
-              <Text style={{ fontSize: 14, fontFamily: "Nunito_600SemiBold", color: colors.mutedForeground }}>
-                {mode === "signin" ? "Don't have an account? " : "Already have an account? "}
-                <Text style={{ color: colors.primary, fontFamily: "Nunito_800ExtraBold" }}>
-                  {mode === "signin" ? "Sign up" : "Sign in"}
+            {mode === "reset" ? (
+              <PressScale
+                onPress={() => switchMode("signin")}
+                scaleTo={0.99}
+                style={{ alignItems: "center", paddingVertical: 14, marginTop: 4 }}
+              >
+                <Text style={{ fontSize: 14, fontFamily: "Nunito_800ExtraBold", color: colors.mutedForeground }}>
+                  Back to sign in
                 </Text>
-              </Text>
-            </PressScale>
+              </PressScale>
+            ) : (
+              <PressScale
+                onPress={() => switchMode(mode === "signin" ? "signup" : "signin")}
+                scaleTo={0.99}
+                style={{ alignItems: "center", paddingVertical: 12, marginTop: 4 }}
+              >
+                <Text style={{ fontSize: 14, fontFamily: "Nunito_600SemiBold", color: colors.mutedForeground }}>
+                  {mode === "signin" ? "Don't have an account? " : "Already have an account? "}
+                  <Text style={{ color: colors.primary, fontFamily: "Nunito_800ExtraBold" }}>
+                    {mode === "signin" ? "Sign up" : "Sign in"}
+                  </Text>
+                </Text>
+              </PressScale>
+            )}
           </Animated.View>
         </ScrollView>
       </KeyboardAvoidingView>

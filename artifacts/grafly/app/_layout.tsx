@@ -29,12 +29,15 @@ function AuthGate({ children }: { children: React.ReactNode }) {
 
   const inAuthGroup = segments[0] === "auth";
   const inOnboarding = segments[0] === "onboarding";
+  const inAuthCallback = segments[0] === "auth-callback";
 
   // Wait until persisted state has loaded before deciding where to send the user.
   if (loading || !hydrated) return null;
 
-  // Onboarding first — no account required to start playing
-  if (!state.onboardingComplete && !inOnboarding && !inAuthGroup) {
+  // Onboarding first — no account required to start playing.
+  // The recovery callback (set new password from email link) must be reachable
+  // even if onboarding has not been completed yet.
+  if (!state.onboardingComplete && !inOnboarding && !inAuthGroup && !inAuthCallback) {
     return <Redirect href="/onboarding" />;
   }
 
@@ -60,6 +63,7 @@ function RootLayoutNav() {
       >
         <Stack.Screen name="(tabs)" options={{ headerShown: false, animation: "fade" }} />
         <Stack.Screen name="auth" options={{ headerShown: false }} />
+        <Stack.Screen name="auth-callback" options={{ headerShown: false }} />
         <Stack.Screen name="onboarding" options={{ headerShown: false, animation: "fade" }} />
         <Stack.Screen
           name="lesson"

@@ -7,6 +7,8 @@ import {
   Platform,
   Image,
   ActivityIndicator,
+  TextInput,
+  KeyboardAvoidingView,
 } from "react-native";
 import Animated, {
   useSharedValue,
@@ -39,12 +41,15 @@ const fadeInDown = (duration = 280) =>
 
 type Step =
   | "welcome"
+  | "name"
   | "goal"
   | "level"
   | "time"
   | "placement"
   | "results"
   | "signup";
+
+type AuthMode = "signin" | "signup" | "reset";
 
 type GoalId = "basics" | "improve" | "portfolio" | "career";
 type SelfLevelId = "beginner" | "intermediate" | "advanced";
@@ -131,9 +136,10 @@ export default function OnboardingScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
   const { state, completeOnboarding, setTheme } = useGame();
-  const { signInWithGoogle } = useAuth();
+  const { signIn, signUp, signInWithGoogle, resetPassword } = useAuth();
 
   const [step, setStep] = useState<Step>("welcome");
+  const [username, setUsername] = useState("");
   const [goal, setGoal] = useState<GoalId | null>(null);
   const [selfLevel, setSelfLevel] = useState<SelfLevelId | null>(null);
   const [dailyTime, setDailyTime] = useState<TimeId | null>(null);
@@ -144,8 +150,15 @@ export default function OnboardingScreen() {
   const [lastWasCorrect, setLastWasCorrect] = useState(false);
   const [placementResult, setPlacementResult] = useState<PlacementLevel>("novice");
   const [mascotState, setMascotState] = useState<MascotState>("idle");
-  const [signingIn, setSigningIn] = useState(false);
-  const [signinError, setSigninError] = useState("");
+
+  // Auth panel (signup step) state
+  const [authMode, setAuthMode] = useState<AuthMode>("signin");
+  const [authEmail, setAuthEmail] = useState("");
+  const [authPassword, setAuthPassword] = useState("");
+  const [authBusy, setAuthBusy] = useState(false);
+  const [googleBusy, setGoogleBusy] = useState(false);
+  const [authError, setAuthError] = useState("");
+  const [authNotice, setAuthNotice] = useState("");
 
   const placementProgress = useSharedValue(0);
 
@@ -198,21 +211,82 @@ export default function OnboardingScreen() {
     setMascotState("celebrate");
   }
 
+  const displayName = username.trim() || "Designer";
+
   function finishWithoutAccount() {
-    completeOnboarding("Designer", placementResult, "", "");
+    completeOnboarding(displayName, placementResult, "", "");
   }
 
   async function finishWithGoogle() {
-    setSigninError("");
-    setSigningIn(true);
+    setAuthError("");
+    setAuthNotice("");
+    setGoogleBusy(true);
     const { error, completed } = await signInWithGoogle();
-    setSigningIn(false);
+    setGoogleBusy(false);
     if (error) {
-      setSigninError(error);
+      setAuthError(error);
       return;
     }
     if (!completed) return;
-    completeOnboarding("Designer", placementResult, "", "");
+    completeOnboarding(displayName, placementResult, "", "");
+  }
+
+  async function finishWithEmail() {
+    setAuthError("");
+    setAuthNotice("");
+    if (authMode === "reset") {
+      if (!authEmail.trim()) {
+        setAuthError("Please enter your email.");
+        return;
+      }
+      setAuthBusy(true);
+      const { error } = await resetPassword(authEmail.trim());
+      setAuthBusy(false);
+      if (error) {
+        setAuthError(error);
+        return;
+      }
+      setAuthNotice("Check your email for a reset link.");
+      return;
+    }
+    if (!authEmail.trim() || !authPassword.trim()) {
+      setAuthError("Please enter your email and password.");
+      return;
+    }
+    if (authPassword.length < 6) {
+      setAuthError("Password must be at least 6 characters.");
+      return;
+    }
+    setAuthBusy(true);
+    if (authMode === "signin") {
+      const { error } = await signIn(authEmail.trim(), authPassword);
+      setAuthBusy(false);
+      if (error) {
+        setAuthError(error);
+        return;
+      }
+      completeOnboarding(displayName, placementResult, "", "");
+    } else {
+      const { error, needsConfirmation } = await signUp(authEmail.trim(), authPassword);
+      setAuthBusy(false);
+      if (error) {
+        setAuthError(error);
+        return;
+      }
+      if (needsConfirmation) {
+        setAuthNotice("We sent a confirmation link to " + authEmail.trim() + ". Verify your email then sign in.");
+        setAuthMode("signin");
+        setAuthPassword("");
+        return;
+      }
+      completeOnboarding(displayName, placementResult, "", "");
+    }
+  }
+
+  function switchAuthMode(next: AuthMode) {
+    setAuthMode(next);
+    setAuthError("");
+    setAuthNotice("");
   }
 
   const padTop = insets.top + (Platform.OS === "web" ? 67 : 0);
@@ -327,7 +401,7 @@ export default function OnboardingScreen() {
                   paddingVertical: 20, alignItems: "center", width: "100%",
                   flexDirection: "row", justifyContent: "center", gap: 10,
                 }}
-                onPress={() => setStep("goal")}
+                onPress={() => setStep("name")}
               >
                 <Text style={{ fontSize: 18, fontFamily: "Nunito_800ExtraBold", color: colors.background }}>
                   Start
@@ -342,7 +416,7 @@ export default function OnboardingScreen() {
   }
 
   // Personalization steps share a header / progress / footer pattern
-  const personalizeSteps: Step[] = ["goal", "level", "time"];
+  const personalizeSteps: Step[] = ["name", "goal", "level", "time"];
   if (personalizeSteps.includes(step)) {
     const idx = personalizeSteps.indexOf(step);
     const totalP = personalizeSteps.length;
@@ -356,7 +430,57 @@ export default function OnboardingScreen() {
     let headline = "";
     let content: React.ReactNode = null;
 
-    if (step === "goal") {
+    if (step === "name") {
+      canContinue = username.trim().length > 0;
+      onContinue = () => setStep("goal");
+      eyebrow = `STEP ${idx + 1} OF ${totalP}`;
+      headline = "What should we call you?";
+      content = (
+        <View style={{ gap: 14 }}>
+          <Text style={{
+            fontSize: 12,
+            fontFamily: "Nunito_800ExtraBold",
+            color: colors.mutedForeground,
+            letterSpacing: 1.2,
+          }}>
+            YOUR NAME
+          </Text>
+          <TextInput
+            value={username}
+            onChangeText={(v) => setUsername(v.slice(0, 24))}
+            placeholder="e.g. Alex"
+            placeholderTextColor={colors.mutedForeground}
+            autoCapitalize="words"
+            autoCorrect={false}
+            maxLength={24}
+            returnKeyType="done"
+            onSubmitEditing={() => { if (username.trim().length > 0) setStep("goal"); }}
+            style={{
+              backgroundColor: colors.card,
+              borderRadius: 22,
+              paddingHorizontal: 20,
+              paddingVertical: 20,
+              fontSize: 20,
+              fontFamily: "Nunito_800ExtraBold",
+              color: colors.foreground,
+              borderWidth: 2,
+              borderColor: username.trim().length > 0 ? colors.foreground : colors.border,
+              letterSpacing: -0.3,
+              ...(Platform.OS === "web" ? { outlineStyle: "none" as any } : {}),
+            }}
+          />
+          <Text style={{
+            fontSize: 13,
+            fontFamily: "Nunito_600SemiBold",
+            color: colors.mutedForeground,
+            lineHeight: 20,
+            paddingHorizontal: 4,
+          }}>
+            We will use this on your profile and progress screens. You can change it later.
+          </Text>
+        </View>
+      );
+    } else if (step === "goal") {
       canContinue = goal !== null;
       onContinue = () => setStep("level");
       eyebrow = `STEP ${idx + 1} OF ${totalP}`;
@@ -558,7 +682,7 @@ export default function OnboardingScreen() {
             <View style={{ flex: 1, height: 4, borderRadius: 100, backgroundColor: colors.border, overflow: "hidden" }}>
               <View style={{
                 height: "100%",
-                width: `${((idx + 1) / (totalP + 1)) * 100}%`,
+                width: `${((idx + 1) / totalP) * 100}%`,
                 backgroundColor: colors.foreground,
                 borderRadius: 100,
               }} />
@@ -942,108 +1066,321 @@ export default function OnboardingScreen() {
   // 7. SOFT SIGNUP
   // ============================================================
   if (step === "signup") {
+    const busy = authBusy || googleBusy;
+    const headline = authMode === "reset" ? "Reset password" : "Save your\nprogress";
+    const eyebrow = authMode === "reset" ? "FORGOT PASSWORD" : "ALMOST THERE";
+    const sub =
+      authMode === "reset"
+        ? "Enter the email for your account and we will send you a reset link."
+        : authMode === "signin"
+        ? "Sign in to keep your XP, streaks, and level on every device."
+        : "Create an account so your XP, streaks, and level follow you everywhere.";
+    const primaryLabel =
+      authMode === "reset" ? "Send reset link" : authMode === "signin" ? "Sign in" : "Create account";
+
     return (
       <View style={{ flex: 1, backgroundColor: colors.background }}>
-        <View style={{ flex: 1, paddingTop: padTop, paddingBottom: padBottom, paddingHorizontal: 28 }}>
-          <Animated.View entering={fadeIn(0, 320)} style={{ flex: 1, justifyContent: "center" }}>
-            <View style={{ alignItems: "center", marginBottom: 32 }}>
-              <View style={{
-                width: 88, height: 88, borderRadius: 26,
-                backgroundColor: colors.accent,
-                alignItems: "center", justifyContent: "center",
-                marginBottom: 24,
-              }}>
-                <Ionicons name="cloud-upload" size={42} color={colors.accentForeground} />
-              </View>
-
-              <Text style={{
-                fontSize: 13,
-                fontFamily: "Nunito_800ExtraBold",
-                color: colors.mutedForeground,
-                letterSpacing: 1.5,
-                marginBottom: 8,
-              }}>
-                ALMOST THERE
-              </Text>
-              <Text style={{
-                fontSize: 38,
-                fontFamily: "Nunito_800ExtraBold",
-                color: colors.foreground,
-                textAlign: "center",
-                letterSpacing: -1,
-                lineHeight: 42,
-                marginBottom: 12,
-              }}>
-                Save your{"\n"}progress
-              </Text>
-              <Text style={{
-                fontSize: 15,
-                fontFamily: "Nunito_600SemiBold",
-                color: colors.mutedForeground,
-                textAlign: "center",
-                lineHeight: 22,
-                paddingHorizontal: 12,
-              }}>
-                Sign in so your XP, streaks, and level{"\n"}follow you on every device.
-              </Text>
-            </View>
-
-            {!!signinError && (
-              <View style={{
-                backgroundColor: colors.destructive + "1F",
-                borderRadius: 14, padding: 12, marginBottom: 16,
-                borderWidth: 1, borderColor: colors.destructive,
-              }}>
-                <Text style={{
-                  fontSize: 13, fontFamily: "Nunito_600SemiBold",
-                  color: colors.destructive, textAlign: "center",
+        <KeyboardAvoidingView
+          behavior={Platform.OS === "ios" ? "padding" : undefined}
+          style={{ flex: 1 }}
+        >
+          <ScrollView
+            contentContainerStyle={{
+              flexGrow: 1,
+              paddingTop: padTop,
+              paddingBottom: padBottom + 12,
+              paddingHorizontal: 28,
+            }}
+            keyboardShouldPersistTaps="handled"
+            showsVerticalScrollIndicator={false}
+          >
+            <Animated.View entering={fadeIn(0, 320)} style={{ flex: 1, justifyContent: "center" }}>
+              <View style={{ alignItems: "center", marginBottom: 24 }}>
+                <View style={{
+                  width: 72, height: 72, borderRadius: 22,
+                  backgroundColor: colors.accent,
+                  alignItems: "center", justifyContent: "center",
+                  marginBottom: 18,
                 }}>
-                  {signinError}
+                  <Ionicons
+                    name={authMode === "reset" ? "mail" : "cloud-upload"}
+                    size={34}
+                    color={colors.accentForeground}
+                  />
+                </View>
+
+                <Text style={{
+                  fontSize: 12,
+                  fontFamily: "Nunito_800ExtraBold",
+                  color: colors.mutedForeground,
+                  letterSpacing: 1.5,
+                  marginBottom: 6,
+                }}>
+                  {eyebrow}
+                </Text>
+                <Text style={{
+                  fontSize: 32,
+                  fontFamily: "Nunito_800ExtraBold",
+                  color: colors.foreground,
+                  textAlign: "center",
+                  letterSpacing: -1,
+                  lineHeight: 36,
+                  marginBottom: 10,
+                }}>
+                  {headline}
+                </Text>
+                <Text style={{
+                  fontSize: 14,
+                  fontFamily: "Nunito_600SemiBold",
+                  color: colors.mutedForeground,
+                  textAlign: "center",
+                  lineHeight: 20,
+                  paddingHorizontal: 8,
+                }}>
+                  {sub}
                 </Text>
               </View>
-            )}
 
-            <PressScale
-              onPress={finishWithGoogle}
-              disabled={signingIn}
-              style={{
-                backgroundColor: colors.foreground, borderRadius: 100,
-                paddingVertical: 18, alignItems: "center", width: "100%",
-                flexDirection: "row", justifyContent: "center", gap: 12,
-                marginBottom: 12,
-                opacity: signingIn ? 0.6 : 1,
-              }}
-            >
-              {signingIn ? (
-                <ActivityIndicator size="small" color={colors.background} />
-              ) : (
-                <>
-                  <Ionicons name="logo-google" size={20} color={colors.background} />
-                  <Text style={{ fontSize: 16, fontFamily: "Nunito_800ExtraBold", color: colors.background }}>
-                    Continue with Google
-                  </Text>
-                </>
+              {authMode !== "reset" && (
+                <View style={{
+                  flexDirection: "row",
+                  backgroundColor: colors.card,
+                  borderRadius: 100,
+                  padding: 4,
+                  marginBottom: 18,
+                  borderWidth: 1,
+                  borderColor: colors.border,
+                  alignSelf: "center",
+                }}>
+                  {(["signin", "signup"] as const).map((m) => {
+                    const active = authMode === m;
+                    return (
+                      <PressScale
+                        key={m}
+                        onPress={() => switchAuthMode(m)}
+                        style={{
+                          paddingHorizontal: 22,
+                          paddingVertical: 9,
+                          borderRadius: 100,
+                          backgroundColor: active ? colors.foreground : "transparent",
+                        }}
+                      >
+                        <Text style={{
+                          fontSize: 13,
+                          fontFamily: "Nunito_800ExtraBold",
+                          color: active ? colors.background : colors.mutedForeground,
+                          letterSpacing: 0.2,
+                        }}>
+                          {m === "signin" ? "Sign in" : "Sign up"}
+                        </Text>
+                      </PressScale>
+                    );
+                  })}
+                </View>
               )}
-            </PressScale>
 
-            <PressScale
-              onPress={finishWithoutAccount}
-              disabled={signingIn}
-              style={{
-                paddingVertical: 18, alignItems: "center", width: "100%",
-              }}
-            >
-              <Text style={{
-                fontSize: 15,
-                fontFamily: "Nunito_800ExtraBold",
-                color: colors.mutedForeground,
-                letterSpacing: -0.2,
-              }}>
-                Skip for now
-              </Text>
-            </PressScale>
-          </Animated.View>
-        </View>
+              <View style={{ gap: 12 }}>
+                <View>
+                  <Text style={{
+                    fontSize: 11, fontFamily: "Nunito_800ExtraBold",
+                    color: colors.mutedForeground, letterSpacing: 1.2, marginBottom: 6,
+                  }}>
+                    EMAIL
+                  </Text>
+                  <TextInput
+                    value={authEmail}
+                    onChangeText={setAuthEmail}
+                    placeholder="you@example.com"
+                    placeholderTextColor={colors.mutedForeground}
+                    keyboardType="email-address"
+                    autoCapitalize="none"
+                    autoCorrect={false}
+                    returnKeyType={authMode === "reset" ? "done" : "next"}
+                    style={{
+                      backgroundColor: colors.card,
+                      borderRadius: 18,
+                      paddingHorizontal: 18,
+                      paddingVertical: 14,
+                      fontSize: 15,
+                      fontFamily: "Nunito_600SemiBold",
+                      color: colors.foreground,
+                      borderWidth: 1.5,
+                      borderColor: colors.border,
+                      ...(Platform.OS === "web" ? { outlineStyle: "none" as any } : {}),
+                    }}
+                  />
+                </View>
+
+                {authMode !== "reset" && (
+                  <View>
+                    <Text style={{
+                      fontSize: 11, fontFamily: "Nunito_800ExtraBold",
+                      color: colors.mutedForeground, letterSpacing: 1.2, marginBottom: 6,
+                    }}>
+                      PASSWORD
+                    </Text>
+                    <TextInput
+                      value={authPassword}
+                      onChangeText={setAuthPassword}
+                      placeholder="Min. 6 characters"
+                      placeholderTextColor={colors.mutedForeground}
+                      secureTextEntry
+                      autoCapitalize="none"
+                      returnKeyType="done"
+                      onSubmitEditing={finishWithEmail}
+                      style={{
+                        backgroundColor: colors.card,
+                        borderRadius: 18,
+                        paddingHorizontal: 18,
+                        paddingVertical: 14,
+                        fontSize: 15,
+                        fontFamily: "Nunito_600SemiBold",
+                        color: colors.foreground,
+                        borderWidth: 1.5,
+                        borderColor: colors.border,
+                        ...(Platform.OS === "web" ? { outlineStyle: "none" as any } : {}),
+                      }}
+                    />
+                  </View>
+                )}
+
+                {authMode === "signin" && (
+                  <PressScale
+                    onPress={() => switchAuthMode("reset")}
+                    scaleTo={0.98}
+                    style={{ alignSelf: "flex-end", paddingVertical: 4, paddingHorizontal: 4 }}
+                  >
+                    <Text style={{
+                      fontSize: 13, fontFamily: "Nunito_800ExtraBold",
+                      color: colors.primary, letterSpacing: -0.2,
+                    }}>
+                      Forgot password?
+                    </Text>
+                  </PressScale>
+                )}
+
+                {!!authError && (
+                  <View style={{
+                    backgroundColor: colors.destructive + "1F",
+                    borderRadius: 14, padding: 12,
+                    borderWidth: 1, borderColor: colors.destructive,
+                  }}>
+                    <Text style={{
+                      fontSize: 13, fontFamily: "Nunito_600SemiBold",
+                      color: colors.destructive, textAlign: "center",
+                    }}>
+                      {authError}
+                    </Text>
+                  </View>
+                )}
+
+                {!!authNotice && (
+                  <View style={{
+                    backgroundColor: colors.success + "1F",
+                    borderRadius: 14, padding: 12,
+                    borderWidth: 1, borderColor: colors.success,
+                  }}>
+                    <Text style={{
+                      fontSize: 13, fontFamily: "Nunito_600SemiBold",
+                      color: colors.success, textAlign: "center",
+                    }}>
+                      {authNotice}
+                    </Text>
+                  </View>
+                )}
+
+                <PressScale
+                  onPress={finishWithEmail}
+                  disabled={busy}
+                  style={{
+                    backgroundColor: colors.foreground, borderRadius: 100,
+                    paddingVertical: 18, alignItems: "center", width: "100%",
+                    flexDirection: "row", justifyContent: "center", gap: 10,
+                    marginTop: 4,
+                    opacity: busy ? 0.6 : 1,
+                  }}
+                >
+                  {authBusy ? (
+                    <ActivityIndicator size="small" color={colors.background} />
+                  ) : (
+                    <>
+                      <Text style={{ fontSize: 16, fontFamily: "Nunito_800ExtraBold", color: colors.background }}>
+                        {primaryLabel}
+                      </Text>
+                      <Ionicons name="arrow-forward" size={18} color={colors.background} />
+                    </>
+                  )}
+                </PressScale>
+
+                {authMode === "reset" ? (
+                  <PressScale
+                    onPress={() => switchAuthMode("signin")}
+                    disabled={busy}
+                    style={{ paddingVertical: 14, alignItems: "center", width: "100%" }}
+                  >
+                    <Text style={{
+                      fontSize: 14, fontFamily: "Nunito_800ExtraBold",
+                      color: colors.mutedForeground, letterSpacing: -0.2,
+                    }}>
+                      Back to sign in
+                    </Text>
+                  </PressScale>
+                ) : (
+                  <>
+                    <View style={{ flexDirection: "row", alignItems: "center", gap: 12, marginVertical: 8 }}>
+                      <View style={{ flex: 1, height: 1, backgroundColor: colors.border }} />
+                      <Text style={{
+                        fontSize: 11, fontFamily: "Nunito_800ExtraBold",
+                        color: colors.mutedForeground, letterSpacing: 1.5,
+                      }}>
+                        OR
+                      </Text>
+                      <View style={{ flex: 1, height: 1, backgroundColor: colors.border }} />
+                    </View>
+
+                    <PressScale
+                      onPress={finishWithGoogle}
+                      disabled={busy}
+                      style={{
+                        backgroundColor: colors.card, borderRadius: 100,
+                        paddingVertical: 16, alignItems: "center", width: "100%",
+                        flexDirection: "row", justifyContent: "center", gap: 12,
+                        borderWidth: 1.5, borderColor: colors.border,
+                        opacity: busy ? 0.6 : 1,
+                      }}
+                    >
+                      {googleBusy ? (
+                        <ActivityIndicator size="small" color={colors.foreground} />
+                      ) : (
+                        <>
+                          <Ionicons name="logo-google" size={20} color={colors.foreground} />
+                          <Text style={{ fontSize: 15, fontFamily: "Nunito_800ExtraBold", color: colors.foreground }}>
+                            Continue with Google
+                          </Text>
+                        </>
+                      )}
+                    </PressScale>
+
+                    <PressScale
+                      onPress={finishWithoutAccount}
+                      disabled={busy}
+                      style={{ paddingVertical: 14, alignItems: "center", width: "100%" }}
+                    >
+                      <Text style={{
+                        fontSize: 14,
+                        fontFamily: "Nunito_800ExtraBold",
+                        color: colors.mutedForeground,
+                        letterSpacing: -0.2,
+                      }}>
+                        Skip for now
+                      </Text>
+                    </PressScale>
+                  </>
+                )}
+              </View>
+            </Animated.View>
+          </ScrollView>
+        </KeyboardAvoidingView>
       </View>
     );
   }

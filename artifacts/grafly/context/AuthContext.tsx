@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useState } from "react";
+import React, { createContext, useContext, useEffect, useRef, useState } from "react";
 import { Session, User } from "@supabase/supabase-js";
 import * as WebBrowser from "expo-web-browser";
 import * as Linking from "expo-linking";
@@ -10,9 +10,12 @@ interface AuthContextType {
   session: Session | null;
   user: User | null;
   loading: boolean;
+  // True while we are exchanging a deep-link (OAuth or password recovery) for a session.
+  resolvingDeepLink: boolean;
   signUp: (email: string, password: string) => Promise<{ error: string | null; needsConfirmation: boolean }>;
   signIn: (email: string, password: string) => Promise<{ error: string | null }>;
   signInWithGoogle: () => Promise<{ error: string | null; completed: boolean }>;
+  resetPassword: (email: string) => Promise<{ error: string | null }>;
   signOut: () => Promise<void>;
 }
 
@@ -20,7 +23,7 @@ const AuthContext = createContext<AuthContextType | null>(null);
 
 const redirectTo = Linking.createURL("auth-callback");
 
-async function exchangeCodeFromUrl(url: string) {
+async function exchangeCodeFromUrl(url: string): Promise<{ error: string | null; session: Session | null }> {
   const parsed = Linking.parse(url);
   const params = (parsed.queryParams ?? {}) as Record<string, string | string[] | undefined>;
   // Some providers return tokens in the URL fragment instead of query
@@ -37,22 +40,28 @@ async function exchangeCodeFromUrl(url: string) {
   const refreshToken = typeof params.refresh_token === "string" ? params.refresh_token : undefined;
 
   if (code) {
-    const { error } = await supabase.auth.exchangeCodeForSession(code);
-    return { error: error?.message ?? null };
+    const { data, error } = await supabase.auth.exchangeCodeForSession(code);
+    return { error: error?.message ?? null, session: data?.session ?? null };
   }
   if (accessToken && refreshToken) {
-    const { error } = await supabase.auth.setSession({
+    const { data, error } = await supabase.auth.setSession({
       access_token: accessToken,
       refresh_token: refreshToken,
     });
-    return { error: error?.message ?? null };
+    return { error: error?.message ?? null, session: data?.session ?? null };
   }
-  return { error: "OAuth callback missing credentials." };
+  return { error: "OAuth callback missing credentials.", session: null };
 }
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
+  // We use a ref counter for in-flight deep-link exchanges so overlapping
+  // invocations (e.g. cold-start initial URL + an immediate "url" event) do
+  // not race each other when toggling a single boolean.
+  const inFlightRef = useRef(0);
+  const [inFlightCount, setInFlightCount] = useState(0);
+  const resolvingDeepLink = inFlightCount > 0;
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -64,12 +73,42 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setSession(session);
     });
 
-    // Handle deep links coming back from OAuth providers
-    const handleUrl = ({ url }: { url: string }) => {
-      exchangeCodeFromUrl(url);
+    // Handle deep links coming back from OAuth providers / password recovery emails.
+    const looksLikeAuthLink = (url: string) => {
+      const lower = url.toLowerCase();
+      return (
+        lower.includes("auth-callback") ||
+        lower.includes("code=") ||
+        lower.includes("access_token=") ||
+        lower.includes("type=recovery")
+      );
     };
+
+    const beginExchange = () => {
+      inFlightRef.current += 1;
+      setInFlightCount(inFlightRef.current);
+    };
+    const endExchange = () => {
+      inFlightRef.current = Math.max(0, inFlightRef.current - 1);
+      setInFlightCount(inFlightRef.current);
+    };
+
+    const processUrl = async (url: string) => {
+      if (!looksLikeAuthLink(url)) return;
+      beginExchange();
+      try {
+        const { session: nextSession } = await exchangeCodeFromUrl(url);
+        // Immediately set the session so consumers do not race with the
+        // onAuthStateChange callback timing.
+        if (nextSession) setSession(nextSession);
+      } finally {
+        endExchange();
+      }
+    };
+
+    const handleUrl = ({ url }: { url: string }) => { processUrl(url); };
     const sub = Linking.addEventListener("url", handleUrl);
-    Linking.getInitialURL().then((url) => { if (url) exchangeCodeFromUrl(url); });
+    Linking.getInitialURL().then((url) => { if (url) processUrl(url); });
 
     return () => {
       subscription.unsubscribe();
@@ -112,12 +151,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return { error: "Google sign-in did not complete.", completed: false };
   };
 
+  const resetPassword = async (email: string) => {
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo,
+    });
+    return { error: error?.message ?? null };
+  };
+
   const signOut = async () => {
     await supabase.auth.signOut();
   };
 
   return (
-    <AuthContext.Provider value={{ session, user: session?.user ?? null, loading, signUp, signIn, signInWithGoogle, signOut }}>
+    <AuthContext.Provider value={{ session, user: session?.user ?? null, loading, resolvingDeepLink, signUp, signIn, signInWithGoogle, resetPassword, signOut }}>
       {children}
     </AuthContext.Provider>
   );
