@@ -310,7 +310,7 @@ export default function HomeScreen() {
                 <PressScale
                   onPress={() => router.push({ pathname: "/(tabs)/tree", params: { courseId: course.id } })}
                   style={{
-                    width: cardW, borderRadius: 24,
+                    width: cardW, height: 290, borderRadius: 24,
                     backgroundColor: course.color,
                     overflow: "hidden",
                     shadowColor: course.color,
@@ -333,12 +333,16 @@ export default function HomeScreen() {
                     </View>
                   </View>
 
-                  {/* Title block */}
+                  {/* Title block — fixed heights so every card matches */}
                   <View style={{ paddingHorizontal: 18, paddingTop: 10 }}>
-                    <Text style={{
-                      fontSize: 24, fontFamily: "Nunito_800ExtraBold",
-                      color: colors.primaryForeground, lineHeight: 28, letterSpacing: -0.5,
-                    }}>
+                    <Text
+                      numberOfLines={1}
+                      style={{
+                        fontSize: 24, fontFamily: "Nunito_800ExtraBold",
+                        color: colors.primaryForeground, lineHeight: 28, letterSpacing: -0.5,
+                        height: 28,
+                      }}
+                    >
                       {course.title}
                     </Text>
                     <Text
@@ -346,14 +350,15 @@ export default function HomeScreen() {
                       style={{
                         fontSize: 12, fontFamily: "Nunito_600SemiBold",
                         color: colors.primaryForeground + "CC", marginTop: 6, lineHeight: 17,
+                        height: 34,
                       }}
                     >
                       {course.description}
                     </Text>
                   </View>
 
-                  {/* Collage block: mascot + accent dot */}
-                  <View style={{ height: 110, marginTop: 8, position: "relative", overflow: "hidden" }}>
+                  {/* Collage block: mascot + accent dot — flexes to fill remaining space */}
+                  <View style={{ flex: 1, marginTop: 8, position: "relative", overflow: "hidden" }}>
                     {/* Accent dot */}
                     <View style={{
                       position: "absolute", left: 22, top: 14,
