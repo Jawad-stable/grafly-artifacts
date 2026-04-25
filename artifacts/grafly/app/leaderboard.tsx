@@ -10,7 +10,7 @@ import Animated, {
   FadeIn,
   FadeInDown,
 } from "react-native-reanimated";
-import { Ionicons } from "@expo/vector-icons";
+import { Icon } from "@/components/Icon";
 import { router } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useColors } from "@/hooks/useColors";
@@ -89,7 +89,7 @@ export default function LeaderboardScreen() {
             hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
             style={{ width: 40, height: 40, borderRadius: 100, backgroundColor: colors.card, alignItems: "center", justifyContent: "center" }}
           >
-            <Ionicons name="arrow-back" size={20} color={colors.foreground} />
+            <Icon name="arrow-back" size={20} color={colors.foreground} />
           </PressScale>
           <View style={{ flex: 1 }}>
             <Text style={{ fontSize: 13, fontFamily: "Nunito_800ExtraBold", color: colors.mutedForeground, letterSpacing: 1.5 }}>
@@ -181,7 +181,7 @@ export default function LeaderboardScreen() {
                 {/* 1st place */}
                 {top3[0] && (
                   <View style={{ alignItems: "center", flex: 1.2 }}>
-                    <Ionicons name="trophy" size={22} color={PODIUM_COLORS[0]} style={{ marginBottom: 4 }} />
+                    <Icon name="trophy" size={22} color={PODIUM_COLORS[0]} style={{ marginBottom: 4 }} />
                     <View style={{
                       width: 64,
                       height: 64,
@@ -306,7 +306,7 @@ export default function LeaderboardScreen() {
                 </Text>
               </View>
               <View style={{ flexDirection: "row", alignItems: "center", gap: 4 }}>
-                <Ionicons name="flash" size={13} color={colors.accent} />
+                <Icon name="flash" size={13} color={colors.accent} />
                 <Text style={{ fontSize: 14, fontFamily: "Nunito_800ExtraBold", color: colors.foreground }}>
                   {item.weeklyXP}
                 </Text>
@@ -353,7 +353,7 @@ export default function LeaderboardScreen() {
                 </Text>
               </View>
               <View style={{ flexDirection: "row", alignItems: "center", gap: 4 }}>
-                <Ionicons name="flash" size={13} color={colors.accent} />
+                <Icon name="flash" size={13} color={colors.accent} />
                 <Text style={{ fontSize: 14, fontFamily: "Nunito_800ExtraBold", color: colors.foreground }}>
                   {state.weeklyXP}
                 </Text>

@@ -7,7 +7,7 @@ import {
   ScrollView,
 } from "react-native";
 import Animated, { FadeIn } from "react-native-reanimated";
-import { Ionicons } from "@expo/vector-icons";
+import { Icon } from "@/components/Icon";
 import { router } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useColors } from "@/hooks/useColors";
@@ -112,7 +112,7 @@ export default function PaywallScreen() {
               justifyContent: "center",
             }}
           >
-            <Ionicons name="close" size={20} color={colors.mutedForeground} />
+            <Icon name="close" size={20} color={colors.mutedForeground} />
           </TouchableOpacity>
         </View>
 
@@ -165,7 +165,7 @@ export default function PaywallScreen() {
                 marginBottom: 8,
               }}
             >
-              <Ionicons name="star" size={14} color={colors.pinkForeground} />
+              <Icon name="star" size={14} color={colors.pinkForeground} />
               <Text
                 style={{
                   fontSize: 12,
@@ -255,7 +255,7 @@ export default function PaywallScreen() {
                     justifyContent: "center",
                   }}
                 >
-                  <Ionicons name={b.icon as any} size={20} color={colors.pink} />
+                  <Icon name={b.icon as any} size={20} color={colors.pink} />
                 </View>
                 <View style={{ flex: 1 }}>
                   <Text
@@ -338,7 +338,7 @@ export default function PaywallScreen() {
                     }}
                   >
                     {selected && (
-                      <Ionicons name="checkmark" size={14} color={colors.background} />
+                      <Icon name="checkmark" size={14} color={colors.background} />
                     )}
                   </View>
                   <View style={{ flex: 1 }}>
@@ -460,7 +460,7 @@ export default function PaywallScreen() {
             {purchasing ? "Processing" : `Start with ${activePlan.label} · ${activePlan.price}`}
           </Text>
           {!purchasing && (
-            <Ionicons name="arrow-forward" size={18} color={colors.background} />
+            <Icon name="arrow-forward" size={18} color={colors.background} />
           )}
         </PressScale>
         <Text

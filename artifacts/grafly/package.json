@@ -51,6 +51,7 @@
     "@supabase/supabase-js": "^2.103.3",
     "expo-av": "^16.0.8",
     "expo-build-properties": "^55.0.13",
+    "phosphor-react-native": "^3.0.6",
     "react-native-url-polyfill": "^3.0.0"
   }
 }

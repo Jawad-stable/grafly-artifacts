@@ -10,7 +10,7 @@ import {
 } from "react-native";
 import Animated, { FadeInDown } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { Ionicons } from "@expo/vector-icons";
+import { Icon } from "@/components/Icon";
 import { router } from "expo-router";
 import { useColors } from "@/hooks/useColors";
 import { useAuth } from "@/context/AuthContext";
@@ -88,7 +88,7 @@ export default function AuthCallbackScreen() {
             <Text style={{ fontSize: 16, fontFamily: "Nunito_800ExtraBold", color: colors.background }}>
               Back to sign in
             </Text>
-            <Ionicons name="arrow-forward" size={18} color={colors.background} />
+            <Icon name="arrow-forward" size={18} color={colors.background} />
           </PressScale>
         </View>
       </View>
@@ -211,7 +211,7 @@ export default function AuthCallbackScreen() {
                   <Text style={{ fontSize: 17, fontFamily: "Nunito_800ExtraBold", color: colors.background }}>
                     Update password
                   </Text>
-                  <Ionicons name="arrow-forward" size={18} color={colors.background} />
+                  <Icon name="arrow-forward" size={18} color={colors.background} />
                 </>
               )}
             </PressScale>

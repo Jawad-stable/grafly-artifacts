@@ -13,7 +13,7 @@ import Animated, {
   withTiming,
   Easing,
 } from "react-native-reanimated";
-import { Ionicons } from "@expo/vector-icons";
+import { Icon, type IconName } from "@/components/Icon";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useColors } from "@/hooks/useColors";
 import { useGame } from "@/context/GameContext";
@@ -61,11 +61,9 @@ function SpringTabButton({
 
 function TabIcon({
   name,
-  outlineName,
   focused,
 }: {
-  name: string;
-  outlineName: string;
+  name: IconName;
   focused: boolean;
 }) {
   const colors = useColors();
@@ -85,10 +83,11 @@ function TabIcon({
           ]}
         />
       )}
-      <Ionicons
-        name={(focused ? name : outlineName) as any}
+      <Icon
+        name={name}
         size={24}
         color={focused ? activeIcon : inactiveIcon}
+        weight={focused ? "fill" : "bold"}
       />
     </View>
   );
@@ -155,7 +154,7 @@ export default function TabLayout() {
         name="index"
         options={{
           tabBarIcon: ({ focused }) => (
-            <TabIcon name="home" outlineName="home-outline" focused={focused} />
+            <TabIcon name="home" focused={focused} />
           ),
         }}
       />
@@ -163,7 +162,7 @@ export default function TabLayout() {
         name="tree"
         options={{
           tabBarIcon: ({ focused }) => (
-            <TabIcon name="git-network" outlineName="git-network-outline" focused={focused} />
+            <TabIcon name="git-network" focused={focused} />
           ),
         }}
       />
@@ -171,7 +170,7 @@ export default function TabLayout() {
         name="critique"
         options={{
           tabBarIcon: ({ focused }) => (
-            <TabIcon name="color-filter" outlineName="color-filter-outline" focused={focused} />
+            <TabIcon name="color-filter" focused={focused} />
           ),
         }}
       />
@@ -179,7 +178,7 @@ export default function TabLayout() {
         name="shop"
         options={{
           tabBarIcon: ({ focused }) => (
-            <TabIcon name="cart" outlineName="cart-outline" focused={focused} />
+            <TabIcon name="cart" focused={focused} />
           ),
         }}
       />
@@ -187,7 +186,7 @@ export default function TabLayout() {
         name="profile"
         options={{
           tabBarIcon: ({ focused }) => (
-            <TabIcon name="person-circle" outlineName="person-circle-outline" focused={focused} />
+            <TabIcon name="person-circle" focused={focused} />
           ),
         }}
       />

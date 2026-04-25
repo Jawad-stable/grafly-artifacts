@@ -15,7 +15,7 @@ import Animated, {
   withTiming,
   FadeIn,
 } from "react-native-reanimated";
-import { Ionicons } from "@expo/vector-icons";
+import { Icon } from "@/components/Icon";
 import { router, useLocalSearchParams } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import * as Haptics from "expo-haptics";
@@ -62,7 +62,7 @@ function MultipleChoice({
               </Text>
             </View>
             <Text style={{ flex: 1, fontSize: 16, fontFamily: "Nunito_600SemiBold", color: textColor, lineHeight: 22 }}>{opt}</Text>
-            {icon && <Ionicons name={icon} size={22} color={icon === "checkmark-circle" ? colors.success : colors.destructive} />}
+            {icon && <Icon name={icon} size={22} color={icon === "checkmark-circle" ? colors.success : colors.destructive} />}
           </TouchableOpacity>
         );
       })}
@@ -95,7 +95,7 @@ function TrueFalse({
             disabled={answered}
             activeOpacity={0.8}
           >
-            <Ionicons name={val ? "checkmark-circle" : "close-circle"} size={32} color={textColor} />
+            <Icon name={val ? "checkmark-circle" : "close-circle"} size={32} color={textColor} />
             <Text style={{ fontSize: 20, fontFamily: "Nunito_800ExtraBold", color: textColor }}>
               {val ? "True" : "False"}
             </Text>
@@ -188,10 +188,10 @@ function ArrangeInOrder({
           </View>
           <View style={{ gap: 6 }}>
             <TouchableOpacity onPress={() => moveUp(pos)} disabled={pos === 0 || submitted} style={{ opacity: pos === 0 || submitted ? 0.3 : 1 }}>
-              <Ionicons name="chevron-up" size={22} color={colors.primary} />
+              <Icon name="chevron-up" size={22} color={colors.primary} />
             </TouchableOpacity>
             <TouchableOpacity onPress={() => moveDown(pos)} disabled={pos === order.length - 1 || submitted} style={{ opacity: pos === order.length - 1 || submitted ? 0.3 : 1 }}>
-              <Ionicons name="chevron-down" size={22} color={colors.primary} />
+              <Icon name="chevron-down" size={22} color={colors.primary} />
             </TouchableOpacity>
           </View>
         </View>
@@ -205,7 +205,7 @@ function ArrangeInOrder({
           <Text style={{ fontSize: 16, fontFamily: "Nunito_800ExtraBold", color: colors.background }}>
             Submit order
           </Text>
-          <Ionicons name="arrow-forward" size={18} color={colors.background} />
+          <Icon name="arrow-forward" size={18} color={colors.background} />
         </TouchableOpacity>
       )}
     </View>
@@ -292,7 +292,7 @@ function DragToMatch({
           activeOpacity={0.88}
         >
           <Text style={{ fontSize: 16, fontFamily: "Nunito_800ExtraBold", color: colors.background }}>Check matches</Text>
-          <Ionicons name="arrow-forward" size={18} color={colors.background} />
+          <Icon name="arrow-forward" size={18} color={colors.background} />
         </TouchableOpacity>
       )}
     </View>
@@ -363,7 +363,7 @@ function FillInBlank({
           <Text style={{ fontSize: 16, fontFamily: "Nunito_800ExtraBold", color: value.trim() ? colors.background : colors.mutedForeground }}>
             Submit answer
           </Text>
-          {value.trim() ? <Ionicons name="arrow-forward" size={18} color={colors.background} /> : null}
+          {value.trim() ? <Icon name="arrow-forward" size={18} color={colors.background} /> : null}
         </TouchableOpacity>
       )}
     </View>
@@ -587,7 +587,7 @@ export default function LessonScreen() {
           {/* Rewards */}
           <Animated.View entering={FadeIn.delay(150)} style={{ flexDirection: "row", gap: 12, marginBottom: 20 }}>
             <View style={{ flex: 1, backgroundColor: colors.card, borderRadius: colors.radius, padding: 20, alignItems: "center", gap: 8 }}>
-              <Ionicons name="flash" size={28} color={colors.accent} />
+              <Icon name="flash" size={28} color={colors.accent} />
               <Text style={{ fontSize: 26, fontFamily: "Nunito_800ExtraBold", color: colors.foreground }}>
                 +{xpEarned}
               </Text>
@@ -596,7 +596,7 @@ export default function LessonScreen() {
               </Text>
             </View>
             <View style={{ flex: 1, backgroundColor: colors.card, borderRadius: colors.radius, padding: 20, alignItems: "center", gap: 8 }}>
-              <Ionicons name="ellipse" size={24} color={colors.warning} />
+              <Icon name="ellipse" size={24} color={colors.warning} />
               <Text style={{ fontSize: 26, fontFamily: "Nunito_800ExtraBold", color: colors.foreground }}>
                 +{coinsEarned}
               </Text>
@@ -605,7 +605,7 @@ export default function LessonScreen() {
               </Text>
             </View>
             <View style={{ flex: 1, backgroundColor: colors.card, borderRadius: colors.radius, padding: 20, alignItems: "center", gap: 8 }}>
-              <Ionicons name="heart" size={26} color={perfect ? colors.success : colors.destructive} />
+              <Icon name="heart" size={26} color={perfect ? colors.success : colors.destructive} />
               <Text style={{ fontSize: 26, fontFamily: "Nunito_800ExtraBold", color: colors.foreground }}>
                 {state.hearts}
               </Text>
@@ -618,7 +618,7 @@ export default function LessonScreen() {
           {/* Perfect bonus */}
           {perfect && (
             <Animated.View entering={FadeIn.delay(300)} style={{ backgroundColor: colors.accent + "20", borderRadius: colors.radius, padding: 16, marginBottom: 20, flexDirection: "row", alignItems: "center", gap: 12 }}>
-              <Ionicons name="star" size={22} color={colors.accent} />
+              <Icon name="star" size={22} color={colors.accent} />
               <Text style={{ flex: 1, fontSize: 14, fontFamily: "Nunito_800ExtraBold", color: colors.foreground }}>
                 Perfect! +10 bonus XP for no mistakes
               </Text>
@@ -634,7 +634,7 @@ export default function LessonScreen() {
                 <Text style={{ fontSize: 17, fontFamily: "Nunito_800ExtraBold", color: colors.background }}>
                   Next lesson
                 </Text>
-                <Ionicons name="arrow-forward" size={18} color={colors.background} />
+                <Icon name="arrow-forward" size={18} color={colors.background} />
               </PressScale>
             )}
             <PressScale
@@ -670,7 +670,7 @@ export default function LessonScreen() {
             onPress={() => router.back()}
             style={{ width: 38, height: 38, borderRadius: 100, backgroundColor: colors.card, alignItems: "center", justifyContent: "center" }}
           >
-            <Ionicons name="close" size={20} color={colors.foreground} />
+            <Icon name="close" size={20} color={colors.foreground} />
           </PressScale>
 
           {/* Progress bar */}
@@ -681,7 +681,7 @@ export default function LessonScreen() {
           {/* Hearts — ONLY on lesson screen */}
           <View style={{ flexDirection: "row", gap: 3 }}>
             {[...Array(5)].map((_, i) => (
-              <Ionicons
+              <Icon
                 key={i}
                 name={i < state.hearts ? "heart" : "heart-outline"}
                 size={18}
@@ -742,7 +742,7 @@ export default function LessonScreen() {
               }}
             >
               <View style={{ flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 6 }}>
-                <Ionicons
+                <Icon
                   name={isCorrect ? "checkmark-circle" : "close-circle"}
                   size={18}
                   color={isCorrect ? colors.success : colors.destructive}

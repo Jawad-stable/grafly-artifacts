@@ -18,7 +18,7 @@ import Animated, {
   FadeIn,
   FadeInDown,
 } from "react-native-reanimated";
-import { Ionicons } from "@expo/vector-icons";
+import { Icon, type IconName } from "@/components/Icon";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useColors } from "@/hooks/useColors";
 import { useGame } from "@/context/GameContext";
@@ -57,7 +57,7 @@ type TimeId = "5" | "10" | "15";
 
 type GoalTone = "primary" | "success" | "pink" | "accent";
 
-const GOALS: { id: GoalId; label: string; icon: keyof typeof Ionicons.glyphMap; tone: GoalTone }[] = [
+const GOALS: { id: GoalId; label: string; icon: IconName; tone: GoalTone }[] = [
   { id: "basics", label: "Learn design basics", icon: "book-outline", tone: "primary" },
   { id: "improve", label: "Improve my skills", icon: "trending-up", tone: "success" },
   { id: "portfolio", label: "Build a portfolio", icon: "briefcase-outline", tone: "pink" },
@@ -83,7 +83,7 @@ const LEVELS: { id: SelfLevelId; label: string; desc: string; emoji: string }[] 
   { id: "advanced", label: "Advanced", desc: "I have real experience", emoji: "⚡" },
 ];
 
-const TIMES: { id: TimeId; label: string; desc: string; icon: keyof typeof Ionicons.glyphMap }[] = [
+const TIMES: { id: TimeId; label: string; desc: string; icon: IconName }[] = [
   { id: "5", label: "5 min", desc: "A quick warmup", icon: "flash-outline" },
   { id: "10", label: "10 min", desc: "A solid daily habit", icon: "time-outline" },
   { id: "15", label: "15+ min", desc: "Serious progress", icon: "trophy-outline" },
@@ -320,7 +320,7 @@ export default function OnboardingScreen() {
                       backgroundColor: active ? colors.foreground : "transparent",
                     }}
                   >
-                    <Ionicons
+                    <Icon
                       name={mode === "light" ? "sunny" : "moon"}
                       size={14}
                       color={active ? colors.background : colors.mutedForeground}
@@ -406,7 +406,7 @@ export default function OnboardingScreen() {
                 <Text style={{ fontSize: 18, fontFamily: "Nunito_800ExtraBold", color: colors.background }}>
                   Start
                 </Text>
-                <Ionicons name="arrow-forward" size={20} color={colors.background} />
+                <Icon name="arrow-forward" size={20} color={colors.background} />
               </PressScale>
             </Animated.View>
           </View>
@@ -510,7 +510,7 @@ export default function OnboardingScreen() {
                   backgroundColor: selected ? colors.background : toneColor + "1F",
                   alignItems: "center", justifyContent: "center",
                 }}>
-                  <Ionicons name={g.icon} size={24} color={toneColor} />
+                  <Icon name={g.icon} size={24} color={toneColor} />
                 </View>
                 <Text style={{
                   flex: 1,
@@ -527,7 +527,7 @@ export default function OnboardingScreen() {
                     backgroundColor: colors.background,
                     alignItems: "center", justifyContent: "center",
                   }}>
-                    <Ionicons name="checkmark" size={18} color={colors.foreground} />
+                    <Icon name="checkmark" size={18} color={colors.foreground} />
                   </View>
                 )}
               </PressScale>
@@ -584,7 +584,7 @@ export default function OnboardingScreen() {
                     backgroundColor: colors.background,
                     alignItems: "center", justifyContent: "center",
                   }}>
-                    <Ionicons name="checkmark" size={18} color={colors.foreground} />
+                    <Icon name="checkmark" size={18} color={colors.foreground} />
                   </View>
                 )}
               </PressScale>
@@ -621,7 +621,7 @@ export default function OnboardingScreen() {
                   backgroundColor: selected ? colors.background : colors.muted,
                   alignItems: "center", justifyContent: "center",
                 }}>
-                  <Ionicons name={t.icon} size={24} color={selected ? colors.foreground : colors.foreground} />
+                  <Icon name={t.icon} size={24} color={selected ? colors.foreground : colors.foreground} />
                 </View>
                 <View style={{ flex: 1 }}>
                   <Text style={{
@@ -647,7 +647,7 @@ export default function OnboardingScreen() {
                     backgroundColor: colors.background,
                     alignItems: "center", justifyContent: "center",
                   }}>
-                    <Ionicons name="checkmark" size={18} color={colors.foreground} />
+                    <Icon name="checkmark" size={18} color={colors.foreground} />
                   </View>
                 )}
               </PressScale>
@@ -677,7 +677,7 @@ export default function OnboardingScreen() {
                 alignItems: "center", justifyContent: "center",
               }}
             >
-              <Ionicons name="arrow-back" size={18} color={colors.foreground} />
+              <Icon name="arrow-back" size={18} color={colors.foreground} />
             </PressScale>
             <View style={{ flex: 1, height: 4, borderRadius: 100, backgroundColor: colors.border, overflow: "hidden" }}>
               <View style={{
@@ -733,7 +733,7 @@ export default function OnboardingScreen() {
               <Text style={{ fontSize: 18, fontFamily: "Nunito_800ExtraBold", color: colors.background }}>
                 Continue
               </Text>
-              <Ionicons name="arrow-forward" size={20} color={colors.background} />
+              <Icon name="arrow-forward" size={20} color={colors.background} />
             </PressScale>
           </View>
         </View>
@@ -769,7 +769,7 @@ export default function OnboardingScreen() {
                 opacity: currentQ === 0 ? 1 : 0.35,
               }}
             >
-              <Ionicons name="arrow-back" size={18} color={colors.foreground} />
+              <Icon name="arrow-back" size={18} color={colors.foreground} />
             </PressScale>
             <View style={{ flex: 1, height: 4, borderRadius: 100, backgroundColor: colors.border, overflow: "hidden" }}>
               <Animated.View style={[{
@@ -905,7 +905,7 @@ export default function OnboardingScreen() {
               }}
             >
               <View style={{ flexDirection: "row", alignItems: "center", gap: 10, marginBottom: 8 }}>
-                <Ionicons
+                <Icon
                   name={lastWasCorrect ? "checkmark-circle" : "close-circle"}
                   size={22}
                   color={lastWasCorrect ? colors.success : colors.destructive}
@@ -934,7 +934,7 @@ export default function OnboardingScreen() {
                 <Text style={{ fontSize: 16, fontFamily: "Nunito_800ExtraBold", color: colors.background }}>
                   {currentQ + 1 >= PLACEMENT_QUESTIONS.length ? "See results" : "Continue"}
                 </Text>
-                <Ionicons name="arrow-forward" size={18} color={colors.background} />
+                <Icon name="arrow-forward" size={18} color={colors.background} />
               </PressScale>
             </Animated.View>
           )}
@@ -996,7 +996,7 @@ export default function OnboardingScreen() {
               backgroundColor: colors.accent,
               marginBottom: 16,
             }}>
-              <Ionicons name="flash" size={18} color={colors.accentForeground} />
+              <Icon name="flash" size={18} color={colors.accentForeground} />
               <Text style={{ fontSize: 18, fontFamily: "Nunito_800ExtraBold", color: colors.accentForeground }}>
                 +{xpEarned} XP
               </Text>
@@ -1055,7 +1055,7 @@ export default function OnboardingScreen() {
             <Text style={{ fontSize: 18, fontFamily: "Nunito_800ExtraBold", color: colors.background }}>
               Continue
             </Text>
-            <Ionicons name="arrow-forward" size={20} color={colors.background} />
+            <Icon name="arrow-forward" size={20} color={colors.background} />
           </PressScale>
         </View>
       </View>
@@ -1102,7 +1102,7 @@ export default function OnboardingScreen() {
                   alignItems: "center", justifyContent: "center",
                   marginBottom: 18,
                 }}>
-                  <Ionicons
+                  <Icon
                     name={authMode === "reset" ? "mail" : "cloud-upload"}
                     size={34}
                     color={colors.accentForeground}
@@ -1307,7 +1307,7 @@ export default function OnboardingScreen() {
                       <Text style={{ fontSize: 16, fontFamily: "Nunito_800ExtraBold", color: colors.background }}>
                         {primaryLabel}
                       </Text>
-                      <Ionicons name="arrow-forward" size={18} color={colors.background} />
+                      <Icon name="arrow-forward" size={18} color={colors.background} />
                     </>
                   )}
                 </PressScale>
@@ -1353,7 +1353,7 @@ export default function OnboardingScreen() {
                         <ActivityIndicator size="small" color={colors.foreground} />
                       ) : (
                         <>
-                          <Ionicons name="logo-google" size={20} color={colors.foreground} />
+                          <Icon name="logo-google" size={20} color={colors.foreground} />
                           <Text style={{ fontSize: 15, fontFamily: "Nunito_800ExtraBold", color: colors.foreground }}>
                             Continue with Google
                           </Text>

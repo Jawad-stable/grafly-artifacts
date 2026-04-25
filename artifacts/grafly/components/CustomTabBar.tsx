@@ -12,7 +12,7 @@ import Animated, {
   useAnimatedStyle,
   withTiming,
 } from "react-native-reanimated";
-import { Ionicons } from "@expo/vector-icons";
+import { Icon } from "@/components/Icon";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useColors } from "@/hooks/useColors";
 
@@ -58,7 +58,7 @@ function TabButton({
             pillStyle,
           ]}
         />
-        <Ionicons
+        <Icon
           name={(isActive ? tab.icon : tab.iconOutline) as any}
           size={24}
           color={isActive ? colors.primary : colors.mutedForeground}

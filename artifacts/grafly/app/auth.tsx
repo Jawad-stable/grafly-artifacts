@@ -12,7 +12,7 @@ import {
 } from "react-native";
 import Animated, { FadeIn, FadeInDown } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { Ionicons } from "@expo/vector-icons";
+import { Icon } from "@/components/Icon";
 import { router } from "expo-router";
 import { useGame } from "@/context/GameContext";
 import { useColors } from "@/hooks/useColors";
@@ -129,7 +129,7 @@ export default function AuthScreen() {
               onPress={() => router.back()}
               style={{ position: "absolute", top: insets.top + 12, left: 20, zIndex: 10, width: 40, height: 40, borderRadius: 100, backgroundColor: colors.card, alignItems: "center", justifyContent: "center" }}
             >
-              <Ionicons name="close" size={20} color={colors.foreground} />
+              <Icon name="close" size={20} color={colors.foreground} />
             </PressScale>
           )}
 
@@ -263,7 +263,7 @@ export default function AuthScreen() {
                   <Text style={{ fontSize: 17, fontFamily: "Nunito_800ExtraBold", color: colors.background }}>
                     {mode === "signin" ? "Sign in" : mode === "signup" ? "Create account" : "Send reset link"}
                   </Text>
-                  <Ionicons name="arrow-forward" size={18} color={colors.background} />
+                  <Icon name="arrow-forward" size={18} color={colors.background} />
                 </>
               )}
             </PressScale>
@@ -299,7 +299,7 @@ export default function AuthScreen() {
                 <ActivityIndicator color={colors.foreground} />
               ) : (
                 <>
-                  <Ionicons name="logo-google" size={20} color={colors.foreground} />
+                  <Icon name="logo-google" size={20} color={colors.foreground} />
                   <Text style={{ fontSize: 15, fontFamily: "Nunito_800ExtraBold", color: colors.foreground }}>
                     Continue with Google
                   </Text>

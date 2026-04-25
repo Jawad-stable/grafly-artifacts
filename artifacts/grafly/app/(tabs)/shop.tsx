@@ -15,7 +15,7 @@ import Animated, {
   Easing,
   withSequence,
 } from "react-native-reanimated";
-import { Ionicons } from "@expo/vector-icons";
+import { Icon } from "@/components/Icon";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import * as Haptics from "expo-haptics";
 import { useColors } from "@/hooks/useColors";
@@ -71,7 +71,7 @@ function ShopCard({ item, onBuy }: { item: ShopItem; onBuy: (item: ShopItem) => 
         backgroundColor: item.iconColor + "20",
         alignItems: "center", justifyContent: "center",
       }}>
-        <Ionicons name={item.icon as any} size={26} color={item.iconColor} />
+        <Icon name={item.icon as any} size={26} color={item.iconColor} />
       </View>
       <View style={{ flex: 1 }}>
         <Text style={{ fontSize: 16, fontFamily: "Nunito_800ExtraBold", color: colors.foreground, marginBottom: 2 }}>
@@ -92,7 +92,7 @@ function ShopCard({ item, onBuy }: { item: ShopItem; onBuy: (item: ShopItem) => 
           paddingHorizontal: 14, paddingVertical: 8,
         }}
       >
-        {!owned && <Ionicons name="ellipse" size={12} color={canAfford ? colors.accentForeground : colors.mutedForeground} />}
+        {!owned && <Icon name="ellipse" size={12} color={canAfford ? colors.accentForeground : colors.mutedForeground} />}
         <Text style={{
           fontSize: 14, fontFamily: "Nunito_800ExtraBold",
           color: owned ? colors.success : canAfford ? colors.accentForeground : colors.mutedForeground,
@@ -165,7 +165,7 @@ export default function ShopScreen() {
                 backgroundColor: colors.foreground, borderRadius: 100,
                 paddingHorizontal: 14, paddingVertical: 8, alignSelf: "flex-start",
               }}>
-                <Ionicons name="ellipse" size={12} color={colors.warning} />
+                <Icon name="ellipse" size={12} color={colors.warning} />
                 <Text style={{ fontSize: 14, fontFamily: "Nunito_800ExtraBold", color: colors.background }}>
                   {state.coins} coins
                 </Text>

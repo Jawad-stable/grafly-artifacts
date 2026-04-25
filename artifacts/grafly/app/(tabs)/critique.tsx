@@ -13,7 +13,7 @@ import {
 } from "react-native";
 import { KeyboardAvoidingView } from "react-native-keyboard-controller";
 import Animated, { FadeIn, FadeInDown, FadeInUp } from "react-native-reanimated";
-import { Ionicons } from "@expo/vector-icons";
+import { Icon } from "@/components/Icon";
 import { router } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useColors } from "@/hooks/useColors";
@@ -198,7 +198,7 @@ export default function CritiqueScreen() {
               onPress={loadNewDesign}
               style={{ backgroundColor: colors.card, padding: 12, borderRadius: 100, marginTop: 16 }}
             >
-              <Ionicons name="shuffle" size={20} color={colors.foreground} />
+              <Icon name="shuffle" size={20} color={colors.foreground} />
             </PressScale>
           </View>
         </Animated.View>
@@ -261,7 +261,7 @@ export default function CritiqueScreen() {
                     Tap to view full size
                   </Text>
                 </View>
-                <Ionicons name="expand-outline" size={userTurnCount > 0 ? 18 : 20} color={colors.mutedForeground} />
+                <Icon name="expand-outline" size={userTurnCount > 0 ? 18 : 20} color={colors.mutedForeground} />
               </View>
             </Pressable>
           </Animated.View>
@@ -368,7 +368,7 @@ export default function CritiqueScreen() {
               }}
               onPress={() => router.push("/paywall" as any)}
             >
-              <Ionicons name="star" size={18} color={colors.background} />
+              <Icon name="star" size={18} color={colors.background} />
               <Text style={{ fontSize: 16, fontFamily: "Nunito_800ExtraBold", color: colors.background }}>
                 Unlock Pro for unlimited sessions
               </Text>
@@ -439,7 +439,7 @@ export default function CritiqueScreen() {
                   marginBottom: 2,
                 }}
               >
-                <Ionicons
+                <Icon
                   name="arrow-up"
                   size={18}
                   color={
@@ -469,7 +469,7 @@ export default function CritiqueScreen() {
             onPress={() => setImageOpen(false)}
             style={{ position: "absolute", top: insets.top + 12, right: 16, padding: 10, backgroundColor: "rgba(255,255,255,0.15)", borderRadius: 100 }}
           >
-            <Ionicons name="close" size={24} color="#fff" />
+            <Icon name="close" size={24} color="#fff" />
           </TouchableOpacity>
           {design && (
             <View style={{ position: "absolute", bottom: insets.bottom + 24, left: 24, right: 24 }}>

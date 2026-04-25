@@ -1,5 +1,5 @@
 import { useFonts } from "expo-font";
-import { Ionicons, Feather } from "@expo/vector-icons";
+import { Feather } from "@expo/vector-icons";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Redirect, Stack, useSegments } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
@@ -89,7 +89,6 @@ export default function RootLayout() {
     Nunito_600SemiBold: require("../assets/fonts/Teshrin_Medium.ttf"),
     Nunito_800ExtraBold: require("../assets/fonts/Teshrin_Bold.ttf"),
     ...TESHRIN_FONTS,
-    ...Ionicons.font,
     ...Feather.font,
   });
 

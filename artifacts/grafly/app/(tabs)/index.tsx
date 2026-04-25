@@ -17,7 +17,7 @@ import Animated, {
   withSequence,
   FadeIn,
 } from "react-native-reanimated";
-import { Ionicons } from "@expo/vector-icons";
+import { Icon } from "@/components/Icon";
 import { router } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useColors } from "@/hooks/useColors";
@@ -69,7 +69,7 @@ function XPPopup() {
       paddingHorizontal: 20, paddingVertical: 10,
       zIndex: 999, flexDirection: "row", alignItems: "center", gap: 6,
     }, animStyle]}>
-      <Ionicons name="flash" size={18} color={colors.accentForeground} />
+      <Icon name="flash" size={18} color={colors.accentForeground} />
       <Text style={{ fontSize: 18, fontFamily: "Nunito_800ExtraBold", color: colors.accentForeground }}>
         +{state.xpPopupAmount} XP
       </Text>
@@ -111,7 +111,7 @@ function LevelUpOverlay() {
           backgroundColor: colors.accent + "30",
           alignItems: "center", justifyContent: "center", marginBottom: 20,
         }}>
-          <Ionicons name="trophy" size={48} color={colors.accent} />
+          <Icon name="trophy" size={48} color={colors.accent} />
         </View>
         <Text style={{ fontSize: 13, fontFamily: "Nunito_600SemiBold", color: colors.accent, marginBottom: 8, letterSpacing: 2 }}>
           LEVEL UP
@@ -191,7 +191,7 @@ export default function HomeScreen() {
               paddingHorizontal: 12, paddingVertical: 6,
               borderWidth: 1, borderColor: colors.border,
             }}>
-              <Ionicons name="flame" size={14} color="#FF7B00" />
+              <Icon name="flame" size={14} color="#FF7B00" />
               <Text style={{ fontSize: 13, fontFamily: "Nunito_800ExtraBold", color: colors.foreground }}>
                 {state.streak}
               </Text>
@@ -202,7 +202,7 @@ export default function HomeScreen() {
               paddingHorizontal: 12, paddingVertical: 6,
               borderWidth: 1, borderColor: colors.border,
             }}>
-              <Ionicons name="ellipse" size={11} color={colors.warning} />
+              <Icon name="ellipse" size={11} color={colors.warning} />
               <Text style={{ fontSize: 13, fontFamily: "Nunito_800ExtraBold", color: colors.foreground }}>
                 {state.coins}
               </Text>
@@ -254,7 +254,7 @@ export default function HomeScreen() {
                 backgroundColor: colors.accent,
                 alignItems: "center", justifyContent: "center",
               }}>
-                <Ionicons name="diamond" size={18} color={colors.accentForeground} />
+                <Icon name="diamond" size={18} color={colors.accentForeground} />
               </View>
               <View style={{ flex: 1 }}>
                 <Text style={{ fontSize: 14, fontFamily: "Nunito_800ExtraBold", color: colors.foreground }}>
@@ -323,7 +323,7 @@ export default function HomeScreen() {
                   {/* Top: category eyebrow (no pill) */}
                   <View style={{ paddingHorizontal: 18, paddingTop: 16 }}>
                     <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
-                      <Ionicons name={course.icon as any} size={12} color={colors.primaryForeground + "DD"} />
+                      <Icon name={course.icon as any} size={12} color={colors.primaryForeground + "DD"} />
                       <Text style={{
                         fontSize: 10, fontFamily: "Nunito_800ExtraBold",
                         color: colors.primaryForeground + "DD", letterSpacing: 1.2,
@@ -425,13 +425,13 @@ export default function HomeScreen() {
               <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
                 <View style={{ flexDirection: "row", alignItems: "center", gap: 14 }}>
                   <View style={{ flexDirection: "row", alignItems: "center", gap: 5 }}>
-                    <Ionicons name="flash" size={14} color={colors.accent} />
+                    <Icon name="flash" size={14} color={colors.accent} />
                     <Text style={{ fontSize: 13, fontFamily: "Nunito_800ExtraBold", color: colors.background }}>
                       +{nextLesson.xpReward} XP
                     </Text>
                   </View>
                   <View style={{ flexDirection: "row", alignItems: "center", gap: 5 }}>
-                    <Ionicons name="ellipse" size={11} color={colors.warning} />
+                    <Icon name="ellipse" size={11} color={colors.warning} />
                     <Text style={{ fontSize: 13, fontFamily: "Nunito_800ExtraBold", color: colors.background }}>
                       +{nextLesson.coinReward}
                     </Text>
@@ -442,7 +442,7 @@ export default function HomeScreen() {
                   backgroundColor: colors.accent,
                   alignItems: "center", justifyContent: "center",
                 }}>
-                  <Ionicons name="arrow-forward" size={20} color={colors.accentForeground} />
+                  <Icon name="arrow-forward" size={20} color={colors.accentForeground} />
                 </View>
               </View>
             </PressScale>
@@ -536,7 +536,7 @@ export default function HomeScreen() {
                 backgroundColor: "#CD7F3222",
                 alignItems: "center", justifyContent: "center",
               }}>
-                <Ionicons name="medal" size={16} color="#CD7F32" />
+                <Icon name="medal" size={16} color="#CD7F32" />
               </View>
             </View>
             <View style={{ flexDirection: "row", alignItems: "baseline", gap: 2, marginTop: 8 }}>
@@ -593,7 +593,7 @@ export default function HomeScreen() {
                   backgroundColor: colors.accent,
                   alignItems: "center", justifyContent: "center",
                 }}>
-                  <Ionicons name="flash" size={16} color={colors.accentForeground} />
+                  <Icon name="flash" size={16} color={colors.accentForeground} />
                 </View>
                 <View>
                   <Text style={{ fontSize: 13, fontFamily: "Nunito_800ExtraBold", color: colors.foreground }}>

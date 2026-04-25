@@ -9,7 +9,7 @@ import {
   TouchableOpacity,
 } from "react-native";
 import Animated, { FadeIn, FadeInDown } from "react-native-reanimated";
-import { Ionicons } from "@expo/vector-icons";
+import { Icon } from "@/components/Icon";
 import { router, useLocalSearchParams } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Svg, { Path } from "react-native-svg";
@@ -58,7 +58,7 @@ function CoursesButton({ onPress }: { onPress: () => void }) {
         alignItems: "center",
         justifyContent: "center",
       }}>
-        <Ionicons name="apps" size={20} color={colors.foreground} />
+        <Icon name="apps" size={20} color={colors.foreground} />
       </View>
       <Text style={{
         fontSize: 15,
@@ -121,7 +121,7 @@ function CoursePickerModal({
               justifyContent: "center",
             }}
           >
-            <Ionicons name="close" size={22} color={colors.foreground} />
+            <Icon name="close" size={22} color={colors.foreground} />
           </PressScale>
         </View>
 
@@ -190,7 +190,7 @@ function CoursePickerModal({
                   alignItems: "center",
                   justifyContent: "center",
                 }}>
-                  <Ionicons
+                  <Icon
                     name={c.icon as any}
                     size={26}
                     color={isSelected ? colors.background : c.color}
@@ -234,7 +234,7 @@ function CoursePickerModal({
                     alignItems: "center",
                     justifyContent: "center",
                   }}>
-                    <Ionicons name="checkmark" size={18} color={colors.foreground} />
+                    <Icon name="checkmark" size={18} color={colors.foreground} />
                   </View>
                 )}
               </PressScale>
@@ -275,10 +275,10 @@ function NodeItem({
         }}
       >
         {isCompleted
-          ? <Ionicons name="checkmark" size={28} color={colors.primaryForeground} />
+          ? <Icon name="checkmark" size={28} color={colors.primaryForeground} />
           : isLocked
-          ? <Ionicons name="lock-closed" size={20} color={colors.mutedForeground} />
-          : <Ionicons name={node.icon as any} size={26} color={nodeColor} />
+          ? <Icon name="lock-closed" size={20} color={colors.mutedForeground} />
+          : <Icon name={node.icon as any} size={26} color={nodeColor} />
         }
       </PressScale>
       <Text style={{
@@ -366,7 +366,7 @@ function NodeSheet({ node, course, isCompleted, isLocked, visible, onClose }: {
               borderWidth: 1,
               borderColor: colors.border,
             }}>
-              {s.icon && <Ionicons name={s.icon as any} size={14} color={s.iconColor!} style={{ marginBottom: 2 }} />}
+              {s.icon && <Icon name={s.icon as any} size={14} color={s.iconColor!} style={{ marginBottom: 2 }} />}
               <Text style={{ fontSize: 22, fontFamily: "Nunito_800ExtraBold", color: colors.foreground, letterSpacing: -0.5 }}>{s.val}</Text>
               <Text style={{ fontSize: 10, fontFamily: "Nunito_800ExtraBold", color: colors.mutedForeground, letterSpacing: 1, marginTop: 2 }}>{s.label}</Text>
             </View>
@@ -391,7 +391,7 @@ function NodeSheet({ node, course, isCompleted, isLocked, visible, onClose }: {
               </Text>
               <Text style={{ flex: 1, fontSize: 14, fontFamily: "Nunito_600SemiBold", color: colors.foreground }}>{lesson.title}</Text>
               <View style={{ flexDirection: "row", alignItems: "center", gap: 3 }}>
-                <Ionicons name="flash" size={12} color={colors.accent} />
+                <Icon name="flash" size={12} color={colors.accent} />
                 <Text style={{ fontSize: 12, fontFamily: "Nunito_800ExtraBold", color: colors.mutedForeground }}>+{lesson.xpReward}</Text>
               </View>
             </View>
@@ -415,7 +415,7 @@ function NodeSheet({ node, course, isCompleted, isLocked, visible, onClose }: {
             }}>
               {isCompleted ? "Practice again" : "Start lessons"}
             </Text>
-            <Ionicons name="arrow-forward" size={18} color={colors.background} />
+            <Icon name="arrow-forward" size={18} color={colors.background} />
           </PressScale>
         ) : (
           <View style={{
@@ -427,7 +427,7 @@ function NodeSheet({ node, course, isCompleted, isLocked, visible, onClose }: {
             justifyContent: "center",
             gap: 8,
           }}>
-            <Ionicons name="lock-closed" size={18} color={colors.mutedForeground} />
+            <Icon name="lock-closed" size={18} color={colors.mutedForeground} />
             <Text style={{ fontSize: 15, fontFamily: "Nunito_800ExtraBold", color: colors.mutedForeground, letterSpacing: -0.2 }}>
               Complete previous lessons
             </Text>
@@ -558,7 +558,7 @@ export default function TreeScreen() {
                 backgroundColor: course.color + "1F",
                 alignItems: "center", justifyContent: "center",
               }}>
-                <Ionicons name={course.icon as any} size={26} color={course.color} />
+                <Icon name={course.icon as any} size={26} color={course.color} />
               </View>
               <View style={{ flex: 1 }}>
                 <Text style={{

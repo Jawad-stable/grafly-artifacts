@@ -9,7 +9,7 @@ import {
   TextInput,
 } from "react-native";
 import Animated, { FadeIn } from "react-native-reanimated";
-import { Ionicons } from "@expo/vector-icons";
+import { Icon } from "@/components/Icon";
 import { router } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useColors } from "@/hooks/useColors";
@@ -147,7 +147,7 @@ export default function ProfileScreen() {
                   returnKeyType="done"
                 />
                 <TouchableOpacity onPress={saveName} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
-                  <Ionicons name="checkmark-circle" size={28} color={colors.success} />
+                  <Icon name="checkmark-circle" size={28} color={colors.success} />
                 </TouchableOpacity>
               </View>
             ) : (
@@ -162,7 +162,7 @@ export default function ProfileScreen() {
                 >
                   {state.username}
                 </AText>
-                <Ionicons name="pencil" size={14} color={colors.mutedForeground} />
+                <Icon name="pencil" size={14} color={colors.mutedForeground} />
               </TouchableOpacity>
             )}
             <Text
@@ -177,7 +177,7 @@ export default function ProfileScreen() {
               LVL {xpProg.level} · {divInfo.label.toUpperCase()} · {placementLabel.toUpperCase()}
             </Text>
             <View style={{ flexDirection: "row", alignItems: "center", gap: 6, marginTop: 8 }}>
-              <Ionicons name={divInfo.icon as any} size={14} color={divInfo.color} />
+              <Icon name={divInfo.icon as any} size={14} color={divInfo.color} />
               <Text style={{ fontSize: 12, fontFamily: "Nunito_600SemiBold", color: colors.mutedForeground }}>
                 {state.weeklyXP} XP this week
               </Text>
@@ -243,7 +243,7 @@ export default function ProfileScreen() {
                   alignItems: "flex-start",
                 }}
               >
-                <Ionicons name={stat.icon as any} size={20} color={stat.color} style={{ marginBottom: 8 }} />
+                <Icon name={stat.icon as any} size={20} color={stat.color} style={{ marginBottom: 8 }} />
                 <Text style={{ fontSize: 26, fontFamily: "Nunito_800ExtraBold", color: colors.foreground, letterSpacing: -0.6 }}>
                   {stat.value}
                 </Text>
@@ -265,7 +265,7 @@ export default function ProfileScreen() {
                   alignItems: "flex-start",
                 }}
               >
-                <Ionicons name={stat.icon as any} size={20} color={stat.color} style={{ marginBottom: 8 }} />
+                <Icon name={stat.icon as any} size={20} color={stat.color} style={{ marginBottom: 8 }} />
                 <Text style={{ fontSize: 26, fontFamily: "Nunito_800ExtraBold", color: colors.foreground, letterSpacing: -0.6 }}>
                   {stat.value}
                 </Text>
@@ -325,7 +325,7 @@ export default function ProfileScreen() {
                       justifyContent: "center",
                     }}
                   >
-                    <Ionicons name={a.icon as any} size={24} color={unlocked ? a.color : colors.mutedForeground} />
+                    <Icon name={a.icon as any} size={24} color={unlocked ? a.color : colors.mutedForeground} />
                   </View>
                   <Text
                     style={{
@@ -337,7 +337,7 @@ export default function ProfileScreen() {
                   >
                     {a.title}
                   </Text>
-                  {!unlocked && <Ionicons name="lock-closed" size={12} color={colors.mutedForeground} />}
+                  {!unlocked && <Icon name="lock-closed" size={12} color={colors.mutedForeground} />}
                 </View>
               );
             })}
@@ -376,7 +376,7 @@ export default function ProfileScreen() {
                     justifyContent: "center",
                   }}
                 >
-                  <Ionicons name="volume-high-outline" size={18} color={colors.primary} />
+                  <Icon name="volume-high-outline" size={18} color={colors.primary} />
                 </View>
                 <View style={{ flex: 1 }}>
                   <Text style={{ fontSize: 15, fontFamily: "Nunito_800ExtraBold", color: colors.foreground }}>
@@ -418,7 +418,7 @@ export default function ProfileScreen() {
             onPress={() => router.push("/paywall" as any)}
             activeOpacity={0.88}
           >
-            <Ionicons name="diamond" size={18} color={colors.accent} />
+            <Icon name="diamond" size={18} color={colors.accent} />
             <Text style={{ fontSize: 16, fontFamily: "Nunito_800ExtraBold", color: colors.background }}>
               Upgrade to Pro
             </Text>
@@ -449,7 +449,7 @@ export default function ProfileScreen() {
                     justifyContent: "center",
                   }}
                 >
-                  <Ionicons name="log-out-outline" size={18} color={colors.destructive} />
+                  <Icon name="log-out-outline" size={18} color={colors.destructive} />
                 </View>
                 <View>
                   <Text style={{ fontSize: 15, fontFamily: "Nunito_800ExtraBold", color: colors.foreground }}>
@@ -460,7 +460,7 @@ export default function ProfileScreen() {
                   </Text>
                 </View>
               </View>
-              <Ionicons name="chevron-forward" size={18} color={colors.mutedForeground} />
+              <Icon name="chevron-forward" size={18} color={colors.mutedForeground} />
             </TouchableOpacity>
           ) : (
             <TouchableOpacity
@@ -489,7 +489,7 @@ export default function ProfileScreen() {
                     justifyContent: "center",
                   }}
                 >
-                  <Ionicons name="cloud-upload-outline" size={18} color={colors.primary} />
+                  <Icon name="cloud-upload-outline" size={18} color={colors.primary} />
                 </View>
                 <View>
                   <Text style={{ fontSize: 15, fontFamily: "Nunito_800ExtraBold", color: colors.foreground }}>
@@ -500,7 +500,7 @@ export default function ProfileScreen() {
                   </Text>
                 </View>
               </View>
-              <Ionicons name="chevron-forward" size={18} color={colors.mutedForeground} />
+              <Icon name="chevron-forward" size={18} color={colors.mutedForeground} />
             </TouchableOpacity>
           )}
         </Animated.View>
