@@ -36,6 +36,24 @@ const { width: SCREEN_W, height: SCREEN_H } = Dimensions.get("window");
 const HERO_HEIGHT_FULL = Math.min(Math.round(SCREEN_H * 0.46), 460);
 const HERO_HEIGHT_COMPACT = Math.min(Math.round(SCREEN_H * 0.22), 200);
 
+const OPENER_TEMPLATES: Array<(title: string) => string> = [
+  (t) => `What is the first thing your eye lands on in "${t}", and why do you think the designer made that choice?`,
+  (t) => `Spend a few seconds with "${t}". What feeling does it give you, and which visual element is doing most of the work?`,
+  (t) => `If you had to describe "${t}" in three words, what would they be? Pick one and tell me why.`,
+  (t) => `Looking at "${t}", what is the clearest visual hierarchy decision the designer made? Where does your eye go second?`,
+  (t) => `What problem do you think "${t}" is trying to solve for the user, and how does the layout support that?`,
+  (t) => `Critique "${t}" like a friendly mentor. What is one thing that works really well, and one thing you would push further?`,
+  (t) => `Imagine you opened "${t}" for the first time. What action does the screen invite you to take, and how do you know?`,
+  (t) => `In "${t}", how do color and typography work together to set the mood? Which one is leading?`,
+  (t) => `What design principle (contrast, balance, rhythm, hierarchy) is most visible in "${t}"? Show me where.`,
+  (t) => `If "${t}" had to lose one element to feel cleaner, which would you cut and why?`,
+];
+
+function pickOpener(title: string): string {
+  const fn = OPENER_TEMPLATES[Math.floor(Math.random() * OPENER_TEMPLATES.length)];
+  return fn(title);
+}
+
 interface TypewriterTextProps {
   text: string;
   active: boolean;
@@ -120,8 +138,7 @@ export default function CritiqueScreen() {
     setAnimateIndex(-1);
     const d = pickRandomLocalDesign();
     setDesign(d);
-    const opener = `Take a look at this design: ${d.title}. What is the first thing your eye lands on, and why do you think the designer made that choice?`;
-    setMessages([{ role: "assistant", content: opener }]);
+    setMessages([{ role: "assistant", content: pickOpener(d.title) }]);
     setLoadingDesign(false);
   }
 
@@ -250,12 +267,25 @@ export default function CritiqueScreen() {
                 style={{ width: "100%", height: "100%", backgroundColor: colors.muted }}
                 resizeMode="cover"
               />
-              {/* Bottom gradient for legibility */}
+              {/* Top gradient for the EXPAND pill legibility */}
               <LinearGradient
-                colors={["rgba(0,0,0,0)", "rgba(0,0,0,0.85)"]}
+                colors={["rgba(0,0,0,0.55)", "rgba(0,0,0,0)"]}
+                style={{
+                  position: "absolute", left: 0, right: 0, top: 0,
+                  height: 90,
+                }}
+              />
+              {/* Strong bottom gradient for title legibility */}
+              <LinearGradient
+                colors={[
+                  "rgba(0,0,0,0)",
+                  "rgba(0,0,0,0.55)",
+                  "rgba(0,0,0,0.92)",
+                ]}
+                locations={[0, 0.45, 1]}
                 style={{
                   position: "absolute", left: 0, right: 0, bottom: 0,
-                  height: chatStarted ? "65%" : "45%",
+                  height: chatStarted ? "80%" : "60%",
                 }}
               />
               {/* Top-right expand pill */}
