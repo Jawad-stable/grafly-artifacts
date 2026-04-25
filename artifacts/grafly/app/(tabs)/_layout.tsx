@@ -70,75 +70,39 @@ function TabPill({
   const { state } = useGame();
   const isLight = state.themeMode === "light";
 
-  // Active = soft tinted primary pill with primary-colored icon, label slides
-  // in to the right of the icon as the pill expands. Inactive = icon only.
+  // Active = soft tinted primary pill, hugging icon + label. No focus-state
+  // motion — the pill simply renders in its active or inactive form so the
+  // highlight always sits perfectly centered around the content.
   const activeBg = colors.primary + (isLight ? "1F" : "26");
-  const activeBorder = colors.primary + (isLight ? "3D" : "55");
   const activeFg = colors.primary;
   const inactiveIcon = isLight
     ? colors.primaryForeground + "B3"
     : colors.mutedForeground;
 
-  const progress = useSharedValue(focused ? 1 : 0);
-
-  React.useEffect(() => {
-    progress.value = withTiming(focused ? 1 : 0, {
-      duration: 260,
-      easing: Easing.out(Easing.cubic),
-    });
-  }, [focused, progress]);
-
-  const pillStyle = useAnimatedStyle(() => ({
-    opacity: progress.value,
-  }));
-
-  const labelStyle = useAnimatedStyle(() => ({
-    opacity: progress.value,
-    marginLeft: progress.value * 8,
-    maxWidth: progress.value * 100,
-  }));
-
-  // Animate horizontal padding so inactive tabs don't reserve
-  // label space (compact icon-only on narrow widths).
-  const contentStyle = useAnimatedStyle(() => ({
-    paddingHorizontal: 12 + progress.value * 4,
-  }));
-
-  const iconColor = focused ? activeFg : inactiveIcon;
-
   return (
     <View style={styles.itemWrap}>
-      <View style={styles.pillWrap}>
-        <Animated.View
-          style={[
-            styles.pillBg,
-            {
-              backgroundColor: activeBg,
-              borderWidth: 1,
-              borderColor: activeBorder,
-            },
-            pillStyle,
-          ]}
+      <View
+        style={[
+          styles.pill,
+          focused
+            ? { backgroundColor: activeBg, paddingHorizontal: 14 }
+            : { backgroundColor: "transparent", paddingHorizontal: 0 },
+        ]}
+      >
+        <Icon
+          name={name}
+          size={22}
+          color={focused ? activeFg : inactiveIcon}
+          weight={focused ? "fill" : "bold"}
         />
-        <Animated.View style={[styles.pillContent, contentStyle]}>
-          <Icon
-            name={name}
-            size={22}
-            color={iconColor}
-            weight={focused ? "fill" : "bold"}
-          />
-          <Animated.View style={[styles.labelBox, labelStyle]}>
-            <AText
-              numberOfLines={1}
-              style={[
-                styles.label,
-                { color: activeFg },
-              ]}
-            >
-              {label}
-            </AText>
-          </Animated.View>
-        </Animated.View>
+        {focused && (
+          <AText
+            numberOfLines={1}
+            style={[styles.label, { color: activeFg }]}
+          >
+            {label}
+          </AText>
+        )}
       </View>
     </View>
   );
@@ -264,31 +228,16 @@ const styles = StyleSheet.create({
     height: 60,
     alignItems: "center",
     justifyContent: "center",
+    paddingHorizontal: 4,
   },
-  pillWrap: {
-    height: 44,
-    minWidth: 44,
-    alignItems: "center",
-    justifyContent: "center",
-    position: "relative",
-  },
-  pillBg: {
-    position: "absolute",
-    top: 0,
-    bottom: 0,
-    left: 0,
-    right: 0,
-    borderRadius: 22,
-  },
-  pillContent: {
+  pill: {
+    height: 40,
+    minWidth: 40,
+    borderRadius: 100,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    height: 44,
-  },
-  labelBox: {
-    overflow: "hidden",
-    flexShrink: 1,
+    gap: 8,
   },
   label: {
     fontFamily: "Nunito_800ExtraBold",
