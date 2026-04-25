@@ -49,9 +49,22 @@ function PressTabButton(props: any) {
         );
         onPressOut?.(e);
       }}
-      style={[style, { flex: 1 }]}
+      style={[
+        style,
+        { flex: 1, alignItems: "center", justifyContent: "center" },
+      ]}
     >
-      <Animated.View style={[{ flex: 1 }, animStyle]}>
+      <Animated.View
+        style={[
+          {
+            flex: 1,
+            alignSelf: "stretch",
+            alignItems: "center",
+            justifyContent: "center",
+          },
+          animStyle,
+        ]}
+      >
         {children}
       </Animated.View>
     </Pressable>
@@ -230,9 +243,15 @@ export default function TabLayout() {
           </View>
         ),
         tabBarItemStyle: {
+          // Each of the 5 tab slots is an equal-width column with its child
+          // content perfectly centered. No padding offsets, no manual spacing.
+          flex: 1,
           paddingTop: 0,
           paddingBottom: 0,
+          paddingHorizontal: 0,
           height: tabBarHeight,
+          alignItems: "center",
+          justifyContent: "center",
         },
       }}
     >
@@ -282,8 +301,12 @@ export default function TabLayout() {
 
 const styles = StyleSheet.create({
   cell: {
+    // Fill the parent slot completely so the icon is dead-centered both
+    // horizontally and vertically inside its equal-width column.
     flex: 1,
-    height: 64,
+    alignSelf: "stretch",
+    width: "100%",
+    height: "100%",
     alignItems: "center",
     justifyContent: "center",
     gap: 5,
