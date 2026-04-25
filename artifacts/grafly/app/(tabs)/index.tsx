@@ -451,23 +451,23 @@ export default function HomeScreen() {
           <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
             <View style={{
               flexDirection: "row", alignItems: "center", gap: 4,
-              backgroundColor: colors.card, borderRadius: 100,
+              backgroundColor: colors.accent, borderRadius: 100,
               paddingHorizontal: 12, paddingVertical: 6,
-              borderWidth: 1, borderColor: colors.border,
+              borderWidth: 1, borderColor: colors.accent,
             }}>
               <Icon name="flame" size={14} color="#FF7B00" />
-              <Text style={{ fontSize: 13, fontFamily: "Nunito_800ExtraBold", color: colors.foreground }}>
+              <Text style={{ fontSize: 13, fontFamily: "Nunito_800ExtraBold", color: colors.accentForeground }}>
                 {state.streak}
               </Text>
             </View>
             <View style={{
               flexDirection: "row", alignItems: "center", gap: 4,
-              backgroundColor: colors.card, borderRadius: 100,
+              backgroundColor: colors.accent, borderRadius: 100,
               paddingHorizontal: 12, paddingVertical: 6,
-              borderWidth: 1, borderColor: colors.border,
+              borderWidth: 1, borderColor: colors.accent,
             }}>
-              <Icon name="ellipse" size={11} color={colors.warning} />
-              <Text style={{ fontSize: 13, fontFamily: "Nunito_800ExtraBold", color: colors.foreground }}>
+              <Icon name="ellipse" size={11} color={colors.accentForeground} />
+              <Text style={{ fontSize: 13, fontFamily: "Nunito_800ExtraBold", color: colors.accentForeground }}>
                 {state.coins}
               </Text>
             </View>
