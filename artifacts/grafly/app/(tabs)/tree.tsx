@@ -35,6 +35,35 @@ function getNodeX(pos: NodePosition): number {
 
 const TIER_PALETTE = ["#00A4FA", "#FF7BD0", "#E3ED43", "#FFB800", "#22DD88", "#A78BFA"];
 
+// Returns a readable foreground color for text/icons rendered on top of `hex`.
+// Compares WCAG relative-luminance contrast ratios for the dark navy and white
+// candidates, then picks the higher one. This keeps mid-saturation colors like
+// blue (#00A4FA) and pink (#FF7BD0) readable, not just the very-light ones.
+function relLuminance(hex: string): number {
+  const c = hex.replace("#", "").slice(0, 6);
+  if (c.length < 6) return 1;
+  const toLin = (v: number) => {
+    const s = v / 255;
+    return s <= 0.03928 ? s / 12.92 : Math.pow((s + 0.055) / 1.055, 2.4);
+  };
+  const r = toLin(parseInt(c.slice(0, 2), 16));
+  const g = toLin(parseInt(c.slice(2, 4), 16));
+  const b = toLin(parseInt(c.slice(4, 6), 16));
+  return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+}
+function contrastRatio(a: string, b: string): number {
+  const la = relLuminance(a);
+  const lb = relLuminance(b);
+  const hi = Math.max(la, lb);
+  const lo = Math.min(la, lb);
+  return (hi + 0.05) / (lo + 0.05);
+}
+function getContrastOn(hex: string): string {
+  const navy = "#21263F";
+  const white = "#FFFFFF";
+  return contrastRatio(navy, hex) >= contrastRatio(white, hex) ? navy : white;
+}
+
 function tierColor(idx: number, fallback: string): string {
   if (idx === 0) return fallback;
   return TIER_PALETTE[idx % TIER_PALETTE.length];
@@ -296,10 +325,10 @@ function NodeItem({
           }}
         >
           {isCompleted
-            ? <Icon name="checkmark" size={30} color="#FFFFFF" />
+            ? <Icon name="checkmark" size={30} color={getContrastOn(fillColor)} />
             : isLocked
             ? <Icon name="lock-closed" size={22} color={colors.mutedForeground} />
-            : <Icon name={node.icon as any} size={28} color="#FFFFFF" />
+            : <Icon name={node.icon as any} size={28} color={getContrastOn(fillColor)} />
           }
         </PressScale>
       </View>
@@ -507,6 +536,7 @@ export default function TreeScreen() {
   const completedInCourse = allLessonIdsInCourse.filter((id) => state.completedLessons.includes(id)).length;
   const totalInCourse = allLessonIdsInCourse.length;
   const courseProgress = totalInCourse > 0 ? Math.round((completedInCourse / totalInCourse) * 100) : 0;
+  const onCourse = getContrastOn(course.color);
 
   function isNodeCompleted(node: SkillNode): boolean {
     return node.lessons.every((l) => state.completedLessons.includes(l.id));
@@ -602,18 +632,18 @@ export default function TreeScreen() {
             <View style={{ flexDirection: "row", alignItems: "center", gap: 14, marginBottom: 16 }}>
               <View style={{
                 width: 56, height: 56, borderRadius: 18,
-                backgroundColor: "#FFFFFF22",
+                backgroundColor: onCourse + "22",
                 borderWidth: 1.5,
-                borderColor: "#FFFFFF44",
+                borderColor: onCourse + "44",
                 alignItems: "center", justifyContent: "center",
               }}>
-                <Icon name={course.icon as any} size={28} color="#FFFFFF" />
+                <Icon name={course.icon as any} size={28} color={onCourse} />
               </View>
               <View style={{ flex: 1 }}>
                 <Text style={{
                   fontSize: 11,
                   fontFamily: "Nunito_800ExtraBold",
-                  color: "#FFFFFFCC",
+                  color: onCourse + "CC",
                   letterSpacing: 1.6,
                   marginBottom: 3,
                   textTransform: "uppercase",
@@ -623,7 +653,7 @@ export default function TreeScreen() {
                 <Text style={{
                   fontSize: 20,
                   fontFamily: "Nunito_800ExtraBold",
-                  color: "#FFFFFF",
+                  color: onCourse,
                   letterSpacing: -0.5,
                   lineHeight: 24,
                 }}>
@@ -634,7 +664,7 @@ export default function TreeScreen() {
                 paddingHorizontal: 12,
                 paddingVertical: 8,
                 borderRadius: 14,
-                backgroundColor: "#FFFFFF",
+                backgroundColor: onCourse,
               }}>
                 <Text style={{
                   fontSize: 22,
@@ -649,7 +679,7 @@ export default function TreeScreen() {
             <Text style={{
               fontSize: 13,
               fontFamily: "Nunito_600SemiBold",
-              color: "#FFFFFFDD",
+              color: onCourse + "DD",
               lineHeight: 19,
               marginBottom: 18,
             }}>
@@ -659,13 +689,13 @@ export default function TreeScreen() {
             <View style={{
               height: 8,
               borderRadius: 100,
-              backgroundColor: "#00000026",
+              backgroundColor: onCourse + "26",
               overflow: "hidden",
             }}>
               <View style={{
                 height: "100%",
                 width: `${courseProgress}%`,
-                backgroundColor: colors.accent,
+                backgroundColor: onCourse,
                 borderRadius: 100,
               }} />
             </View>
@@ -673,17 +703,17 @@ export default function TreeScreen() {
               <Text style={{
                 fontSize: 11,
                 fontFamily: "Nunito_800ExtraBold",
-                color: "#FFFFFFCC",
+                color: onCourse + "CC",
                 letterSpacing: 1.2,
               }}>
                 {completedInCourse} OF {totalInCourse} LESSONS
               </Text>
               <View style={{ flexDirection: "row", alignItems: "center", gap: 4 }}>
-                <Icon name="flame" size={14} color={colors.accent} />
+                <Icon name="flame" size={14} color={onCourse} />
                 <Text style={{
                   fontSize: 12,
                   fontFamily: "Nunito_800ExtraBold",
-                  color: "#FFFFFF",
+                  color: onCourse,
                   letterSpacing: 0.4,
                 }}>
                   KEEP GOING
@@ -730,10 +760,10 @@ export default function TreeScreen() {
                 shadowColor: course.color, shadowOffset: { width: 0, height: 6 },
                 shadowOpacity: 0.35, shadowRadius: 10, elevation: 5,
               }}>
-                <Icon name="rocket-outline" size={14} color={colors.primaryForeground} />
+                <Icon name="rocket-outline" size={14} color={onCourse} />
                 <Text style={{
                   fontSize: 11, fontFamily: "Nunito_800ExtraBold",
-                  color: colors.primaryForeground, letterSpacing: 1.4,
+                  color: onCourse, letterSpacing: 1.4,
                 }}>
                   START
                 </Text>
