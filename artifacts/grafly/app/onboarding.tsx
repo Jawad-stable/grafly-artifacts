@@ -854,7 +854,12 @@ export default function OnboardingScreen() {
               )}
 
               {q.type === "true_false" && (
-                <View style={{ flexDirection: "row", gap: 12, width: "100%", alignSelf: "stretch" }}>
+                <View style={{
+                  flexDirection: "row",
+                  gap: 8,
+                  marginHorizontal: -24,
+                  alignSelf: "stretch",
+                }}>
                   {[true, false].map((val) => {
                     const isCorrectAnswer = showFeedback && val === q.correctBool;
                     const isWrongPick = showFeedback && answerSelected === val && val !== q.correctBool;
