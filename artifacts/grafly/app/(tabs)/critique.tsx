@@ -46,16 +46,18 @@ function AiBot({ size, spinning = false }: { size: number; spinning?: boolean })
   const rotation = useSharedValue(0);
 
   useEffect(() => {
+    cancelAnimation(rotation);
     if (spinning) {
+      // Reset to 0 on the UI thread, then start a continuous repeating
+      // rotation. Linear easing so the spin is even and fan-like.
       rotation.value = 0;
       rotation.value = withRepeat(
-        // Linear easing so the spin is even and fan-like, not bouncy.
         withTiming(360, { duration: 900, easing: Easing.linear }),
         -1,
         false,
       );
     } else {
-      cancelAnimation(rotation);
+      // Ease back to the rest position when the bot stops thinking.
       rotation.value = withTiming(0, { duration: 220, easing: SMOOTH });
     }
     return () => {
@@ -67,12 +69,22 @@ function AiBot({ size, spinning = false }: { size: number; spinning?: boolean })
     transform: [{ rotate: `${rotation.value}deg` }],
   }));
 
+  // Wrap the Image in an Animated.View — Animated.View reliably honours
+  // transform styles on every platform (including web), whereas
+  // Animated.Image can drop transforms on some renderers.
   return (
-    <Animated.Image
-      source={AI_BOT}
-      resizeMode="contain"
-      style={[{ width: size, height: size }, animStyle]}
-    />
+    <Animated.View
+      style={[
+        { width: size, height: size, alignItems: "center", justifyContent: "center" },
+        animStyle,
+      ]}
+    >
+      <Image
+        source={AI_BOT}
+        resizeMode="contain"
+        style={{ width: size, height: size }}
+      />
+    </Animated.View>
   );
 }
 
