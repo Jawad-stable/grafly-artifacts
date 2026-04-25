@@ -2,7 +2,8 @@
 // - Body text on backgrounds: >= 4.5:1
 // - Large/UI text on backgrounds: >= 3:1
 // - Foreground-on-fill pairs (e.g. primaryForeground on primary): >= 4.5:1
-// When pairing brand tints with text dynamically, use getContrastOn() from constants/contrast.
+// When pairing brand tints with text dynamically, use onBrand() from constants/contrast
+// (white on blue/pink, navy on yellow). Use getContrastOn() for arbitrary colors needing WCAG.
 const colors = {
   dark: {
     text: "#DEE0ED",
@@ -20,7 +21,7 @@ const colors = {
     accent: "#E3ED43",
     accentForeground: "#21263F",
     pink: "#FF7BD0",
-    pinkForeground: "#21263F",
+    pinkForeground: "#FFFFFF",
     destructive: "#DC2A3A",
     destructiveForeground: "#FFFFFF",
     border: "#3A4068",
@@ -44,7 +45,7 @@ const colors = {
     accent: "#E3ED43",
     accentForeground: "#21263F",
     pink: "#FF7BD0",
-    pinkForeground: "#21263F",
+    pinkForeground: "#FFFFFF",
     destructive: "#DC2A3A",
     destructiveForeground: "#FFFFFF",
     border: "#DDE1EE",

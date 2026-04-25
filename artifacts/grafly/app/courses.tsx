@@ -14,6 +14,7 @@ import { useGame } from "@/context/GameContext";
 import { COURSES } from "@/constants/lessons";
 import { GraflyMascot } from "@/components/GraflyMascot";
 import { PressScale } from "@/components/PressScale";
+import { onBrand } from "@/constants/contrast";
 
 export default function CoursesScreen() {
   const colors = useColors();
@@ -77,6 +78,7 @@ export default function CoursesScreen() {
           const progress = totalLessons > 0 ? Math.round((completedCount / totalLessons) * 100) : 0;
           const mascotStates = ["think", "celebrate", "idle", "correct", "oops"] as const;
           const mascotState = mascotStates[index % mascotStates.length];
+          const onCard = onBrand(course.color);
 
           return (
             <Animated.View entering={FadeIn.delay(80 + index * 60)}>
@@ -97,10 +99,10 @@ export default function CoursesScreen() {
                 <View style={{ flex: 1, flexDirection: "row" }}>
                   <View style={{ flex: 1, paddingHorizontal: 18, paddingTop: 16, paddingBottom: 12 }}>
                     <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
-                      <Icon name={course.icon as any} size={12} color={colors.primaryForeground + "DD"} />
+                      <Icon name={course.icon as any} size={12} color={onCard + "DD"} />
                       <Text style={{
                         fontSize: 10, fontFamily: "Nunito_800ExtraBold",
-                        color: colors.primaryForeground + "DD", letterSpacing: 1.2,
+                        color: onCard + "DD", letterSpacing: 1.2,
                       }}>
                         COURSE
                       </Text>
@@ -110,7 +112,7 @@ export default function CoursesScreen() {
                       numberOfLines={2}
                       style={{
                         fontSize: 24, fontFamily: "Nunito_800ExtraBold",
-                        color: colors.primaryForeground, lineHeight: 28, letterSpacing: -0.5,
+                        color: onCard, lineHeight: 28, letterSpacing: -0.5,
                         marginTop: 8,
                       }}
                     >
@@ -120,7 +122,7 @@ export default function CoursesScreen() {
                       numberOfLines={3}
                       style={{
                         fontSize: 12, fontFamily: "Nunito_600SemiBold",
-                        color: colors.primaryForeground + "CC", marginTop: 6, lineHeight: 17,
+                        color: onCard + "CC", marginTop: 6, lineHeight: 17,
                       }}
                     >
                       {course.description}
@@ -144,13 +146,13 @@ export default function CoursesScreen() {
 
                 <View style={{
                   paddingHorizontal: 18, paddingVertical: 12,
-                  backgroundColor: colors.accentForeground + "22",
+                  backgroundColor: onCard + "22",
                   flexDirection: "row", alignItems: "center", justifyContent: "space-between",
                 }}>
-                  <Text style={{ fontSize: 11, fontFamily: "Nunito_800ExtraBold", color: colors.primaryForeground }}>
+                  <Text style={{ fontSize: 11, fontFamily: "Nunito_800ExtraBold", color: onCard }}>
                     {completedCount}/{totalLessons} lessons
                   </Text>
-                  <Text style={{ fontSize: 11, fontFamily: "Nunito_800ExtraBold", color: colors.primaryForeground }}>
+                  <Text style={{ fontSize: 11, fontFamily: "Nunito_800ExtraBold", color: onCard }}>
                     {progress}%
                   </Text>
                 </View>

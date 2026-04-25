@@ -17,7 +17,7 @@ import { useColors } from "@/hooks/useColors";
 import { useGame } from "@/context/GameContext";
 import { COURSES, type SkillNode, type Course } from "@/constants/lessons";
 import { PressScale } from "@/components/PressScale";
-import { getContrastOn } from "@/constants/contrast";
+import { onBrand } from "@/constants/contrast";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 const NODE_SIZE = 68;
@@ -297,10 +297,10 @@ function NodeItem({
           }}
         >
           {isCompleted
-            ? <Icon name="checkmark" size={30} color={getContrastOn(fillColor)} />
+            ? <Icon name="checkmark" size={30} color={onBrand(fillColor)} />
             : isLocked
             ? <Icon name="lock-closed" size={22} color={colors.mutedForeground} />
-            : <Icon name={node.icon as any} size={28} color={getContrastOn(fillColor)} />
+            : <Icon name={node.icon as any} size={28} color={onBrand(fillColor)} />
           }
         </PressScale>
       </View>
@@ -508,7 +508,7 @@ export default function TreeScreen() {
   const completedInCourse = allLessonIdsInCourse.filter((id) => state.completedLessons.includes(id)).length;
   const totalInCourse = allLessonIdsInCourse.length;
   const courseProgress = totalInCourse > 0 ? Math.round((completedInCourse / totalInCourse) * 100) : 0;
-  const onCourse = getContrastOn(course.color);
+  const onCourse = onBrand(course.color);
 
   function isNodeCompleted(node: SkillNode): boolean {
     return node.lessons.every((l) => state.completedLessons.includes(l.id));

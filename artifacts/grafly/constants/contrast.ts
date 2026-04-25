@@ -31,3 +31,19 @@ export function getContrastOn(
 export function meetsAA(fg: string, bg: string, large = false): boolean {
   return contrastRatio(fg, bg) >= (large ? 3 : 4.5);
 }
+
+/**
+ * Brand-color foreground rule. Uses a luminance heuristic so that:
+ *   - Blue and pink brand fills get white text
+ *   - Yellow brand fill gets dark navy text
+ * The threshold of 0.55 was chosen so the project palette
+ * (#00A4FA, #FF7BD0, #E3ED43) lands on the user-preferred side.
+ */
+export function onBrand(
+  hex: string,
+  options?: { dark?: string; light?: string },
+): string {
+  const dark = options?.dark ?? "#21263F";
+  const light = options?.light ?? "#FFFFFF";
+  return relLuminance(hex) > 0.55 ? dark : light;
+}
