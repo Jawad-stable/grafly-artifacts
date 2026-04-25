@@ -12,7 +12,7 @@ import {
   Pressable,
 } from "react-native";
 import { KeyboardAvoidingView } from "react-native-keyboard-controller";
-import Animated, { FadeIn, FadeInDown, FadeInUp } from "react-native-reanimated";
+import Animated, { FadeIn, FadeInDown, FadeInUp, Easing } from "react-native-reanimated";
 import { Icon } from "@/components/Icon";
 import { router } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -179,7 +179,7 @@ export default function CritiqueScreen() {
       >
         {/* Editorial header */}
         <Animated.View
-          entering={FadeInDown.duration(420).springify().damping(18)}
+          entering={FadeInDown.duration(520).easing(Easing.out(Easing.cubic))}
           style={{ paddingTop: paddingTop + 12, paddingHorizontal: 24, paddingBottom: 14 }}
         >
           <View style={{ flexDirection: "row", alignItems: "flex-start", justifyContent: "space-between" }}>

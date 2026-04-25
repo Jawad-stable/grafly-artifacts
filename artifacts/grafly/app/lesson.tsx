@@ -10,7 +10,6 @@ import {
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
-  withSpring,
   withSequence,
   withTiming,
   FadeIn,

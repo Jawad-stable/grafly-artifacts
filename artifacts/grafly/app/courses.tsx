@@ -5,7 +5,7 @@ import {
   FlatList,
   Platform,
 } from "react-native";
-import Animated, { FadeIn, FadeInDown } from "react-native-reanimated";
+import Animated, { FadeIn, FadeInDown, Easing } from "react-native-reanimated";
 import { Icon } from "@/components/Icon";
 import { router } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -31,7 +31,7 @@ export default function CoursesScreen() {
   return (
     <View style={{ flex: 1, backgroundColor: colors.background }}>
       <Animated.View
-        entering={FadeInDown.duration(420).springify().damping(18)}
+        entering={FadeInDown.duration(520).easing(Easing.out(Easing.cubic))}
         style={{
           paddingTop: paddingTop + 12,
           paddingHorizontal: 24,

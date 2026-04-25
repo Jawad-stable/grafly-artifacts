@@ -10,7 +10,7 @@ import {
   ScrollView,
   Alert,
 } from "react-native";
-import Animated, { FadeIn, FadeInDown } from "react-native-reanimated";
+import Animated, { FadeIn, FadeInDown, Easing } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Icon } from "@/components/Icon";
 import { router } from "expo-router";
@@ -134,7 +134,7 @@ export default function AuthScreen() {
           )}
 
           <Animated.View
-            entering={FadeInDown.duration(460).springify().damping(18)}
+            entering={FadeInDown.duration(560).easing(Easing.out(Easing.cubic))}
             style={{ marginBottom: 36 }}
           >
             <View style={{ alignItems: "flex-start", marginBottom: 18 }}>
@@ -155,7 +155,7 @@ export default function AuthScreen() {
             </Text>
           </Animated.View>
 
-          <Animated.View entering={FadeInDown.delay(120).duration(460).springify().damping(18)} style={{ gap: 14 }}>
+          <Animated.View entering={FadeInDown.delay(120).duration(560).easing(Easing.out(Easing.cubic))} style={{ gap: 14 }}>
             <View>
               <Text style={{ fontSize: 12, fontFamily: "Nunito_800ExtraBold", color: colors.mutedForeground, marginBottom: 8, letterSpacing: 1.2 }}>
                 EMAIL

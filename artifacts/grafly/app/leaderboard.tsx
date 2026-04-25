@@ -9,6 +9,7 @@ import {
 import Animated, {
   FadeIn,
   FadeInDown,
+  Easing,
 } from "react-native-reanimated";
 import { Icon } from "@/components/Icon";
 import { router } from "expo-router";
@@ -76,7 +77,7 @@ export default function LeaderboardScreen() {
     <View style={{ flex: 1, backgroundColor: colors.background }}>
       {/* Editorial header */}
       <Animated.View
-        entering={FadeInDown.duration(420).springify().damping(18)}
+        entering={FadeInDown.duration(520).easing(Easing.out(Easing.cubic))}
         style={{
           paddingTop: paddingTop + 12,
           paddingHorizontal: 24,
@@ -267,7 +268,7 @@ export default function LeaderboardScreen() {
 
           return (
             <Animated.View
-              entering={FadeInDown.delay(index * 35).duration(360).springify().damping(18)}
+              entering={FadeInDown.delay(index * 35).duration(420).easing(Easing.out(Easing.cubic))}
               style={{
                 marginHorizontal: 24,
                 marginBottom: 10,
