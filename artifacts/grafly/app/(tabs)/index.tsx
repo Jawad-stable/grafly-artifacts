@@ -185,7 +185,10 @@ export default function HomeScreen() {
   if (!state.onboardingComplete) return null;
 
   const SCREEN_W = Dimensions.get("window").width;
-  const cardW = Math.min(SCREEN_W - 80, 300);
+  // Wider card for a balanced, near-square composition that matches the
+  // reference. Side gutters reduced from 80 → 56 so the card breathes more.
+  const cardW = Math.min(SCREEN_W - 56, 360);
+  const cardH = 340;
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.background }}>
@@ -358,7 +361,7 @@ export default function HomeScreen() {
                 <PressScale
                   onPress={() => router.push({ pathname: "/(tabs)/tree", params: { courseId: course.id } })}
                   style={{
-                    width: cardW, height: 320, borderRadius: 24,
+                    width: cardW, height: cardH, borderRadius: 26,
                     backgroundColor: baseColor,
                     overflow: "hidden",
                     shadowColor: baseColor,
@@ -441,10 +444,10 @@ export default function HomeScreen() {
                     pointerEvents="none"
                     style={{
                       position: "absolute",
-                      top: 24, right: 22,
-                      width: 22,
+                      top: 26, right: 24,
+                      width: 26,
                       flexDirection: "row", flexWrap: "wrap",
-                      gap: 5,
+                      gap: 6,
                     }}
                   >
                     {Array.from({ length: 9 }).map((_, i) => (
@@ -460,13 +463,14 @@ export default function HomeScreen() {
 
                   {/* Layer 5: mascot with Figma-style selection ring,
                       yellow square corner handles, white midpoint circles,
-                      and a soft glow halo behind. */}
+                      and a soft glow halo behind. Larger zone (152) so the
+                      selection box is the visual anchor of the right half. */}
                   <View
                     pointerEvents="none"
                     style={{
                       position: "absolute",
-                      right: -2, bottom: 78,
-                      width: 132, height: 132,
+                      right: 14, bottom: 90,
+                      width: 152, height: 152,
                       alignItems: "center", justifyContent: "center",
                     }}
                   >
@@ -474,7 +478,7 @@ export default function HomeScreen() {
                     <View
                       style={{
                         position: "absolute",
-                        width: 116, height: 116, borderRadius: 58,
+                        width: 132, height: 132, borderRadius: 66,
                         backgroundColor: lightTint,
                         opacity: 0.4,
                       }}
@@ -483,7 +487,7 @@ export default function HomeScreen() {
                     <View
                       style={{
                         position: "absolute",
-                        width: 124, height: 124, borderRadius: 14,
+                        width: 144, height: 144, borderRadius: 16,
                         borderWidth: 1,
                         borderColor: handleStroke,
                         borderStyle: "dashed",
@@ -491,16 +495,16 @@ export default function HomeScreen() {
                     />
                     {/* 4 yellow square corner handles */}
                     {[
-                      { top: -4, left: -4 },
-                      { top: -4, right: -4 },
-                      { bottom: -4, left: -4 },
-                      { bottom: -4, right: -4 },
+                      { top: 0, left: 0 },
+                      { top: 0, right: 0 },
+                      { bottom: 0, left: 0 },
+                      { bottom: 0, right: 0 },
                     ].map((pos, i) => (
                       <View
                         key={`c${i}`}
                         style={{
                           position: "absolute",
-                          width: 8, height: 8,
+                          width: 9, height: 9,
                           backgroundColor: accent,
                           borderWidth: 1,
                           borderColor: textColor,
@@ -513,12 +517,12 @@ export default function HomeScreen() {
                         }}
                       />
                     ))}
-                    {/* 4 white midpoint circles (top, bottom, left, right) */}
+                    {/* 4 midpoint circles (top, bottom, left, right) */}
                     {[
-                      { top: -4, left: 58 },
-                      { bottom: -4, left: 58 },
-                      { top: 58, left: -4 },
-                      { top: 58, right: -4 },
+                      { top: 0, left: 72 },
+                      { bottom: 0, left: 72 },
+                      { top: 72, left: 0 },
+                      { top: 72, right: 0 },
                     ].map((pos, i) => (
                       <View
                         key={`m${i}`}
@@ -533,26 +537,26 @@ export default function HomeScreen() {
                       />
                     ))}
                     {/* The mascot itself */}
-                    <GraflyMascot state={mascotState} size={108} />
+                    <GraflyMascot state={mascotState} size={120} />
                   </View>
 
-                  {/* Layer 5b: small UI sprinkles around the mascot —
-                      mini card mockup + accent blob, lifted from the reference */}
+                  {/* Layer 5b: small UI sprinkles INSIDE the selection box —
+                      mini card mockup + accent blob beside the mascot */}
                   {/* Mini UI card mockup */}
                   <View
                     pointerEvents="none"
                     style={{
                       position: "absolute",
-                      right: 110, bottom: 116,
-                      width: 30, height: 24, borderRadius: 5,
+                      right: 130, bottom: 132,
+                      width: 32, height: 26, borderRadius: 6,
                       backgroundColor: textColor + "1F",
                       borderWidth: 1,
                       borderColor: textColor + "40",
-                      padding: 4,
+                      padding: 5,
                     }}
                   >
                     <View style={{ width: 14, height: 2, borderRadius: 1, backgroundColor: textColor + "66" }} />
-                    <View style={{ width: 9, height: 2, borderRadius: 1, backgroundColor: textColor + "44", marginTop: 2 }} />
+                    <View style={{ width: 9, height: 2, borderRadius: 1, backgroundColor: textColor + "44", marginTop: 3 }} />
                     <View
                       style={{
                         position: "absolute", bottom: 4, right: 4,
@@ -567,10 +571,10 @@ export default function HomeScreen() {
                     pointerEvents="none"
                     style={{
                       position: "absolute",
-                      right: 96, bottom: 98,
-                      width: 24, height: 18, borderRadius: 12,
+                      right: 118, bottom: 112,
+                      width: 26, height: 20, borderRadius: 13,
                       backgroundColor: accent,
-                      opacity: 0.85,
+                      opacity: 0.9,
                       transform: [{ rotate: "-12deg" }],
                       shadowColor: accent,
                       shadowOffset: { width: 0, height: 0 },
@@ -584,8 +588,8 @@ export default function HomeScreen() {
                   <Text
                     style={{
                       position: "absolute",
-                      right: 28, top: 78,
-                      fontSize: 13,
+                      right: 36, top: 90,
+                      fontSize: 14,
                       fontFamily: "Nunito_800ExtraBold",
                       color: textMuted,
                     }}
@@ -594,22 +598,22 @@ export default function HomeScreen() {
                   </Text>
 
                   {/* Layer 6: top text block — pill eyebrow, big 2-line title,
-                      yellow underline accent, refined subtitle */}
-                  <View style={{ paddingHorizontal: 22, paddingTop: 22 }}>
+                      accent underline, refined subtitle */}
+                  <View style={{ paddingHorizontal: 24, paddingTop: 24 }}>
                     {/* Eyebrow as a pill */}
                     <View
                       style={{
                         alignSelf: "flex-start",
                         flexDirection: "row",
                         alignItems: "center",
-                        gap: 7,
-                        paddingHorizontal: 11,
-                        paddingVertical: 5,
+                        gap: 8,
+                        paddingHorizontal: 12,
+                        paddingVertical: 6,
                         borderRadius: 100,
                         backgroundColor: pillBg,
                       }}
                     >
-                      <Icon name="grid-outline" size={11} color={textColor} />
+                      <Icon name="grid-outline" size={12} color={textColor} />
                       <Text
                         style={{
                           fontSize: 10,
@@ -628,25 +632,25 @@ export default function HomeScreen() {
                       style={{
                         fontSize: 30,
                         lineHeight: 34,
-                        marginTop: 14,
+                        marginTop: 16,
                         fontFamily: "Nunito_800ExtraBold",
                         color: textColor,
                         letterSpacing: -0.9,
                         textShadowColor: "#00000026",
                         textShadowOffset: { width: 0, height: 1 },
                         textShadowRadius: 4,
-                        maxWidth: "70%",
+                        maxWidth: "62%",
                       }}
                     >
                       {course.title}
                     </Text>
 
-                    {/* Yellow underline accent */}
+                    {/* Accent underline */}
                     <View
                       style={{
-                        width: 38,
+                        width: 44,
                         height: 3,
-                        marginTop: 7,
+                        marginTop: 10,
                         borderRadius: 2,
                         backgroundColor: accent,
                         shadowColor: accent,
@@ -663,10 +667,10 @@ export default function HomeScreen() {
                       style={{
                         fontSize: 13,
                         lineHeight: 18,
-                        marginTop: 12,
+                        marginTop: 14,
                         fontFamily: "Nunito_600SemiBold",
                         color: textSoft,
-                        maxWidth: "60%",
+                        maxWidth: "58%",
                       }}
                     >
                       {course.description}
