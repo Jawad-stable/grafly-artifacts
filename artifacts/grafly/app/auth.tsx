@@ -149,6 +149,35 @@ export default function AuthScreen() {
         pointerEvents="none"
       />
 
+      {/* Floating close button (pinned to viewport, not the scroll content) */}
+      {canSkip && (
+        <PressScale
+          onPress={() => {
+            if (router.canGoBack()) {
+              router.back();
+            } else {
+              router.replace("/(tabs)");
+            }
+          }}
+          style={{
+            position: "absolute",
+            top: insets.top + 12,
+            right: 16,
+            zIndex: 50,
+            width: 40,
+            height: 40,
+            borderRadius: 20,
+            backgroundColor: colors.card,
+            borderWidth: 1,
+            borderColor: colors.border,
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          <Icon name="close" size={20} color={colors.foreground} />
+        </PressScale>
+      )}
+
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : "height"}
         style={{ flex: 1 }}
@@ -164,28 +193,6 @@ export default function AuthScreen() {
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >
-          {canSkip && (
-            <PressScale
-              onPress={() => router.back()}
-              style={{
-                position: "absolute",
-                top: insets.top + 14,
-                right: 20,
-                zIndex: 10,
-                width: 40,
-                height: 40,
-                borderRadius: 100,
-                backgroundColor: colors.card,
-                borderWidth: 1,
-                borderColor: colors.border,
-                alignItems: "center",
-                justifyContent: "center",
-              }}
-            >
-              <Icon name="close" size={18} color={colors.foreground} />
-            </PressScale>
-          )}
-
           {/* Mascot plate */}
           <Animated.View
             entering={FadeInDown.duration(560).easing(Easing.out(Easing.cubic))}
