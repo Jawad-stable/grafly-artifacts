@@ -15,3 +15,5 @@ export const LOGO = {
   wordmark_white: require("../assets/logo/wordmark_white.png"),
   wordmark_primary: require("../assets/logo/wordmark_primary.png"),
 } as const;
+
+export const AI_BOT = require("../assets/ai/bot.png");

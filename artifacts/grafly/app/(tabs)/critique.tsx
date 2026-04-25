@@ -13,7 +13,17 @@ import {
   Dimensions,
 } from "react-native";
 import { KeyboardAvoidingView } from "react-native-keyboard-controller";
-import Animated, { FadeIn, FadeInDown, FadeInUp, Easing } from "react-native-reanimated";
+import Animated, {
+  FadeIn,
+  FadeInDown,
+  FadeInUp,
+  Easing,
+  useSharedValue,
+  useAnimatedStyle,
+  withRepeat,
+  withTiming,
+  cancelAnimation,
+} from "react-native-reanimated";
 import { Icon } from "@/components/Icon";
 import { router } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -25,10 +35,46 @@ import {
 } from "@/services/aiCritique";
 import { pickRandomLocalDesign, type LocalDesign } from "@/data/localDesigns";
 import { PressScale } from "@/components/PressScale";
-import { GraflyMascot } from "@/components/GraflyMascot";
 import { BOTTOM_BAR_WIDTH } from "@/constants/layout";
+import { AI_BOT } from "@/constants/assets";
 
 const SMOOTH = Easing.out(Easing.cubic);
+
+// AI bot avatar. Renders the blue starfish/fan logo. When `spinning` is true
+// it rotates continuously like a fan, used to signal that the AI is thinking.
+function AiBot({ size, spinning = false }: { size: number; spinning?: boolean }) {
+  const rotation = useSharedValue(0);
+
+  useEffect(() => {
+    if (spinning) {
+      rotation.value = 0;
+      rotation.value = withRepeat(
+        // Linear easing so the spin is even and fan-like, not bouncy.
+        withTiming(360, { duration: 900, easing: Easing.linear }),
+        -1,
+        false,
+      );
+    } else {
+      cancelAnimation(rotation);
+      rotation.value = withTiming(0, { duration: 220, easing: SMOOTH });
+    }
+    return () => {
+      cancelAnimation(rotation);
+    };
+  }, [spinning]);
+
+  const animStyle = useAnimatedStyle(() => ({
+    transform: [{ rotate: `${rotation.value}deg` }],
+  }));
+
+  return (
+    <Animated.Image
+      source={AI_BOT}
+      resizeMode="contain"
+      style={[{ width: size, height: size }, animStyle]}
+    />
+  );
+}
 
 const XP_PER_SESSION = 20;
 const COINS_PER_SESSION = 8;
@@ -444,7 +490,7 @@ export default function CritiqueScreen() {
                   alignItems: "center", justifyContent: "center",
                   overflow: "hidden",
                 }}>
-                  <GraflyMascot state="idle" size={28} />
+                  <AiBot size={22} />
                 </View>
                 <View>
                   <Text style={{
@@ -530,11 +576,11 @@ export default function CritiqueScreen() {
                 borderWidth: 1,
                 borderColor: colors.border,
                 flexDirection: "row",
-                gap: 8,
+                gap: 10,
                 alignItems: "center",
               }}
             >
-              <ActivityIndicator size="small" color={colors.mutedForeground} />
+              <AiBot size={22} spinning />
               <Text style={{ fontSize: 12, fontFamily: "Nunito_600SemiBold", color: colors.mutedForeground }}>
                 Grafly is Graflying
               </Text>
