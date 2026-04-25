@@ -336,15 +336,21 @@ export default function HomeScreen() {
               const darkTint = tintHex(baseColor, -0.28);
               const deepTint = tintHex(baseColor, -0.45);
 
-              // Light cards (yellow) need dark text + dark accent for contrast.
+              // Strict rule: every card uses either NAVY (#21263F) or WHITE
+              // for text + accents based on the card's luminance, so contrast
+              // always lands on the safe side. Yellow cards → navy text.
+              // Blue / pink / dark cards → white text.
+              const NAVY = "#21263F";
               const isLightCard = relLuminance(baseColor) > 0.55;
-              const textColor = isLightCard ? "#1A1A2E" : "#FFFFFF";
-              const textSoft = isLightCard ? "#1A1A2EB0" : "#FFFFFFB8";
-              const textMuted = isLightCard ? "#1A1A2E80" : "#FFFFFFB0";
-              const accent = isLightCard ? "#FF7BD0" : "#FFD84D"; // pink on light, yellow elsewhere
-              const pillBg = isLightCard ? "#1A1A2E1F" : "#FFFFFF26";
-              const lineColor = isLightCard ? "#1A1A2E14" : "#FFFFFF14";
-              const handleStroke = isLightCard ? "#1A1A2E80" : "#FFFFFF80";
+              const textColor = isLightCard ? NAVY : "#FFFFFF";
+              const textSoft = isLightCard ? `${NAVY}B0` : "#FFFFFFB8";
+              const textMuted = isLightCard ? `${NAVY}80` : "#FFFFFFB0";
+              // Accent: keep yellow on dark cards; on yellow cards, use navy
+              // so the underline + handles + progress fill remain readable.
+              const accent = isLightCard ? NAVY : "#FFD84D";
+              const pillBg = isLightCard ? `${NAVY}1F` : "#FFFFFF26";
+              const lineColor = isLightCard ? `${NAVY}14` : "#FFFFFF14";
+              const handleStroke = isLightCard ? `${NAVY}80` : "#FFFFFF80";
 
               const courseLabel = `COURSE ${String(index + 1).padStart(2, "0")}`;
 
