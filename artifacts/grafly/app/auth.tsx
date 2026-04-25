@@ -8,6 +8,7 @@ import {
   ActivityIndicator,
   ScrollView,
   Alert,
+  Pressable,
 } from "react-native";
 import Animated, { FadeInDown, Easing } from "react-native-reanimated";
 import { LinearGradient } from "expo-linear-gradient";
@@ -150,16 +151,23 @@ export default function AuthScreen() {
         pointerEvents="none"
       />
 
-      {/* Floating close button (pinned to viewport, not the scroll content) */}
+      {/* Floating close button (pinned to viewport, not the scroll content).
+          Uses a plain Pressable so the position+size styles live on the actual
+          hit-test box — wrapping in PressScale would put the styles on an inner
+          Animated.View, which on web leaves the Pressable's box at 0x0 and
+          breaks click handling. */}
       {canSkip && (
-        <PressScale
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="Close"
+          hitSlop={12}
           onPress={() => {
             // Always send the user back to the main app — `router.back()` can
-            // silently no-op on web when the navigation stack is shallow, which
-            // would leave the user trapped on this screen.
+            // silently no-op when the navigation stack is shallow, which would
+            // leave the user trapped on this screen.
             router.replace("/(tabs)");
           }}
-          style={{
+          style={({ pressed }) => ({
             position: "absolute",
             top: insets.top + 12,
             right: 16,
@@ -172,10 +180,11 @@ export default function AuthScreen() {
             borderColor: colors.border,
             alignItems: "center",
             justifyContent: "center",
-          }}
+            opacity: pressed ? 0.7 : 1,
+          })}
         >
           <Icon name="close" size={20} color={colors.foreground} />
-        </PressScale>
+        </Pressable>
       )}
 
       <KeyboardAvoidingView
