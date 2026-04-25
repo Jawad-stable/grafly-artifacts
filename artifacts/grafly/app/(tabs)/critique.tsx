@@ -399,11 +399,13 @@ export default function CritiqueScreen() {
               >
                 <View style={{
                   paddingHorizontal: 10, paddingVertical: 5, borderRadius: 100,
-                  backgroundColor: colors.accent + "26",
+                  // Brand blue tint instead of yellow — yellow text fails
+                  // contrast against the near-white card in light mode.
+                  backgroundColor: colors.primary + "1F",
                 }}>
                   <Text style={{
                     fontSize: 11, fontFamily: "Nunito_800ExtraBold",
-                    color: colors.accent, letterSpacing: 1.4,
+                    color: colors.primary, letterSpacing: 1.4,
                   }}>
                     TODAY'S DESIGN
                   </Text>
@@ -479,7 +481,7 @@ export default function CritiqueScreen() {
                     borderTopWidth: 1, borderTopColor: colors.border,
                     flexDirection: "row", alignItems: "center", gap: 8,
                   }}>
-                    <Icon name="flash" size={14} color={colors.accent} />
+                    <Icon name="flash" size={14} color={colors.primary} />
                     <Text style={{
                       fontSize: 12, fontFamily: "Nunito_600SemiBold",
                       color: colors.mutedForeground, flex: 1,
