@@ -155,14 +155,19 @@ export default function TabLayout() {
   const isLight = state.themeMode === "light";
 
   // Responsive sizing with a hard width cap. The bar must never stretch to
-  // screen width: on phones it sits at ~82% of width, on anything wider it
-  // is locked at maxBarWidth and the gutters grow to absorb the extra space.
-  // The screenWidth - 2*minSideGutter clamp guarantees breathing room on the
-  // narrowest devices.
-  const minSideGutter = 20;
+  // screen width and must never touch the left or right edges.
+  // - On phones it sits at ~80% of width.
+  // - On anything wider it is locked at maxBarWidth, and the gutters grow to
+  //   absorb the extra space, keeping it perfectly centered.
+  // - minSideGutter guarantees AT LEAST this many pixels of breathing room
+  //   on every screen size, no matter how narrow.
+  // Note: in React Native, an absolutely positioned tab bar centers most
+  // reliably via equal `left` and `right` insets; this is mathematically
+  // identical to `alignSelf: 'center'` with a fixed width.
+  const minSideGutter = 24;
   const maxBarWidth = 380;
   const idealWidth = Math.min(
-    screenWidth * 0.82,
+    screenWidth * 0.8,
     maxBarWidth,
     screenWidth - minSideGutter * 2,
   );
