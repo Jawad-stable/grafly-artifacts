@@ -129,7 +129,9 @@ export default function CritiqueScreen() {
   const tabBarBottomOffset = 12;
   const composerLift = tabBarHeight + tabBarBottomOffset + 12;
 
-  const heroCardImageHeight = Math.min(Math.round(SCREEN_H * 0.34), 340);
+  // Hero image: taller, capped higher, so the today's-design card feels
+  // like a true featured slab rather than a thumbnail with a body block.
+  const heroCardImageHeight = Math.min(Math.round(SCREEN_H * 0.44), 440);
   const sessionsLeft = Math.max(0, maxSessions - sessionsDone);
 
   function loadNewDesign() {
@@ -266,7 +268,7 @@ export default function CritiqueScreen() {
         {design && chatStarted && (
           <Animated.View
             entering={FadeInDown.duration(420).easing(SMOOTH)}
-            style={{ paddingHorizontal: 20, paddingTop: 4, paddingBottom: 8 }}
+            style={{ paddingHorizontal: 14, paddingTop: 4, paddingBottom: 8 }}
           >
             <Pressable
               onPress={() => setImageOpen(true)}
@@ -319,7 +321,7 @@ export default function CritiqueScreen() {
         <ScrollView
           ref={scrollRef}
           style={{ flex: 1 }}
-          contentContainerStyle={{ paddingHorizontal: 20, paddingTop: 14, paddingBottom: 12, gap: 10 }}
+          contentContainerStyle={{ paddingHorizontal: 14, paddingTop: 14, paddingBottom: 12, gap: 10 }}
           keyboardShouldPersistTaps="handled"
         >
           {loadingDesign && (
@@ -396,23 +398,25 @@ export default function CritiqueScreen() {
                     </View>
                   </View>
                 </Pressable>
-                {/* Card body */}
-                <View style={{ padding: 18 }}>
+                {/* Card body — slightly more breathing room and a larger
+                    title so the body holds its own next to the bigger
+                    hero image above. */}
+                <View style={{ paddingHorizontal: 22, paddingTop: 20, paddingBottom: 18 }}>
                   <Text style={{
-                    fontSize: 20, fontFamily: "Nunito_800ExtraBold",
-                    color: colors.foreground, letterSpacing: -0.5, lineHeight: 24,
+                    fontSize: 22, fontFamily: "Nunito_800ExtraBold",
+                    color: colors.foreground, letterSpacing: -0.6, lineHeight: 26,
                   }}>
                     {design.title}
                   </Text>
                   <Text style={{
-                    fontSize: 13, fontFamily: "Nunito_600SemiBold",
-                    color: colors.mutedForeground, marginTop: 6, lineHeight: 19,
+                    fontSize: 14, fontFamily: "Nunito_600SemiBold",
+                    color: colors.mutedForeground, marginTop: 8, lineHeight: 20,
                   }}>
                     {design.description}
                   </Text>
                   {/* Hint footer */}
                   <View style={{
-                    marginTop: 14, paddingTop: 14,
+                    marginTop: 16, paddingTop: 14,
                     borderTopWidth: 1, borderTopColor: colors.border,
                     flexDirection: "row", alignItems: "center", gap: 8,
                   }}>
