@@ -450,7 +450,7 @@ export default function HomeScreen() {
           </View>
           <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
             <LinearGradient
-              colors={["#5CC4FC", "#004C7A"]}
+              colors={["#5CC4FC", "#0078BB"]}
               start={{ x: 0, y: 0 }}
               end={{ x: 0, y: 1 }}
               style={{
@@ -465,7 +465,7 @@ export default function HomeScreen() {
               </Text>
             </LinearGradient>
             <LinearGradient
-              colors={["#5CC4FC", "#004C7A"]}
+              colors={["#5CC4FC", "#0078BB"]}
               start={{ x: 0, y: 0 }}
               end={{ x: 0, y: 1 }}
               style={{
