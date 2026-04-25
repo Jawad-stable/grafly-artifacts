@@ -768,22 +768,20 @@ export default function LessonScreen() {
               entering={FadeIn}
               style={{
                 marginTop: 20, borderRadius: colors.radius, padding: 18,
-                backgroundColor: isCorrect ? colors.success + "18" : colors.destructive + "18",
-                borderLeftWidth: 4,
-                borderLeftColor: isCorrect ? colors.success : colors.destructive,
+                backgroundColor: (isCorrect ? colors.success : colors.destructive) + "E6",
               }}
             >
               <View style={{ flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 6 }}>
                 <Icon
                   name={isCorrect ? "checkmark-circle" : "close-circle"}
                   size={18}
-                  color={isCorrect ? colors.success : colors.destructive}
+                  color={colors.destructiveForeground}
                 />
-                <Text style={{ fontSize: 14, fontFamily: "Nunito_800ExtraBold", color: isCorrect ? colors.success : colors.destructive }}>
+                <Text style={{ fontSize: 14, fontFamily: "Nunito_800ExtraBold", color: colors.destructiveForeground }}>
                   {isCorrect ? "Correct!" : "Not quite"}
                 </Text>
               </View>
-              <Text style={{ fontSize: 14, fontFamily: "Nunito_600SemiBold", color: colors.mutedForeground, lineHeight: 20 }}>
+              <Text style={{ fontSize: 14, fontFamily: "Nunito_600SemiBold", color: colors.destructiveForeground, lineHeight: 20 }}>
                 {currentQ.explanation}
               </Text>
             </Animated.View>
