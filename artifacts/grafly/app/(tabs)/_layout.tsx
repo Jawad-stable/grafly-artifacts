@@ -141,14 +141,15 @@ export default function TabLayout() {
   const { state } = useGame();
   const isLight = state.themeMode === "light";
 
-  // Responsive sizing: ~88% of screen width on phones, hard-capped at
-  // maxBarWidth so the bar never stretches on tablets or wide previews.
-  // On wide screens the gutter naturally grows to absorb the extra space,
-  // keeping the bar perfectly centered with breathing room on both sides.
+  // Responsive sizing with a hard width cap. The bar must never stretch to
+  // screen width: on phones it sits at ~82% of width, on anything wider it
+  // is locked at maxBarWidth and the gutters grow to absorb the extra space.
+  // The screenWidth - 2*minSideGutter clamp guarantees breathing room on the
+  // narrowest devices.
   const minSideGutter = 20;
-  const maxBarWidth = 460;
+  const maxBarWidth = 380;
   const idealWidth = Math.min(
-    screenWidth * 0.88,
+    screenWidth * 0.82,
     maxBarWidth,
     screenWidth - minSideGutter * 2,
   );
