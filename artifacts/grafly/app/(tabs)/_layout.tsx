@@ -5,6 +5,7 @@ import {
   Platform,
   Pressable,
   StyleSheet,
+  useWindowDimensions,
   View,
 } from "react-native";
 import Animated, {
@@ -136,12 +137,27 @@ function TabIcon({
 export default function TabLayout() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
+  const { width: screenWidth } = useWindowDimensions();
   const { state } = useGame();
   const isLight = state.themeMode === "light";
 
+  // Responsive sizing: ~88% of screen width on phones, hard-capped at
+  // maxBarWidth so the bar never stretches on tablets or wide previews.
+  // On wide screens the gutter naturally grows to absorb the extra space,
+  // keeping the bar perfectly centered with breathing room on both sides.
+  const minSideGutter = 20;
+  const maxBarWidth = 460;
+  const idealWidth = Math.min(
+    screenWidth * 0.88,
+    maxBarWidth,
+    screenWidth - minSideGutter * 2,
+  );
+  const sideGutter = (screenWidth - idealWidth) / 2;
+
   const tabBarHeight = 64;
-  const tabBottom = Math.max(insets.bottom, 16);
-  const pillRadius = 32;
+  // Lift the bar off the bottom edge for a true floating feel.
+  const tabBottom = Math.max(insets.bottom + 8, 22);
+  const pillRadius = 34;
 
   return (
     <Tabs
@@ -154,8 +170,9 @@ export default function TabLayout() {
         tabBarStyle: {
           position: "absolute",
           bottom: tabBottom,
-          left: 20,
-          right: 20,
+          // Equal left/right offsets keep the bar perfectly centered.
+          left: sideGutter,
+          right: sideGutter,
           borderRadius: pillRadius,
           height: tabBarHeight,
           paddingTop: 0,
@@ -163,11 +180,11 @@ export default function TabLayout() {
           paddingHorizontal: 14,
           backgroundColor: "transparent",
           borderTopWidth: 0,
-          elevation: 16,
+          elevation: 18,
           shadowColor: "#000",
-          shadowOffset: { width: 0, height: 14 },
-          shadowOpacity: isLight ? 0.12 : 0.45,
-          shadowRadius: 28,
+          shadowOffset: { width: 0, height: 16 },
+          shadowOpacity: isLight ? 0.14 : 0.5,
+          shadowRadius: 32,
         },
         tabBarBackground: () => (
           <View style={StyleSheet.absoluteFill}>
