@@ -474,7 +474,7 @@ export default function HomeScreen() {
                 paddingHorizontal: 12, paddingVertical: 6,
               }}
             >
-              <Icon name="ellipse" size={11} color="#FFFFFF" weight="fill" />
+              <Icon name="coin" size={14} color="#FFFFFF" weight="fill" />
               <Text style={{ fontSize: 13, fontFamily: "Nunito_800ExtraBold", color: "#FFFFFF" }}>
                 {state.coins}
               </Text>

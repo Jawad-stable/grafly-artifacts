@@ -19,6 +19,7 @@ import {
   CircleIcon as Circle,
   CircleHalf,
   Clock,
+  Coin,
   CloudArrowUp,
   Compass,
   DeviceMobile,
@@ -82,6 +83,7 @@ export type IconName =
   | "chevron-forward"
   | "chevron-up"
   | "close"
+  | "coin"
   | "cloud-upload-outline"
   | "color-filter"
   | "color-filter-outline"
@@ -158,6 +160,7 @@ const MAP: Record<IconName, PhosphorComp> = {
   "chevron-up": CaretUp,
   "close": X,
   "close-circle": XCircle,
+  "coin": Coin,
   "cloud-upload": CloudArrowUp,
   "cloud-upload-outline": CloudArrowUp,
   "color-filter": Palette,
