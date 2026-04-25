@@ -172,13 +172,15 @@ export default function TabLayout() {
         tabBarStyle: {
           position: "absolute",
           bottom: tabBottom,
-          // Single shared wrapper width: BOTTOM_BAR_WIDTH from
-          // constants/layout.ts. The composer wrapper above uses the same
-          // constant, so the input pill and the nav line up flush left
-          // and right. NO left/right, NO maxWidth, NO marginHorizontal,
-          // NO transforms — width is the only horizontal sizing rule.
+          // Centered horizontally on the screen. `alignSelf` does not
+          // apply to absolutely positioned elements, so we pin both
+          // edges and use `marginHorizontal: "auto"` with a fixed width
+          // (BOTTOM_BAR_WIDTH from constants/layout.ts) to center it.
+          // The composer pill uses the same constant so they line up.
           width: BOTTOM_BAR_WIDTH,
-          alignSelf: "center",
+          left: 0,
+          right: 0,
+          marginHorizontal: "auto",
           flexDirection: "row",
           borderRadius: pillRadius,
           height: tabBarHeight,
