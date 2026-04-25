@@ -153,11 +153,10 @@ export default function AuthScreen() {
       {canSkip && (
         <PressScale
           onPress={() => {
-            if (router.canGoBack()) {
-              router.back();
-            } else {
-              router.replace("/(tabs)");
-            }
+            // Always send the user back to the main app — `router.back()` can
+            // silently no-op on web when the navigation stack is shallow, which
+            // would leave the user trapped on this screen.
+            router.replace("/(tabs)");
           }}
           style={{
             position: "absolute",
