@@ -1,102 +1,66 @@
-# Workspace
+# Overview
 
-## Overview
+Grafly is a gamified design education mobile app built with Expo (React Native) within a pnpm monorepo. Its primary purpose is to provide an engaging learning experience through interactive lessons, AI critique, and a structured skill tree progression. The project aims to deliver a high-quality, accessible, and visually appealing educational platform for design principles.
 
-pnpm workspace monorepo using TypeScript. Contains the **Grafly** gamified design education mobile app (Expo) and an API server.
+# User Preferences
 
-## Stack
+- All UI scale/slide animations should use `withTiming` with `Easing.out(Easing.cubic)` – never `withSpring` (which can overshoot), except for the mascot's bounciness which is intentional.
+- No hyphens or dashes in UI strings.
+- Coins should be shown on home/shop/lesson results only.
+- Hearts should be shown on the lesson screen only.
+- Streak should be shown on the home screen only.
+- The mascot should only be displayed via the `GraflyMascot` component.
+- The default theme is light (`themeMode: "light"` in GameContext).
+- I prefer an editorial design aesthetic, reminiscent of magazines and collages.
+- All primary CTAs across the app should use `PressScale.tsx` for consistent press feedback.
+- I want iterative development; ask before making major changes.
 
-- **Monorepo tool**: pnpm workspaces
-- **Node.js version**: 24
-- **Package manager**: pnpm
-- **TypeScript version**: 5.9
-- **API framework**: Express 5
+# System Architecture
 
-## Artifacts
+## Monorepo Structure
+The project is a pnpm workspace monorepo using TypeScript, comprising the Grafly mobile app (`artifacts/grafly`) and an API server (`artifacts/api-server`).
 
-### Grafly Mobile App (`artifacts/grafly`)
-- **Framework**: Expo (React Native), expo-router v6
-- **State**: React Context + AsyncStorage (`context/GameContext.tsx`)
-- **Font**: Teshrin (custom TTFs in `assets/fonts/`) — Regular, Medium, Bold. The legacy family names `Nunito_600SemiBold` and `Nunito_800ExtraBold` are aliased in `app/_layout.tsx`'s `useFonts` to Teshrin Medium / Bold so existing `fontFamily: "Nunito_..."` references render Teshrin without per-file edits. `@expo-google-fonts/nunito` is no longer imported.
-- **Theme**: Dark-first (`constants/colors.ts`) — background #21263F, primary #0078BB, accent #E3ED43, pink #FF7BD0, destructive #DC2A3A. All theme tokens are tuned for WCAG 2.1 AA (>= 4.5:1 body text, >= 3:1 large/UI text, >= 4.5:1 foreground-on-fill). Never hardcode hex values inline; use tokens from this file.
-- **Contrast helper**: `constants/contrast.ts` exports `relLuminance(hex)`, `contrastRatio(a,b)`, `getContrastOn(hex, {dark?, light?})` (returns navy or white based on which has higher contrast on the given fill), and `meetsAA(fg, bg, large=false)`. Use `getContrastOn()` whenever rendering text/icons on top of a dynamic colored fill (course tiles, badges, START pills, active tree nodes). Imported into `tree.tsx` and available app-wide.
-- **Bottom nav** (`app/(tabs)/_layout.tsx`): premium floating pill (height 64, borderRadius 32, 20px side margin, 14px inner padding) over a `BlurView` + `colors.card`@F2 fill on dark / `colors.foreground`@F2 fill on light, soft 28px-radius black shadow for elevation, 1px hairline border, and a 1px top-edge inner-highlight stripe for depth. Five icon-only tabs evenly spaced, no labels. Active state animates on focus (`withTiming` 260ms, `Easing.out(Easing.cubic)`): icon scales to 1.12, fills (Phosphor `weight="fill"`), recolors to `colors.primary`, gains a soft primary-tinted halo (44x44 circle at 15% alpha + matching shadow) behind it, and shows a 5x5 primary dot indicator beneath. Inactive icons render at `#FFFFFF99` (dark) or `colors.primaryForeground`@AA (light). Press feedback uses `withSequence(withTiming(0.9, 110ms), withTiming(1.04, 160ms), withTiming(1, 140ms))` for a soft bounce-back.
-- **Navigation**: Floating frosted-glass tab bar with subtle non-bouncy press feedback + Stack screens with custom transitions (slide_from_right default, fade for tabs/onboarding, slide_from_bottom for lesson/paywall modals)
-- **Press feedback**: `components/PressScale.tsx` — Pressable wrapper that scales to 0.97 onPressIn (90ms) then eases back to 1.0 (180ms cubic out). Pure timing curves, no overshoot. Used on all primary CTAs across the app for an editorial, deliberate feel.
-- **Editorial design pattern (2026 redesign)**: All major screens (auth, leaderboard, critique, lesson, home, onboarding, paywall, skill tree) use a magazine-like editorial header: small uppercase eyebrow (13px Nunito_800ExtraBold mutedForeground letterSpacing 1.5) above a 38–44px Nunito_800ExtraBold headline (letterSpacing -1). Primary CTAs are near-black pills (bg=foreground, text=background, borderRadius=100, with Ionicons arrow-forward). Horizontal padding standardized to 24 across redesigned screens.
-- **Skill tree screen** (`app/(tabs)/tree.tsx`): editorial layout with eyebrow "YOUR JOURNEY" + "Skill tree" headline, a `CoursesButton` pill (height 52, borderRadius 100, card bg, 1px border, Ionicons "apps" 2x2 grid icon + "Courses" label) in the top-right that opens a fullscreen `CoursePickerModal` for course selection, course summary card with progress bar and percentage, "THE PATH" eyebrow above the winding S/Z node tree, and an editorial NodeSheet bottom modal (course color eyebrow + node title headline + 3 stat cards + numbered lesson list "01"/"02" + near-black CTA pill). Reads `courseId` query param via `useLocalSearchParams` to pre-select the right course. All bouncy spring animations removed.
-- **Course summary card spec** (top of tree.tsx ScrollView): card padding 22, border radius 24, 1px border. Top row (gap 14, marginBottom 16): 52x52 rounded-square icon (radius 16) with `course.color + "1F"` tint and 26px course icon | column with uppercase "COURSE" eyebrow in `course.color` (letterSpacing 1.6) and 19px title (letterSpacing -0.5, lineHeight 22) | large 30px right-aligned `{progress}%` (letterSpacing -1) in foreground. Below: 13px description (mutedForeground, lineHeight 19, marginBottom 18). Below: 4px thin progress bar (border bg, course.color fill). Caption: "X OF Y LESSONS" 11px ExtraBold mutedForeground letterSpacing 1.2 marginTop 12. Matches editorial reference design.
-- **Course picker** (`CoursePickerModal` inside `tree.tsx`): fullscreen slide-in modal with safe-area aware top bar containing "BROWSE" eyebrow + X close button, large 2-line "Choose / a course." headline, and a vertical scrollable list of all courses. Each row shows course icon square + "X% COMPLETE" eyebrow + course name + lesson count. Selected row is filled foreground with a checkmark badge. Tapping a row selects the course and closes the modal.
-- **Course routing**: Home page Popular Courses cards each pass their own `courseId` to `/(tabs)/tree` so each course routes to its own tree (previously all defaulted to Design Principles).
-- **Home stat cards** (`app/(tabs)/index.tsx` Daily Goal + Rank): editorial side-by-side cards (minHeight 132, padding 18, card bg, 1px border, 22 radius). Daily Goal shows uppercase "DAILY GOAL" eyebrow + large baseline-aligned `count`/`goal` headline (38/18) + thin horizontal primary-color progress bar + "X to go"/"Complete!" meta. Rank shows "YOUR RANK" eyebrow with small bronze-tinted medal accent in top-right, "#" + large rank number headline, then "Bronze division" (#CD7F32) + "View leaderboard" hint. Replaces previous centered CircularProgress + large medal-circle layout. CircularProgress component and its react-native-svg imports removed (no longer used).
-- **Course carousel cards** (`app/(tabs)/index.tsx`, ~lines 320–650): square-ish premium cards (`cardW = min(SCREEN_W - 56, 360)`, height 340, borderRadius 26). Per-course palette derived from `course.color` via inline `tintHex(hex, amount)` helper → 3-stop `LinearGradient` (lightTint → base → darkTint) plus a `deepTint` for the footer overlay. Strict text-contrast rule via `relLuminance` from `constants/contrast.ts`: `isLightCard = luminance > 0.55` → text + accents flip between navy `#21263F` and white. Yellow card → navy text + navy accent; blue/pink → white text + yellow `#FFD84D` accent. Grid lines use a complementary hue per card (yellow → blue, pink → white, blue → yellow) at ~15% opacity. Layers (back to front): gradient → 3 soft blob shapes → faint complementary grid → 9-dot pattern top-right → mascot zone (152×152, soft glow halo + `GraflyMascot size={120}`, NO selection box) → mini UI card mockup + accent blob + floating "?" beside mascot → text block (pill eyebrow with grid-outline icon + `COURSE NN`, 30/34 two-line title with -0.9 letterSpacing, 44×3 accent underline, 3-line subtitle) → glass footer (`BlurView` tint adapts to light/dark card + deepTint overlay, `0/5 lessons` left + `0%` right, 3px progress bar at the very bottom edge filled with accent color). Imports: `LinearGradient` (expo-linear-gradient), `BlurView` (expo-blur), `relLuminance`.
-- **No-bounce policy**: All UI scale/slide animations use `withTiming` with `Easing.out(Easing.cubic)` — never `withSpring` (which can overshoot). The mascot (`GraflyMascot`) is the one exception — its bounciness is intentional character.
-- **Screens**: Onboarding (7-step editorial flow: welcome → goal → level → time → placement test → results/reward → soft signup; default username "Designer", no typing required), Home (time greeting, XP bar, fixed streak), Skill Tree (S/Z winding path + swipeable course cards), AI Critique (mascot-driven feedback), Shop (bounce mascot), Profile (inline name edit, 2x2 stats, horizontal achievement badges), Lesson Engine, Leaderboard, Paywall
-- **Mascot**: `GraflyMascot` component (`components/GraflyMascot.tsx`) with states: idle, celebrate, think, oops, correct, wrong — used throughout all screens
-- **Assets**: `constants/assets.ts` exports MASCOT and LOGO path maps; mascot images in `assets/mascot/`, logo in `assets/logo/`
-- **Services**: `services/voiceService.ts` (ElevenLabs via API), `services/aiCritique.ts` (NVIDIA NIM via API)
-- **Gamification**: XP/level progression, coins, 5 hearts (lesson screen only), streak (home screen only), shields, XP booster
-- **Lesson data**: 5 courses × multiple skill nodes × multiple lessons (`constants/lessons.ts`); 10-question placement test; 7 question types: multiple_choice, true_false, spot_the_difference, tap_the_element, arrange_in_order, drag_to_match, fill_in_blank
-- **Display rules**: Coins shown on home/shop/lesson result only. Hearts shown on lesson screen only. Streak shown on home only (fixed, no animation). No hyphens or dashes in UI strings.
+## Grafly Mobile App (Expo/React Native)
+- **Framework**: Expo (React Native), expo-router v6.
+- **State Management**: React Context with AsyncStorage for persistence and Supabase for cloud sync (`GameContext.tsx`).
+- **Theming**: Dark-first initially, but now defaults to light theme. Uses `constants/colors.ts` for a WCAG 2.1 AA compliant color palette. All hex values must use tokens from this file. `constants/contrast.ts` provides utility functions for contrast ratio checks.
+- **Typography**: Custom Teshrin fonts (Regular, Medium, Bold) are used.
+- **Navigation**:
+    - Floating frosted-glass tab bar with subtle press feedback.
+    - Stack screens with custom transitions (slide_from_right default, fade for tabs/onboarding, slide_from_bottom for modals).
+    - `initialRouteName` is `(tabs)` to ensure AuthGate handles onboarding redirects correctly.
+- **UI/UX Patterns**:
+    - **Editorial Design (2026 Redesign)**: Magazine-like headers with small uppercase eyebrows and large headlines. Primary CTAs are near-black pills. Horizontal padding standardized to 24px.
+    - **Bottom Navigation**: Premium floating pill design with five icon-only tabs, animating on focus.
+    - **Press Feedback**: `PressScale.tsx` for consistent, non-bouncy scaling feedback on CTAs.
+- **Core Screens & Components**:
+    - **Skill Tree (`app/(tabs)/tree.tsx`)**: Editorial layout with "YOUR JOURNEY" eyebrow, "Skill tree" headline, `CoursesButton` for course selection, course summary card, and a winding S/Z node tree. Node details are shown in an editorial `NodeSheet` bottom modal.
+    - **Course Picker (`CoursePickerModal`)**: Fullscreen slide-in modal for course selection.
+    - **Home Screen (`app/(tabs)/index.tsx`)**: Includes editorial stat cards (Daily Goal, Rank) and a horizontal `FlatList` carousel of premium course cards.
+    - **AI Critique (`app/(tabs)/critique.tsx`)**: Chat-style UI with a redesigned hero section and composer that floats above the tab bar.
+    - **Onboarding**: A 7-step editorial flow.
+    - **Mascot**: `GraflyMascot` component (`components/GraflyMascot.tsx`) with various states.
+- **Gamification**: Includes XP/level progression, coins, hearts (lesson only), streak (home only), shields, and XP boosters.
+- **Lesson Engine**: Supports 7 question types, with lesson data stored in `constants/lessons.ts`.
+- **Auth**: Onboarding-first authentication with no account required initially. AuthGate manages declarative routing based on `onboardingComplete` state. Google Sign-In is implemented with specific contract requirements for success handling. Hydration gate ensures `GameContext` is loaded before app renders.
 
-### API Server (`artifacts/api-server`)
-- **Routes**: `GET /api/health`, `POST /api/critique/chat` (NVIDIA NIM Gemma proxy), `GET /api/critique/designs(/random)` (Supabase + fallback list), `POST /api/tts` (ElevenLabs proxy)
-- **Env vars**: `NVIDIA_API_KEY`, `ELEVENLABS_API_KEY`, `SESSION_SECRET`, plus `EXPO_PUBLIC_SUPABASE_URL` / `EXPO_PUBLIC_SUPABASE_ANON_KEY` (shared)
-- **NVIDIA model**: `google/gemma-3-27b-it`
-- **ElevenLabs voice ID**: `MFZUKuGQUsGJPQjTS4wC`
-- **Supabase client**: `src/lib/supabase.ts` (anon key, no session persistence)
+## API Server (Express 5)
+- Provides routes for health checks, AI critique (Gemma proxy), design retrieval, and TTS (ElevenLabs proxy).
+- Utilizes environment variables for API keys and session secrets.
 
-## Recent Architecture Decisions
+# External Dependencies
 
-- **Onboarding-first auth**: no account required. AuthGate (`app/_layout.tsx`) routes declaratively based on `state.onboardingComplete` — never use imperative `router.replace` for these transitions, it causes navigator races.
-- **Google sign-in contract**: `AuthContext.signInWithGoogle()` returns `{ error, completed }`. `completed: true` means the OAuth callback URL contained valid credentials AND `supabase.auth.exchangeCodeForSession` succeeded. Cancel/dismiss returns `{ error: null, completed: false }`. All callers must gate post-signin actions (navigation, `completeOnboarding`) on `!error && completed === true` — checking only `!error` will trigger false positives on user cancel and on malformed callbacks.
-- **Hydration gate**: `GameContext` exposes a `hydrated` flag; AuthGate waits on it so the app does not bounce to the welcome screen before AsyncStorage loads.
-- **Local→cloud migration**: `GameContext` syncs to AsyncStorage immediately and to Supabase `game_state` (debounced 1.5s). On sign-in, falls back to local state if no cloud row exists.
-- **Google OAuth**: `supabase.auth.signInWithOAuth` + `expo-web-browser` + `expo-linking`. Do NOT reintroduce `expo-auth-session`/`expo-crypto` — ExpoCryptoAES native module is missing in Expo Go SDK 54.
-- **AI Critique chat**: chat-style UI in `app/(tabs)/critique.tsx`. Designs come from `data/localDesigns.ts` (4 bundled PNGs in `assets/designs/`) so the AI is testable without Supabase. Backend `loadDesignsFromSupabase()` exists for when the user runs the SQL.
-- **Critique composer**: floats above the tab bar (`composerLift = tabBarHeight + 12`). Uses `KeyboardAvoidingView` from `react-native-keyboard-controller` so the UI lifts with the keyboard.
-- **Display rules** (strict): coins on home/shop/lesson results only; hearts on lesson screen only; streak on home only; no hyphens/dashes in UI strings; mascot only via `GraflyMascot`.
-- **Editorial visual system** (Apr 2026): light theme is now the default (`themeMode: "light"` in GameContext). Aesthetic = magazine/collage: beige bg (`colors.background` #F5F6FA), big bold headlines (38–56px Nunito_800ExtraBold with negative letter-spacing), uppercase eyebrow labels (`colors.mutedForeground`, letterSpacing 1.5), near-black pill CTAs (`backgroundColor: colors.foreground`, `borderRadius: 100`, arrow-forward Ionicon, text in `colors.background`), rounded course cards on Home using a horizontal `FlatList` carousel with `course.color` backgrounds and `GraflyMascot` collage. Tab bar is theme-aware: near-black with yellow accent active pill in light mode (`app/(tabs)/_layout.tsx`). For text/overlays on vivid colored cards, use `colors.primaryForeground` (always #FFFFFF) and `colors.accentForeground` (always dark navy) rather than raw hex.
-- **WCAG 2.1 AA color overhaul** (Apr 2026): audited every theme token combination and rebalanced the failing pairs at the source. Changes in `constants/colors.ts`: `primary` #00A4FA → #0078BB (white-on now 4.77:1, was 2.73), `destructive` #FF4757 → #DC2A3A (white-on now 4.73:1, was 3.34), `mutedForeground` dark #8A90B0 → #969CBC (4.53:1 on card), `mutedForeground` light #6B7090 → #646A88 (4.91:1 on bg), `success` light #1FB874 → #138354 (4.77:1 on white), `warning` light #E89B00 → #A36E00. Dark theme green/yellow/orange/pink unchanged (already pass on dark bg). New shared util `constants/contrast.ts` extracted from inline tree.tsx helper.
-- **Critique screen redesign** (`app/(tabs)/critique.tsx`): hero is now a bordered card (image rounded top + body below with title/desc/+20 XP footer hint) instead of full-bleed-with-text-overlay. Eyebrow row at top matches tree.tsx pattern ("TODAY'S DESIGN" + line + "DAILY DROP"). Mentor identity row added above opener (28px mascot in tinted circle + "Grafly · DESIGN MENTOR" label). Header right cluster: pill gets infinity (Pro) or flash + count (free); shuffle button is outlined 40x40 card-style, not filled dark circle. Compact mode (chat started) = pinned horizontal pill card with 52x52 thumbnail. Entrance: `Easing.out(Easing.cubic)` with 360-560ms durations and 60-220ms stagger.
-- **Edge-to-edge T/F buttons**: in both placement test (`app/onboarding.tsx`) and lesson engine (`app/lesson.tsx`), the True/False button row uses `marginHorizontal: -24` + `gap: 8` to escape the parent ScrollView's 24px padding and span the full screen width. Two buttons share equal flex (`flexBasis: 0, flexGrow: 1`).
-- **Secrets policy**: never write API keys to files; always use the secrets vault. NVIDIA key was once shared in chat — needs rotation.
-
-- **Initial route**: `Stack` in `app/_layout.tsx` sets `initialRouteName="(tabs)"` so the AuthGate's onboarding redirect kicks in for new users (otherwise expo-router defaults to the first declared screen — previously `auth`, which made "Welcome back" appear first).
-- **Dev-only LogBox filter**: `app/_layout.tsx` ignores the harmless "Unable to activate keep awake" warning that fires on some Android devices (e.g. MIUI/Xiaomi) in Expo Go.
-
-## Android Build (EAS Cloud)
-
-- **Builder**: EAS Build (`eas-cli` is a devDep of `@workspace/grafly`). Auth via the `EXPO_TOKEN` secret (Expo account `jawadkh`).
-- **EAS project**: `@jawadkh/grafly`, projectId `9e4690ce-72f5-4ca8-b905-99e34bb71364` (recorded in `app.json` under `extra.eas.projectId` + `owner`).
-- **Profiles** (`artifacts/grafly/eas.json`):
-  - `development` — internal APK with dev client.
-  - `preview` — internal APK for sharing/install (this is what we use).
-  - `production` — AAB with `autoIncrement` for Play Store later.
-- **Android config** (`app.json`):
-  - `android.package = "com.jawadkh.grafly"`.
-  - `android.build.abiFilters = ["arm64-v8a"]` — 64-bit ARM only (covers all phones from ~2019, including the user's Xiaomi 11 Lite / Android 14). To re-enable 32-bit phones, add `"armeabi-v7a"`.
-  - `expo-build-properties` plugin enables `enableProguardInReleaseBuilds` + `enableShrinkResourcesInReleaseBuilds` for size reduction.
-- **Removed packages** (unused, dropped to shrink APK): `expo-glass-effect`, `expo-location`, `expo-symbols`. Kept (in use): `expo-av` (voice service), `expo-image-picker` (onboarding), `expo-blur` (tab bar), `expo-haptics` (lesson/shop).
-- **Font shrink**: only Teshrin Regular/Medium/Bold are bundled; the unused weights (Hairline/Thin/ExtraLight/Light/Black .ttfs) still live in `assets/fonts/` but are NOT loaded.
-- **Latest APK build**: `cb418a25-99c9-4cb1-9dc0-78ae34e6e16d` — ~88.8 MB (down from 95.4 MB pre-shrink). URL: `https://expo.dev/artifacts/eas/r6JLjhFZHy4CrneUctzd7H.apk`. Build page: `https://expo.dev/accounts/jawadkh/projects/grafly/builds/cb418a25-99c9-4cb1-9dc0-78ae34e6e16d`.
-- **Rebuild command** (from `artifacts/grafly`): `pnpm exec eas build --platform android --profile preview --non-interactive`.
-
-## Pending User Actions
-
-1. Disable "Confirm email" in Supabase Auth → Providers → Email (default SMTP is rate-limited).
-2. Configure Google OAuth: Google Cloud OAuth Client ID + redirect `https://ylvkpbfzyyruacabgfhc.supabase.co/auth/v1/callback`; Supabase allow list must include `grafly://auth-callback`.
-3. Rotate the NVIDIA API key.
-4. (Optional) Run the provided SQL to create `critique_designs` table + `critique-designs` storage bucket to swap from local to user-managed designs.
-5. (Optional) After verifying icons render correctly in Expo Go post cache-clear, consider switching the EAS preview profile from `internal` to a smaller production-style build with feature trims (drop expo-av/image-picker/blur) if a sub-70MB APK is desired.
-
-## GitHub
-
-Repo: `Jawad-stable/grafly`. Remote `origin` is configured with an OAuth token. After accumulating local checkpoints, push with `git push origin main`. Most recent push: WCAG color overhaul + critique redesign + edge-to-edge T/F buttons (Apr 2026).
-
-## Key Commands
-
-- `pnpm --filter @workspace/grafly run dev` — start Expo dev server
-- `pnpm --filter @workspace/api-server run dev` — run API server locally
-
-See the `pnpm-workspace` skill for workspace structure details.
+- **Monorepo Tool**: pnpm workspaces
+- **Frontend Framework**: Expo (React Native), expo-router v6
+- **Backend Framework**: Express 5
+- **Database**: Supabase (for `game_state` sync and `critique_designs`)
+- **AI/ML**: NVIDIA NIM (for AI Critique, specifically `google/gemma-3-27b-it`)
+- **Text-to-Speech**: ElevenLabs (voice ID `MFZUKuGQUsGJPQjTS4wC`)
+- **OAuth**: Google OAuth (via `supabase.auth.signInWithOAuth`, `expo-web-browser`, `expo-linking`)
+- **Fonts**: Teshrin (custom TTFs)
+- **UI Libraries**:
+    - `expo-linear-gradient`
+    - `expo-blur`
+    - `react-native-keyboard-controller`
+- **Expo Packages (in use)**: `expo-av`, `expo-image-picker`, `expo-blur`, `expo-haptics`.
+- **Build Tool**: EAS Build (`eas-cli`) for Android builds.
