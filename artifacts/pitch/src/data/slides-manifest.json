@@ -5,7 +5,7 @@
     "filepath": "src/pages/slides/Title.tsx",
     "title": "Title",
     "description": "Cold-open title card with Grafly wordmark, tagline, and idle mascot.",
-    "speakerNotes": ""
+    "speakerNotes": "Hi, we're Grafly. Our tagline is 'Ink outside of the box,' and what you're about to see is a live walkthrough of the MVP. In the next few minutes we'll cover why we built it, who it's for, and where we're taking it next."
   },
   {
     "id": "9c1b3e60-3a2f-4f8a-9d22-7c9d12e4a102",
@@ -13,7 +13,7 @@
     "filepath": "src/pages/slides/Problem.tsx",
     "title": "The Problem",
     "description": "Why we built Grafly — design education is passive and theory-heavy.",
-    "speakerNotes": ""
+    "speakerNotes": "Design education today is passive, theory-heavy, and intimidating. Most learners watch lectures and read PDFs, but never actually open a canvas and make something. That gap between knowing and doing is exactly what Grafly is built to close."
   },
   {
     "id": "9c1b3e60-3a2f-4f8a-9d22-7c9d12e4a103",
@@ -21,7 +21,7 @@
     "filepath": "src/pages/slides/Audience.tsx",
     "title": "Who it's for",
     "description": "Aspiring designers, students, and career-switchers.",
-    "speakerNotes": ""
+    "speakerNotes": "Grafly is for aspiring designers, students, and career-switchers — anyone who wants to actually do design instead of just reading about it. These are people who are motivated but stuck on the sidelines, intimidated by pro tools and dense theory. We give them tiny, playable lessons that build real skill from day one."
   },
   {
     "id": "9c1b3e60-3a2f-4f8a-9d22-7c9d12e4a104",
@@ -29,7 +29,7 @@
     "filepath": "src/pages/slides/WhatsNext.tsx",
     "title": "What's next",
     "description": "Near-term roadmap: more games, Arabic language, and more features.",
-    "speakerNotes": ""
+    "speakerNotes": "Near-term, we're focused on three things. First, more mini-games and challenges so daily practice stays fresh. Second, full Arabic with RTL support, then more languages so Grafly meets learners where they are. Third, sharper canvas tools and deeper feedback to make every lesson feel more rewarding."
   },
   {
     "id": "9c1b3e60-3a2f-4f8a-9d22-7c9d12e4a106",
@@ -37,7 +37,7 @@
     "filepath": "src/pages/slides/FuturePlans.tsx",
     "title": "If we had more time",
     "description": "Stretch goals — what we'd build with more runway.",
-    "speakerNotes": ""
+    "speakerNotes": "With more runway, this is the dream list. An AI design tutor giving personalized feedback on every canvas, a multiplayer mode so friends can design together live, and a native mobile app with daily streaks. Beyond that: a community marketplace of remixable lessons, a career track with portfolios and hiring partners, and live workshops led by pro designers."
   },
   {
     "id": "9c1b3e60-3a2f-4f8a-9d22-7c9d12e4a105",
@@ -45,6 +45,6 @@
     "filepath": "src/pages/slides/Closing.tsx",
     "title": "Closing",
     "description": "Dark-mode thank-you card with celebrating mascot and CTAs.",
-    "speakerNotes": ""
+    "speakerNotes": "That's Grafly — a hands-on, playful way to actually learn design. Thank you for watching; we'd love for you to try it and share feedback. Now go ink outside the box, and we're happy to take any questions."
   }
 ]
