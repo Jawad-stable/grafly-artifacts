@@ -5,6 +5,7 @@ import {
   ScrollView,
   TouchableOpacity,
   Platform,
+  Dimensions,
 } from "react-native";
 import Animated, {
   FadeIn,
@@ -20,6 +21,11 @@ import * as Haptics from "expo-haptics";
 import { useColors } from "@/hooks/useColors";
 import { useGame } from "@/context/GameContext";
 import { GraflyMascot } from "@/components/GraflyMascot";
+import { BrandSquiggle } from "@/components/BrandSquiggle";
+import { LinearGradient } from "expo-linear-gradient";
+import { onBrand } from "@/constants/contrast";
+
+const { width: SCREEN_W, height: SCREEN_H } = Dimensions.get("window");
 
 interface ShopItem {
   id: string;
@@ -40,6 +46,13 @@ const SHOP_ITEMS: ShopItem[] = [
   { id: "avatar-pink", name: "Pink Frame", subtitle: "Exclusive avatar frame", icon: "person-circle", iconColor: "#FF7BD0", cost: 400, type: "cosmetic" },
 ];
 
+/**
+ * Vibrant shop card. Each card is filled in its item's brand color so
+ * the shop reads as a colorful storefront, matching the home-tab course
+ * cards and the design-principles welcome card. Text colors are picked
+ * via onBrand() so contrast is AA on every fill (lime/yellow → navy,
+ * cyan/red/pink → white).
+ */
 function ShopCard({ item, onBuy }: { item: ShopItem; onBuy: (item: ShopItem) => void }) {
   const colors = useColors();
   const { state } = useGame();
@@ -48,6 +61,8 @@ function ShopCard({ item, onBuy }: { item: ShopItem; onBuy: (item: ShopItem) => 
 
   const owned = state.xpBoosterActive && item.type === "booster";
   const canAfford = state.coins >= item.cost;
+  const fg = onBrand(item.iconColor); // navy on bright, white on dark
+  const isLight = fg === "#FFFFFF";
 
   function handlePress() {
     scale.value = withSequence(
@@ -58,48 +73,163 @@ function ShopCard({ item, onBuy }: { item: ShopItem; onBuy: (item: ShopItem) => 
   }
 
   return (
-    <Animated.View style={[{
-      backgroundColor: colors.card, borderRadius: colors.radius,
-      padding: 18, marginBottom: 12,
-      flexDirection: "row", alignItems: "center", gap: 16,
-      borderWidth: owned ? 2 : 1,
-      borderColor: owned ? item.iconColor : colors.border,
-    }, anim]}>
-      <View style={{
-        width: 52, height: 52, borderRadius: 16,
-        backgroundColor: item.iconColor + "20",
-        alignItems: "center", justifyContent: "center",
-      }}>
-        <Icon name={item.icon as any} size={26} color={item.iconColor} />
+    <Animated.View
+      style={[
+        {
+          backgroundColor: item.iconColor,
+          borderRadius: 22,
+          padding: 18,
+          marginBottom: 14,
+          flexDirection: "row",
+          alignItems: "center",
+          gap: 14,
+          overflow: "hidden",
+          shadowColor: item.iconColor,
+          shadowOffset: { width: 0, height: 8 },
+          shadowOpacity: 0.28,
+          shadowRadius: 14,
+          elevation: 5,
+        },
+        anim,
+      ]}
+    >
+      {/* Brand squiggle flourish — same watermark treatment as the
+          tree welcome card and home backdrop. */}
+      <View pointerEvents="none" style={{ position: "absolute", right: -18, top: -10 }}>
+        <BrandSquiggle
+          variant="loop"
+          width={130}
+          height={80}
+          color={fg}
+          opacity={isLight ? 0.14 : 0.18}
+          strokeWidth={4}
+        />
       </View>
+
+      {/* Translucent icon chip on top of the colored card */}
+      <View
+        style={{
+          width: 52,
+          height: 52,
+          borderRadius: 16,
+          backgroundColor: fg + "26",
+          borderWidth: 1,
+          borderColor: fg + "55",
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+      >
+        <Icon name={item.icon as any} size={26} color={fg} weight="fill" />
+      </View>
+
       <View style={{ flex: 1 }}>
-        <Text style={{ fontSize: 16, fontFamily: "Nunito_800ExtraBold", color: colors.foreground, marginBottom: 2 }}>
+        <Text
+          style={{
+            fontSize: 17,
+            fontFamily: "Nunito_800ExtraBold",
+            color: fg,
+            letterSpacing: -0.3,
+            marginBottom: 2,
+          }}
+        >
           {item.name}
         </Text>
-        <Text style={{ fontSize: 12, fontFamily: "Nunito_600SemiBold", color: colors.mutedForeground }}>
+        <Text
+          style={{
+            fontSize: 12,
+            fontFamily: "Nunito_600SemiBold",
+            color: fg + "CC",
+          }}
+        >
           {item.subtitle}
         </Text>
       </View>
+
       <TouchableOpacity
         onPress={handlePress}
-        activeOpacity={0.8}
+        activeOpacity={0.85}
         disabled={owned || !canAfford}
         style={{
-          flexDirection: "row", alignItems: "center", gap: 5,
-          backgroundColor: owned ? colors.success + "20" : canAfford ? colors.accent : colors.muted,
+          flexDirection: "row",
+          alignItems: "center",
+          gap: 5,
+          backgroundColor: owned ? fg + "33" : canAfford ? fg : fg + "22",
           borderRadius: 100,
-          paddingHorizontal: 14, paddingVertical: 8,
+          paddingHorizontal: 14,
+          paddingVertical: 9,
+          borderWidth: owned ? 1 : 0,
+          borderColor: owned ? fg + "66" : "transparent",
         }}
       >
-        {!owned && <Icon name="coin" size={14} color={canAfford ? colors.accentForeground : colors.mutedForeground} weight="fill" />}
-        <Text style={{
-          fontSize: 14, fontFamily: "Nunito_800ExtraBold",
-          color: owned ? colors.success : canAfford ? colors.accentForeground : colors.mutedForeground,
-        }}>
-          {owned ? "Active" : item.cost}
-        </Text>
+        {owned ? (
+          <>
+            <Icon name="checkmark" size={14} color={fg} weight="bold" />
+            <Text style={{ fontSize: 13, fontFamily: "Nunito_800ExtraBold", color: fg }}>
+              Active
+            </Text>
+          </>
+        ) : (
+          <>
+            {/* Coin icon stays in the item's brand color as a visual
+                cue. Price text uses navy on the white button (or the
+                item color on the navy button) for AA-safe contrast. */}
+            <Icon
+              name="coin"
+              size={14}
+              color={canAfford ? item.iconColor : fg + "AA"}
+              weight="fill"
+            />
+            <Text
+              style={{
+                fontSize: 14,
+                fontFamily: "Nunito_800ExtraBold",
+                color: canAfford ? (isLight ? "#21263F" : item.iconColor) : fg + "AA",
+              }}
+            >
+              {item.cost}
+            </Text>
+          </>
+        )}
       </TouchableOpacity>
     </Animated.View>
+  );
+}
+
+/**
+ * Section heading with a small brand color dot — gives each section
+ * (Power-ups vs Avatar Frames) a distinct visual anchor.
+ */
+function SectionHeading({ label, dotColor, mt = 0 }: { label: string; dotColor: string; mt?: number }) {
+  const colors = useColors();
+  return (
+    <View
+      style={{
+        flexDirection: "row",
+        alignItems: "center",
+        gap: 8,
+        marginBottom: 12,
+        marginTop: mt,
+      }}
+    >
+      <View
+        style={{
+          width: 8,
+          height: 8,
+          borderRadius: 4,
+          backgroundColor: dotColor,
+        }}
+      />
+      <Text
+        style={{
+          fontSize: 12,
+          fontFamily: "Nunito_800ExtraBold",
+          color: colors.mutedForeground,
+          letterSpacing: 1.5,
+        }}
+      >
+        {label}
+      </Text>
+    </View>
   );
 }
 
@@ -145,6 +275,24 @@ export default function ShopScreen() {
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.background }}>
+      {/* Brand backdrop — three drifting squiggle motifs at low alpha,
+          matching the home/tree treatment so the shop feels part of
+          the same visual world. */}
+      <View
+        pointerEvents="none"
+        style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0, overflow: "hidden" }}
+      >
+        <View style={{ position: "absolute", top: SCREEN_H * 0.18, left: -24 }}>
+          <BrandSquiggle variant="loop" width={150} height={90} color={colors.brand.cyan} opacity={0.08} drift delay={400} />
+        </View>
+        <View style={{ position: "absolute", top: SCREEN_H * 0.55, left: SCREEN_W - 100 }}>
+          <BrandSquiggle variant="tube" width={100} height={170} color={colors.brand.pink} opacity={0.07} strokeWidth={5} drift delay={1800} />
+        </View>
+        <View style={{ position: "absolute", top: SCREEN_H * 0.82, left: SCREEN_W * 0.45 - 100 }}>
+          <BrandSquiggle variant="wave" width={200} height={32} color={colors.brand.lime} opacity={0.1} strokeWidth={4} drift delay={1100} />
+        </View>
+      </View>
+
       <ScrollView
         contentContainerStyle={{ paddingTop: paddingTop + 12, paddingHorizontal: 24, paddingBottom }}
         showsVerticalScrollIndicator={false}
@@ -155,30 +303,46 @@ export default function ShopScreen() {
             POWER UP
           </Text>
           <View style={{ flexDirection: "row", alignItems: "flex-end", justifyContent: "space-between" }}>
-            <View>
+            <View style={{ flex: 1 }}>
               <Text style={{ fontSize: 38, fontFamily: "Nunito_800ExtraBold", color: colors.foreground, letterSpacing: -1, lineHeight: 42 }}>
                 Shop
               </Text>
-              <View style={{
-                flexDirection: "row", alignItems: "center", gap: 6, marginTop: 10,
-                backgroundColor: colors.foreground, borderRadius: 100,
-                paddingHorizontal: 14, paddingVertical: 8, alignSelf: "flex-start",
-              }}>
-                <Icon name="coin" size={14} color={colors.warning} weight="fill" />
-                <Text style={{ fontSize: 14, fontFamily: "Nunito_800ExtraBold", color: colors.background }}>
+              {/* Coin balance pill — same brand pattern as the home
+                  tab streak/coin chips: lime gradient with navy text,
+                  AA-safe and instantly recognizable as Grafly. */}
+              <LinearGradient
+                colors={[colors.brand.lime, "#C7D11A"]}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 0, y: 1 }}
+                style={{
+                  flexDirection: "row",
+                  alignItems: "center",
+                  gap: 6,
+                  marginTop: 12,
+                  borderRadius: 100,
+                  paddingHorizontal: 14,
+                  paddingVertical: 8,
+                  alignSelf: "flex-start",
+                  shadowColor: colors.brand.lime,
+                  shadowOffset: { width: 0, height: 4 },
+                  shadowOpacity: 0.35,
+                  shadowRadius: 8,
+                  elevation: 3,
+                }}
+              >
+                <Icon name="coin" size={14} color={colors.brand.navy} weight="fill" />
+                <Text style={{ fontSize: 14, fontFamily: "Nunito_800ExtraBold", color: colors.brand.navy }}>
                   {state.coins} coins
                 </Text>
-              </View>
+              </LinearGradient>
             </View>
-            <GraflyMascot state={mascotState} size={90} />
+            <GraflyMascot state={mascotState} size={96} />
           </View>
         </Animated.View>
 
         {/* Power-ups */}
         <Animated.View entering={FadeIn.delay(80)}>
-          <Text style={{ fontSize: 14, fontFamily: "Nunito_600SemiBold", color: colors.mutedForeground, marginBottom: 10, letterSpacing: 1 }}>
-            POWER UPS
-          </Text>
+          <SectionHeading label="POWER UPS" dotColor={colors.brand.cyan} />
           {SHOP_ITEMS.filter((i) => i.type !== "cosmetic").map((item) => (
             <ShopCard key={item.id} item={item} onBuy={handleBuy} />
           ))}
@@ -186,9 +350,7 @@ export default function ShopScreen() {
 
         {/* Cosmetics */}
         <Animated.View entering={FadeIn.delay(160)}>
-          <Text style={{ fontSize: 14, fontFamily: "Nunito_600SemiBold", color: colors.mutedForeground, marginBottom: 10, marginTop: 8, letterSpacing: 1 }}>
-            AVATAR FRAMES
-          </Text>
+          <SectionHeading label="AVATAR FRAMES" dotColor={colors.brand.pink} mt={10} />
           {SHOP_ITEMS.filter((i) => i.type === "cosmetic").map((item) => (
             <ShopCard key={item.id} item={item} onBuy={handleBuy} />
           ))}
@@ -203,15 +365,18 @@ export default function ShopScreen() {
             position: "absolute",
             bottom: 120,
             alignSelf: "center",
-            backgroundColor: colors.card,
+            backgroundColor: colors.foreground,
             borderRadius: 100,
             paddingHorizontal: 20,
             paddingVertical: 12,
-            borderWidth: 1,
-            borderColor: colors.border,
+            shadowColor: "#000",
+            shadowOffset: { width: 0, height: 6 },
+            shadowOpacity: 0.18,
+            shadowRadius: 12,
+            elevation: 6,
           }}
         >
-          <Text style={{ fontSize: 15, fontFamily: "Nunito_800ExtraBold", color: colors.foreground }}>
+          <Text style={{ fontSize: 15, fontFamily: "Nunito_800ExtraBold", color: colors.background }}>
             {toast}
           </Text>
         </Animated.View>
