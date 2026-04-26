@@ -739,7 +739,6 @@ export default function HomeScreen() {
               // so the underline + handles + progress fill remain readable.
               const accent = isLightCard ? NAVY : "#FFD84D";
               const pillBg = isLightCard ? `${NAVY}1F` : "#FFFFFF26";
-              const handleStroke = isLightCard ? `${NAVY}80` : "#FFFFFF80";
 
               // Grid line color is a deliberate complementary hue per card:
               //   yellow card → blue grid lines

@@ -18,7 +18,6 @@ import type { SharedValue } from "react-native-reanimated";
 import Svg, { Circle } from "react-native-svg";
 import type {
   Question,
-  Scene,
   ScreenSpec,
   SceneBlock,
   LessonIntro,
@@ -748,12 +747,7 @@ export function FiveSecondTestRenderer({ question, answered, onAnswer }: MiniGam
   if (!scene || scene.kind !== "five_sec") return null;
   const { screen, followUp } = scene;
 
-  const ringRadius = 26;
-  const ringCircumference = 2 * Math.PI * ringRadius;
-  const ringStyle = useAnimatedStyle(() => ({}));
-
   if (phase === "preview") {
-    const seconds = Math.ceil(totalMs / 1000);
     return (
       <Animated.View entering={FadeIn} exiting={FadeOut}>
         <View style={{ alignItems: "center", marginBottom: 16 }}>
@@ -880,10 +874,6 @@ function CountdownRing({
     }, 200);
     return () => clearInterval(interval);
   }, [totalMs]);
-
-  const animatedProps = useAnimatedStyle(() => ({
-    // Reanimated SharedValue used for visual progress; we read it here so the prop closes over it
-  }));
 
   return (
     <View style={{ width: 64, height: 64, alignItems: "center", justifyContent: "center" }}>

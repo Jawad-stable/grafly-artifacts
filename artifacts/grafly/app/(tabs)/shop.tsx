@@ -5,7 +5,6 @@ import {
   ScrollView,
   TouchableOpacity,
   Platform,
-  Modal,
 } from "react-native";
 import Animated, {
   FadeIn,

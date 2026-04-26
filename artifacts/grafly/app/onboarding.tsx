@@ -3,7 +3,6 @@ import {
   View,
   Text,
   ScrollView,
-  Dimensions,
   Platform,
   Image,
   ActivityIndicator,
@@ -31,8 +30,6 @@ import { LOGO } from "@/constants/assets";
 import type { MascotState } from "@/constants/assets";
 import { AText } from "@/components/AText";
 import { PressScale } from "@/components/PressScale";
-
-const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
 const EASE = Easing.out(Easing.cubic);
 const fadeIn = (delay = 0, duration = 300) =>

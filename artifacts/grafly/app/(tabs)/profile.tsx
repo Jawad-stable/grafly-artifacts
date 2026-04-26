@@ -6,7 +6,6 @@ import {
   TouchableOpacity,
   Switch,
   Platform,
-  TextInput,
 } from "react-native";
 import Animated, { FadeIn } from "react-native-reanimated";
 import { Icon } from "@/components/Icon";

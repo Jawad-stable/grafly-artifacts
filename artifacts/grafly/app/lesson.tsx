@@ -182,7 +182,7 @@ function SpotTheDifference({
 }
 
 function ArrangeInOrder({
-  question, onAnswer, answered,
+  question, onAnswer,
 }: {
   question: Question; onAnswer: (isCorrect: boolean) => void;
   answered: boolean;
@@ -249,7 +249,7 @@ function ArrangeInOrder({
 }
 
 function DragToMatch({
-  question, onAnswer, answered,
+  question, onAnswer,
 }: {
   question: Question; onAnswer: (isCorrect: boolean) => void;
   answered: boolean;
@@ -305,7 +305,7 @@ function DragToMatch({
           })}
         </View>
         <View style={{ flex: 1, gap: 10 }}>
-          {shuffledRight.map((rightIdx, pos) => {
+          {shuffledRight.map((rightIdx) => {
             const isMatchedBySelected = Object.values(matched).includes(rightIdx);
             return (
               <TouchableOpacity
@@ -336,7 +336,7 @@ function DragToMatch({
 }
 
 function FillInBlank({
-  question, onAnswer, answered,
+  question, onAnswer,
 }: {
   question: Question; onAnswer: (isCorrect: boolean) => void;
   answered: boolean;

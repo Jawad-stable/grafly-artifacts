@@ -513,7 +513,7 @@ function ToggleSwitch({ onCard, accent }: { onCard: string; accent: string }) {
   );
 }
 
-function TouchPing({ onCard, accent }: { onCard: string; accent: string }) {
+function TouchPing({ accent }: { accent: string }) {
   const t = useFloat(1800, 0);
   const ringStyle = useAnimatedStyle(() => ({
     transform: [{ scale: interpolate(t.value, [0, 1], [0.4, 1.4]) }],
@@ -551,7 +551,7 @@ function UIDesignMotion({ onCard, accent }: { onCard: string; accent: string }) 
       <MockCard onCard={onCard} />
       <ToggleSwitch onCard={onCard} accent={accent} />
       <PillButton accent={accent} />
-      <TouchPing onCard={onCard} accent={accent} />
+      <TouchPing accent={accent} />
       <FloatDot right={186} top={104} size={6} color={onCard} alpha="88" loop={2800} delay={300} amp={8} />
     </MotionLayer>
   );
@@ -561,7 +561,7 @@ function UIDesignMotion({ onCard, accent }: { onCard: string; accent: string }) 
 // 4. Branding — Rotating logo mark + orbiting elements + swatches
 // ---------------------------------------------------------------------------
 
-function LogoMark({ onCard, accent }: { onCard: string; accent: string }) {
+function LogoMark({ accent }: { accent: string }) {
   const r = useRotate(14000, 0, 1);
   const p = useFloat(3000, 0);
   const style = useAnimatedStyle(() => {
@@ -586,9 +586,9 @@ function LogoMark({ onCard, accent }: { onCard: string; accent: string }) {
 }
 
 function Orbit({
-  onCard, radius, duration, delay, dotSize, dotColor, dotAlpha, startAngle,
+  radius, duration, delay, dotSize, dotColor, dotAlpha, startAngle,
 }: {
-  onCard: string; radius: number; duration: number; delay: number;
+  radius: number; duration: number; delay: number;
   dotSize: number; dotColor: string; dotAlpha: string; startAngle: number;
 }) {
   const r = useRotate(duration, delay, 1);
@@ -651,12 +651,12 @@ function BrandingMotion({ onCard, accent }: { onCard: string; accent: string }) 
       <FloatRing right={36} top={6} size={88} color={onCard} alpha="22" loop={4400} delay={0} amp={5} />
       <FloatRing right={50} top={20} size={60} color={onCard} alpha="33" loop={3600} delay={300} amp={4} />
 
-      <LogoMark onCard={onCard} accent={accent} />
+      <LogoMark accent={accent} />
 
       {/* 3 orbiting dots at different radii / speeds */}
-      <Orbit onCard={onCard} radius={42} duration={9000}  delay={0}    dotSize={6} dotColor={accent} dotAlpha="FF" startAngle={0} />
-      <Orbit onCard={onCard} radius={50} duration={12000} delay={400}  dotSize={5} dotColor={onCard} dotAlpha="AA" startAngle={130} />
-      <Orbit onCard={onCard} radius={36} duration={7000}  delay={200}  dotSize={4} dotColor={onCard} dotAlpha="88" startAngle={245} />
+      <Orbit radius={42} duration={9000}  delay={0}    dotSize={6} dotColor={accent} dotAlpha="FF" startAngle={0} />
+      <Orbit radius={50} duration={12000} delay={400}  dotSize={5} dotColor={onCard} dotAlpha="AA" startAngle={130} />
+      <Orbit radius={36} duration={7000}  delay={200}  dotSize={4} dotColor={onCard} dotAlpha="88" startAngle={245} />
 
       {/* Wordmark line */}
       <View

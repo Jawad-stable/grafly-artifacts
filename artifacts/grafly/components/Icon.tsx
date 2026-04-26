@@ -6,7 +6,6 @@ import {
   ArrowUp,
   ArrowsOut,
   ArrowsOutSimple,
-  Book,
   BookOpen,
   Briefcase,
   Browsers,

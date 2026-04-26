@@ -256,9 +256,9 @@ function CoursePickerModal({
 }
 
 function NodeItem({
-  node, course, isCompleted, isLocked, posX, onPress, tint, completedLessons,
+  node, isCompleted, isLocked, posX, onPress, tint, completedLessons,
 }: {
-  node: SkillNode; course: Course; isCompleted: boolean;
+  node: SkillNode; isCompleted: boolean;
   isLocked: boolean; posX: number; onPress: () => void; tint: string;
   completedLessons: number;
 }) {
@@ -971,7 +971,6 @@ export default function TreeScreen() {
                 >
                   <NodeItem
                     node={node}
-                    course={course}
                     isCompleted={completed}
                     isLocked={locked}
                     posX={posX}
