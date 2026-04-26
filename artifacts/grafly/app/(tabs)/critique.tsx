@@ -12,6 +12,7 @@ import {
   Pressable,
   Dimensions,
 } from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { KeyboardAvoidingView } from "react-native-keyboard-controller";
 import Animated, {
   FadeIn,
@@ -23,6 +24,7 @@ import Animated, {
   withRepeat,
   withTiming,
   cancelAnimation,
+  interpolate,
 } from "react-native-reanimated";
 import { Icon } from "@/components/Icon";
 import { router } from "expo-router";
@@ -93,6 +95,8 @@ const COINS_PER_SESSION = 8;
 const MIN_USER_TURNS_FOR_REWARD = 3;
 const TYPEWRITER_SPEED_MS = 14;
 
+const ONBOARDING_KEY = "grafly:critique_onboarding_seen_v1";
+
 const { width: SCREEN_W, height: SCREEN_H } = Dimensions.get("window");
 
 const OPENER_TEMPLATES: Array<(title: string) => string> = [
@@ -160,6 +164,293 @@ function TypewriterText({ text, active, style, onTick, onDone }: TypewriterTextP
   );
 }
 
+type OnboardStep = {
+  title: string;
+  body: string;
+  ring?: { left: number; top: number; w: number; h: number; radius: number };
+  tooltip: { top?: number; bottom?: number };
+};
+
+function CritiqueOnboarding({
+  insets,
+  onClose,
+}: {
+  insets: { top: number; bottom: number };
+  onClose: () => void;
+}) {
+  const colors = useColors();
+  const [step, setStep] = useState(0);
+
+  const pulse = useSharedValue(0);
+  useEffect(() => {
+    pulse.value = withRepeat(
+      withTiming(1, { duration: 1100, easing: Easing.inOut(Easing.sin) }),
+      -1,
+      true,
+    );
+    return () => cancelAnimation(pulse);
+  }, []);
+  const ringStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: interpolate(pulse.value, [0, 1], [1, 1.18]) }],
+    opacity: interpolate(pulse.value, [0, 1], [0.95, 0.45]),
+  }));
+
+  const headerTop = insets.top + (Platform.OS === "web" ? 67 : 0) + 10;
+  const tabBottomPad = Math.max(insets.bottom, Platform.OS === "web" ? 16 : 10);
+  const tabBarHeight = 62 + tabBottomPad;
+  const composerY = SCREEN_H - tabBarHeight - 12 - 70;
+
+  const STEPS: OnboardStep[] = [
+    {
+      title: "Welcome to Critique",
+      body: "Get personalized design feedback from Grafly. Here are a few quick tips to get you started.",
+      tooltip: { top: SCREEN_H * 0.32 },
+    },
+    {
+      title: "Tap shuffle for a fresh design",
+      body: "The shuffle button at the top right loads a brand new design any time you want something new to critique.",
+      ring: { left: SCREEN_W - 60, top: headerTop + 18, w: 44, h: 44, radius: 100 },
+      tooltip: { top: headerTop + 90 },
+    },
+    {
+      title: "Tap the photo to expand",
+      body: "Tap any design image to open it full-screen and study every pixel up close.",
+      ring: { left: 14, top: headerTop + 100, w: SCREEN_W - 28, h: 200, radius: 24 },
+      tooltip: { top: headerTop + 320 },
+    },
+    {
+      title: "Chat to earn XP",
+      body: `Type your observations in the message box. Three thoughtful exchanges earn you +${XP_PER_SESSION} XP and ${COINS_PER_SESSION} coins.`,
+      ring: { left: 16, top: composerY, w: SCREEN_W - 32, h: 64, radius: 28 },
+      tooltip: { bottom: tabBarHeight + 120 },
+    },
+  ];
+
+  const current = STEPS[step];
+  const isLast = step === STEPS.length - 1;
+
+  function next() {
+    if (isLast) onClose();
+    else setStep((s) => s + 1);
+  }
+
+  return (
+    <View
+      pointerEvents="box-none"
+      style={{
+        position: "absolute",
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        zIndex: 1000,
+      }}
+    >
+      {/* Dim backdrop — tap-through disabled to focus on the tooltip */}
+      <Pressable
+        onPress={() => {}}
+        style={{
+          position: "absolute",
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: "rgba(7, 11, 28, 0.78)",
+        }}
+      />
+
+      {/* Pulsing highlight ring */}
+      {current.ring && (
+        <Animated.View
+          pointerEvents="none"
+          style={[
+            ringStyle,
+            {
+              position: "absolute",
+              left: current.ring.left,
+              top: current.ring.top,
+              width: current.ring.w,
+              height: current.ring.h,
+              borderRadius: current.ring.radius,
+              borderWidth: 3,
+              borderColor: colors.accent,
+              shadowColor: colors.accent,
+              shadowOffset: { width: 0, height: 0 },
+              shadowOpacity: 0.8,
+              shadowRadius: 14,
+              elevation: 8,
+            },
+          ]}
+        />
+      )}
+
+      {/* Step counter chip */}
+      <Animated.View
+        key={`chip-${step}`}
+        entering={FadeIn.duration(220)}
+        style={{
+          position: "absolute",
+          top: insets.top + 14,
+          alignSelf: "center",
+          left: 0,
+          right: 0,
+          alignItems: "center",
+        }}
+      >
+        <View
+          style={{
+            paddingHorizontal: 14,
+            paddingVertical: 6,
+            borderRadius: 100,
+            backgroundColor: "rgba(255,255,255,0.16)",
+            borderWidth: 1,
+            borderColor: "rgba(255,255,255,0.22)",
+          }}
+        >
+          <Text
+            style={{
+              fontSize: 11,
+              fontFamily: "Nunito_800ExtraBold",
+              color: "#FFFFFF",
+              letterSpacing: 1.4,
+            }}
+          >
+            {step + 1} OF {STEPS.length}
+          </Text>
+        </View>
+      </Animated.View>
+
+      {/* Tooltip card */}
+      <Animated.View
+        key={`card-${step}`}
+        entering={FadeInUp.duration(360).easing(Easing.out(Easing.cubic))}
+        style={{
+          position: "absolute",
+          left: 20,
+          right: 20,
+          ...(current.tooltip.top !== undefined
+            ? { top: current.tooltip.top }
+            : { bottom: current.tooltip.bottom }),
+          backgroundColor: colors.card,
+          borderRadius: 22,
+          padding: 20,
+          borderWidth: 1,
+          borderColor: colors.border,
+          shadowColor: "#000",
+          shadowOffset: { width: 0, height: 14 },
+          shadowOpacity: 0.35,
+          shadowRadius: 30,
+          elevation: 14,
+        }}
+      >
+        <View style={{ flexDirection: "row", alignItems: "center", gap: 10, marginBottom: 10 }}>
+          <View
+            style={{
+              width: 32,
+              height: 32,
+              borderRadius: 100,
+              backgroundColor: colors.accent + "26",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            <Icon name="bulb" size={16} color={colors.accent} />
+          </View>
+          <Text
+            style={{
+              fontSize: 17,
+              fontFamily: "Nunito_800ExtraBold",
+              color: colors.foreground,
+              letterSpacing: -0.3,
+              flex: 1,
+            }}
+          >
+            {current.title}
+          </Text>
+        </View>
+        <Text
+          style={{
+            fontSize: 14,
+            lineHeight: 20,
+            fontFamily: "Nunito_600SemiBold",
+            color: colors.mutedForeground,
+            marginBottom: 18,
+          }}
+        >
+          {current.body}
+        </Text>
+
+        {/* Step dots */}
+        <View style={{ flexDirection: "row", gap: 6, justifyContent: "center", marginBottom: 14 }}>
+          {STEPS.map((_, i) => (
+            <View
+              key={i}
+              style={{
+                width: i === step ? 18 : 6,
+                height: 6,
+                borderRadius: 3,
+                backgroundColor: i === step ? colors.accent : colors.border,
+              }}
+            />
+          ))}
+        </View>
+
+        <View style={{ flexDirection: "row", alignItems: "center", gap: 12 }}>
+          {!isLast && (
+            <Pressable
+              onPress={onClose}
+              style={{
+                paddingHorizontal: 14,
+                paddingVertical: 12,
+              }}
+            >
+              <Text
+                style={{
+                  fontSize: 13,
+                  fontFamily: "Nunito_800ExtraBold",
+                  color: colors.mutedForeground,
+                  letterSpacing: 0.3,
+                }}
+              >
+                Skip
+              </Text>
+            </Pressable>
+          )}
+          <View style={{ flex: 1 }} />
+          <PressScale
+            onPress={next}
+            style={{
+              backgroundColor: colors.foreground,
+              paddingHorizontal: 22,
+              paddingVertical: 13,
+              borderRadius: 100,
+              flexDirection: "row",
+              alignItems: "center",
+              gap: 8,
+            }}
+          >
+            <Text
+              style={{
+                fontSize: 14,
+                fontFamily: "Nunito_800ExtraBold",
+                color: colors.background,
+                letterSpacing: 0.2,
+              }}
+            >
+              {isLast ? "Got it, let's go" : "Next"}
+            </Text>
+            <Icon
+              name={isLast ? "checkmark" : "arrow-forward"}
+              size={15}
+              color={colors.background}
+            />
+          </PressScale>
+        </View>
+      </Animated.View>
+    </View>
+  );
+}
+
 export default function CritiqueScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
@@ -173,6 +464,26 @@ export default function CritiqueScreen() {
   const [imageOpen, setImageOpen] = useState(false);
   const [sessionsDone, setSessionsDone] = useState(0);
   const [rewardedThisDesign, setRewardedThisDesign] = useState(false);
+  const [showOnboarding, setShowOnboarding] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    AsyncStorage.getItem(ONBOARDING_KEY)
+      .then((v) => {
+        if (!cancelled && !v) setShowOnboarding(true);
+      })
+      .catch(() => {
+        if (!cancelled) setShowOnboarding(true);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  function dismissOnboarding() {
+    setShowOnboarding(false);
+    AsyncStorage.setItem(ONBOARDING_KEY, "1").catch(() => {});
+  }
 
   const scrollRef = useRef<ScrollView>(null);
   const [animateIndex, setAnimateIndex] = useState(-1);
@@ -707,6 +1018,11 @@ export default function CritiqueScreen() {
           </View>
         )}
       </KeyboardAvoidingView>
+
+      {/* First-time onboarding walkthrough */}
+      {showOnboarding && (
+        <CritiqueOnboarding insets={insets} onClose={dismissOnboarding} />
+      )}
 
       {/* Full-image modal */}
       <Modal visible={imageOpen} transparent animationType="fade" onRequestClose={() => setImageOpen(false)}>
