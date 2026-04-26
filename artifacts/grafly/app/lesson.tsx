@@ -25,6 +25,15 @@ import { COURSES, findNodeById, type Question, type Lesson } from "@/constants/l
 import { adaptiveQuestions } from "@/utils/adaptive";
 import { GraflyMascot } from "@/components/GraflyMascot";
 import { PressScale } from "@/components/PressScale";
+import {
+  LessonIntroCard,
+  ModuleCompleteCelebration,
+  SpotBadDesignRenderer,
+  ChooseBetterDesignRenderer,
+  DragDropLayoutRenderer,
+  FiveSecondTestRenderer,
+  FindTheCTARenderer,
+} from "@/components/LessonScenes";
 import type { MascotState } from "@/constants/assets";
 
 function MultipleChoice({
@@ -456,6 +465,16 @@ function QuestionRenderer({
       return <DragToMatch question={question} onAnswer={(c) => onAnswer(c ? 0 : -1)} answered={answered} />;
     case "fill_in_blank":
       return <FillInBlank question={question} onAnswer={(c) => onAnswer(c ? 0 : -1)} answered={answered} />;
+    case "spot_bad_design":
+      return <SpotBadDesignRenderer question={question} onAnswer={(c) => onAnswer(c ? 0 : -1)} answered={answered} />;
+    case "choose_better_design":
+      return <ChooseBetterDesignRenderer question={question} onAnswer={(c) => onAnswer(c ? 0 : -1)} answered={answered} />;
+    case "drag_drop_layout":
+      return <DragDropLayoutRenderer question={question} onAnswer={(c) => onAnswer(c ? 0 : -1)} answered={answered} />;
+    case "five_second_test":
+      return <FiveSecondTestRenderer question={question} onAnswer={(c) => onAnswer(c ? 0 : -1)} answered={answered} />;
+    case "find_the_cta":
+      return <FindTheCTARenderer question={question} onAnswer={(c) => onAnswer(c ? 0 : -1)} answered={answered} />;
     default:
       return <MultipleChoice question={question} onAnswer={onAnswer as (i: number) => void} answered={answered} selectedIndex={selectedIndex} />;
   }
@@ -473,6 +492,7 @@ export default function LessonScreen() {
 
   const [lessonIdx, setLessonIdx] = useState(0);
   const [questionIdx, setQuestionIdx] = useState(0);
+  const [introDismissed, setIntroDismissed] = useState(false);
   const [answered, setAnswered] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
   const [selectedBool, setSelectedBool] = useState<boolean | null>(null);
@@ -521,7 +541,16 @@ export default function LessonScreen() {
 
   function getCorrect(q: Question, answer: number | boolean): boolean {
     if (q.type === "true_false") return (answer as boolean) === q.correctBool;
-    if (q.type === "arrange_in_order" || q.type === "drag_to_match" || q.type === "fill_in_blank") return (answer as number) === 0;
+    if (
+      q.type === "arrange_in_order" ||
+      q.type === "drag_to_match" ||
+      q.type === "fill_in_blank" ||
+      q.type === "spot_bad_design" ||
+      q.type === "choose_better_design" ||
+      q.type === "drag_drop_layout" ||
+      q.type === "five_second_test" ||
+      q.type === "find_the_cta"
+    ) return (answer as number) === 0;
     return (answer as number) === q.correctIndex;
   }
 
@@ -590,6 +619,7 @@ export default function LessonScreen() {
     if (nextLessonIdx < allLessons.length) {
       setLessonIdx(nextLessonIdx);
       setQuestionIdx(0);
+      setIntroDismissed(false);
       setAnswered(false);
       setSelectedIndex(null);
       setSelectedBool(null);
@@ -604,6 +634,10 @@ export default function LessonScreen() {
 
   if (showSummary) {
     const perfect = heartsLost === 0;
+    const moduleJustCompleted = allDone; // last lesson of this node finished
+    const moduleCelebrationMsg = perfect
+      ? `Flawless run through the ${node.title} module — you've earned this one.`
+      : `You wrapped the entire ${node.title} module. The patterns are starting to click.`;
     return (
       <View style={{ flex: 1, backgroundColor: colors.background }}>
         <ScrollView
@@ -619,6 +653,14 @@ export default function LessonScreen() {
               {currentLesson.title}
             </Text>
           </Animated.View>
+
+          {moduleJustCompleted && (
+            <ModuleCompleteCelebration
+              moduleTitle={node.title}
+              message={moduleCelebrationMsg}
+              accentColor={course?.color}
+            />
+          )}
 
           {/* Rewards */}
           <Animated.View entering={FadeIn.delay(150)} style={{ flexDirection: "row", gap: 12, marginBottom: 20 }}>
@@ -695,7 +737,43 @@ export default function LessonScreen() {
     arrange_in_order: "Arrange in order",
     drag_to_match: "Match the pairs",
     fill_in_blank: "Fill in the blank",
+    spot_bad_design: "Spot the bad design",
+    choose_better_design: "Pick the better design",
+    drag_drop_layout: "Stack the layout",
+    five_second_test: "5-second test",
+    find_the_cta: "Find the primary CTA",
   };
+
+  // Lesson intro card — shown once before the very first question
+  if (currentLesson.intro && !introDismissed && questionIdx === 0) {
+    return (
+      <View style={{ flex: 1, backgroundColor: colors.background }}>
+        <View style={{ paddingTop: paddingTop + 8, paddingHorizontal: 24, paddingBottom: 12, flexDirection: "row", alignItems: "center", gap: 14 }}>
+          <PressScale
+            onPress={() => {
+              if (router.canGoBack()) router.back();
+              else router.replace("/");
+            }}
+            style={{ width: 38, height: 38, borderRadius: 100, backgroundColor: colors.card, alignItems: "center", justifyContent: "center" }}
+          >
+            <Icon name="close" size={20} color={colors.foreground} />
+          </PressScale>
+          <View style={{ flex: 1, height: 8, backgroundColor: colors.muted, borderRadius: 4, overflow: "hidden" }}>
+            <View style={{ height: "100%", width: `${(lessonIdx / Math.max(1, allLessons.length)) * 100}%`, backgroundColor: course?.color ?? colors.primary, borderRadius: 4 }} />
+          </View>
+          <Text style={{ fontSize: 12, fontFamily: "Nunito_800ExtraBold", color: colors.mutedForeground }}>
+            {lessonIdx + 1}/{allLessons.length}
+          </Text>
+        </View>
+        <LessonIntroCard
+          intro={currentLesson.intro}
+          lessonTitle={currentLesson.title}
+          accentColor={course?.color}
+          onContinue={() => setIntroDismissed(true)}
+        />
+      </View>
+    );
+  }
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.background }}>
@@ -760,8 +838,9 @@ export default function LessonScreen() {
             {currentQ.question}
           </Text>
 
-          {/* Question component */}
+          {/* Question component — keyed by question id so per-question local state resets between questions */}
           <QuestionRenderer
+            key={currentQ.id}
             question={currentQ}
             onAnswer={handleAnswer}
             answered={answered}

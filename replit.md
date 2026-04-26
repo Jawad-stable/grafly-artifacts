@@ -41,7 +41,8 @@ The project is a pnpm workspace monorepo using TypeScript, comprising the Grafly
     - **Onboarding**: A 7-step editorial flow.
     - **Mascot**: `GraflyMascot` component (`components/GraflyMascot.tsx`) with various states.
 - **Gamification**: Includes XP/level progression, coins, hearts (lesson only), streak (home only), shields, and XP boosters.
-- **Lesson Engine**: Supports 7 question types, with lesson data stored in `constants/lessons.ts`.
+- **Lesson Engine**: Supports 12 question types (7 originals plus `spot_bad_design`, `choose_better_design`, `drag_drop_layout`, `five_second_test`, `find_the_cta`), with lesson data stored in `constants/lessons.ts`. Lessons can carry an optional `intro` (headline/body + good-vs-bad scene) shown via `LessonIntroCard` before the first question. New mini-game renderers + scene primitives live in `components/LessonScenes.tsx` and use only RN primitives + react-native-svg + reanimated.
+- **Design Principles Course**: Six modules (Contrast, Typography, Spacing, Color, Hierarchy, UX Basics), each with 3-5 lessons. Players reach it via the new `app/course-intro.tsx` welcome screen (linked from a "NEW · COURSE WELCOME" card in the tree header for design-principles only). Each node sheet shows a per-module progress ring + completed-lesson checkmarks. Finishing the last lesson of a module triggers a `ModuleCompleteCelebration` banner on the summary screen.
 - **Auth**: Onboarding-first authentication with no account required initially. AuthGate manages declarative routing based on `onboardingComplete` state. Google Sign-In is implemented with specific contract requirements for success handling. Hydration gate ensures `GameContext` is loaded before app renders.
 
 ## API Server (Express 5)

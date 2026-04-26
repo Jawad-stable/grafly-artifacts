@@ -25,9 +25,9 @@ export interface MatchPair {
 // ---------------------------------------------------------------------------
 
 export type SceneBlock =
-  | { kind: "title"; text: string; size?: number; color?: string; align?: "left" | "center"; weight?: "bold" | "black" | "regular" }
-  | { kind: "subtitle"; text: string; size?: number; color?: string; opacity?: number; align?: "left" | "center" }
-  | { kind: "body"; text: string; size?: number; color?: string; opacity?: number; align?: "left" | "center"; lines?: number }
+  | { kind: "title"; text: string; size?: number; color?: string; align?: "left" | "center"; weight?: "bold" | "black" | "regular"; tapId?: string }
+  | { kind: "subtitle"; text: string; size?: number; color?: string; opacity?: number; align?: "left" | "center"; weight?: "bold" | "black" | "regular"; tapId?: string }
+  | { kind: "body"; text: string; size?: number; color?: string; opacity?: number; align?: "left" | "center"; lines?: number; weight?: "bold" | "black" | "regular"; tapId?: string }
   | { kind: "button"; text: string; bg: string; fg: string; large?: boolean; outline?: boolean; tapId?: string; rounded?: number }
   | { kind: "tag"; text: string; bg: string; fg: string }
   | { kind: "image"; bg: string; height: number; emoji?: string; rounded?: number; tapId?: string }
@@ -128,209 +128,1021 @@ export const COURSES: Course[] = [
     id: "design-principles",
     title: "Design Principles",
     icon: "grid-outline",
-    description: "Master the foundational rules that guide all great design.",
+    description: "Six modules, real mini-games, and the why behind every rule of good design.",
     color: "#00A4FA",
     nodes: [
-      {
-        id: "dp-balance",
-        courseId: "design-principles",
-        title: "Balance",
-        icon: "scale-outline",
-        description: "Achieve visual equilibrium in your designs.",
-        prerequisites: [],
-        lessons: [
-          {
-            id: "dp-balance-1",
-            title: "Symmetry vs Asymmetry",
-            description: "Learn how balance creates harmony in design.",
-            xpReward: 20,
-            coinReward: 5,
-            questions: [
-              {
-                id: "q1",
-                type: "multiple_choice",
-                question: "Which type of balance creates a mirror-image layout?",
-                options: ["Asymmetrical balance", "Radial balance", "Symmetrical balance", "Dynamic balance"],
-                correctIndex: 2,
-                explanation: "Symmetrical balance creates identical or near-identical elements on both sides of an axis, producing a stable, formal feel.",
-                difficulty: 1,
-              },
-              {
-                id: "q2",
-                type: "true_false",
-                question: "Asymmetrical balance always feels less professional than symmetrical balance.",
-                correctBool: false,
-                explanation: "Asymmetrical balance can feel dynamic and modern. Many premium brands use asymmetry to appear energetic and contemporary.",
-                difficulty: 1,
-              },
-              {
-                id: "q3",
-                type: "multiple_choice",
-                question: "A heavy dark element on the left can be balanced by:",
-                options: ["Adding more dark elements", "Placing multiple smaller light elements on the right", "Removing all contrast", "Using only one color"],
-                correctIndex: 1,
-                explanation: "Visual weight isn't just about size — multiple smaller, lighter elements can balance one heavy element, like small coins balancing a large rock.",
-                difficulty: 2,
-              },
-              {
-                id: "q4",
-                type: "true_false",
-                question: "Radial balance radiates from a central point outward.",
-                correctBool: true,
-                explanation: "Radial balance distributes design elements equally around a center point, like a sunflower or circular mandala.",
-                difficulty: 2,
-              },
-            ],
-            critiquePrompt: "Find a poster or app screen and critique how it achieves (or fails to achieve) visual balance. Consider both the visual weight distribution and how it affects the viewer's eye movement.",
-          },
-          {
-            id: "dp-balance-2",
-            title: "Visual Weight",
-            description: "Understand what makes elements feel heavy or light.",
-            xpReward: 20,
-            coinReward: 5,
-            questions: [
-              {
-                id: "q5",
-                type: "multiple_choice",
-                question: "Which factor contributes most to visual weight?",
-                options: ["File size of the image", "Size and darkness of an element", "Number of fonts used", "Page loading speed"],
-                correctIndex: 1,
-                explanation: "Larger and darker elements carry more visual weight, drawing the eye more strongly than smaller, lighter elements.",
-                difficulty: 2,
-              },
-              {
-                id: "q6",
-                type: "true_false",
-                question: "Isolated elements appear lighter than elements surrounded by content.",
-                correctBool: false,
-                explanation: "Isolated elements actually carry MORE visual weight because they have more white space around them, making them stand out.",
-                difficulty: 2,
-              },
-              {
-                id: "q7",
-                type: "multiple_choice",
-                question: "Which placement gives an element the most visual prominence?",
-                options: ["Bottom-left corner", "Dead center of the composition", "Top-right area", "Along the left edge"],
-                correctIndex: 1,
-                explanation: "The center of a composition naturally draws the most attention and visual weight, though off-center placements can be equally powerful through contrast.",
-                difficulty: 1,
-              },
-            ],
-          },
-        ],
-      },
-      {
-        id: "dp-hierarchy",
-        courseId: "design-principles",
-        title: "Visual Hierarchy",
-        icon: "layers-outline",
-        description: "Guide your viewer's eye with intentional hierarchy.",
-        prerequisites: ["dp-balance"],
-        lessons: [
-          {
-            id: "dp-hierarchy-1",
-            title: "Size & Scale",
-            description: "Use scale to establish hierarchy instantly.",
-            xpReward: 20,
-            coinReward: 5,
-            questions: [
-              {
-                id: "q8",
-                type: "multiple_choice",
-                question: "What is the primary purpose of visual hierarchy?",
-                options: ["To make designs look complex", "To guide the viewer through content in a meaningful order", "To use as many fonts as possible", "To fill empty space"],
-                correctIndex: 1,
-                explanation: "Visual hierarchy directs the viewer's eye to information in order of importance, making content easier to understand and navigate.",
-                difficulty: 1,
-              },
-              {
-                id: "q9",
-                type: "true_false",
-                question: "Making everything the same size creates a strong visual hierarchy.",
-                correctBool: false,
-                explanation: "Uniformity destroys hierarchy. Variation in size, weight, and color is essential for establishing clear information priority.",
-                difficulty: 1,
-              },
-              {
-                id: "q10",
-                type: "multiple_choice",
-                question: "Which technique does NOT effectively create hierarchy?",
-                options: ["Increasing contrast", "Varying font sizes", "Using random colors", "Adding whitespace"],
-                correctIndex: 2,
-                explanation: "Random color choice undermines hierarchy. Intentional color contrast and variation communicates importance, but randomness creates visual noise.",
-                difficulty: 3,
-              },
-            ],
-            critiquePrompt: "Look at a news website homepage and critique its visual hierarchy. Which story demands your attention first? Is this intentional? How do size, color, and placement guide your eye?",
-          },
-          {
-            id: "dp-hierarchy-2",
-            title: "Color & Contrast",
-            description: "Leverage color to create visual priority.",
-            xpReward: 25,
-            coinReward: 5,
-            questions: [
-              {
-                id: "q11",
-                type: "multiple_choice",
-                question: "High contrast between elements creates:",
-                options: ["Visual confusion", "A sense of harmony", "Visual emphasis and importance", "A monotonous design"],
-                correctIndex: 2,
-                explanation: "High contrast draws attention and signals importance, which is why call-to-action buttons often use the highest contrast color combination on a page.",
-                difficulty: 1,
-              },
-              {
-                id: "q12",
-                type: "true_false",
-                question: "Warm colors (red, orange) typically advance while cool colors (blue, green) recede.",
-                correctBool: true,
-                explanation: "Warm colors appear to come forward visually while cool colors recede, which is why warnings use red/orange and calm states use blue/green.",
-                difficulty: 2,
-              },
-            ],
-          },
-        ],
-      },
+      // ========== MODULE 1: CONTRAST ==========
       {
         id: "dp-contrast",
         courseId: "design-principles",
         title: "Contrast",
         icon: "contrast-outline",
-        description: "Create visual interest and clarity through contrast.",
-        prerequisites: ["dp-hierarchy"],
+        description: "Make the right thing impossible to miss.",
+        prerequisites: [],
         lessons: [
           {
             id: "dp-contrast-1",
-            title: "Contrast Fundamentals",
-            description: "Learn the types and uses of contrast in design.",
+            title: "Why Contrast Matters",
+            description: "The single biggest readability lever you have.",
             xpReward: 20,
             coinReward: 5,
+            intro: {
+              headline: "Contrast is how design speaks.",
+              body: "Without contrast, everything blends. With it, the eye knows exactly where to land first. Look at the same screen with — and without — it.",
+              scene: {
+                kind: "good_vs_bad",
+                goodNote: "High contrast: the headline pops, the action is unmissable.",
+                badNote: "Low contrast: the eye gets lost, and nothing feels primary.",
+                good: {
+                  bg: "#FFFFFF", padding: 16,
+                  blocks: [
+                    { kind: "title", text: "Welcome back", size: 24, color: "#21263F", weight: "bold" },
+                    { kind: "body", text: "Your dashboard is ready.", size: 14, color: "#646A88" },
+                    { kind: "spacer", size: 16 },
+                    { kind: "button", text: "Open dashboard", bg: "#0078BB", fg: "#FFFFFF", large: true },
+                  ],
+                },
+                bad: {
+                  bg: "#FFFFFF", padding: 16,
+                  blocks: [
+                    { kind: "title", text: "Welcome back", size: 24, color: "#C8CCD9", weight: "bold" },
+                    { kind: "body", text: "Your dashboard is ready.", size: 14, color: "#DEE0ED" },
+                    { kind: "spacer", size: 16 },
+                    { kind: "button", text: "Open dashboard", bg: "#E8EBF5", fg: "#C8CCD9", large: true },
+                  ],
+                },
+              },
+            },
             questions: [
               {
-                id: "q13",
+                id: "dp-c1-q1",
                 type: "multiple_choice",
-                question: "WCAG AA accessibility requires a minimum contrast ratio of:",
+                question: "What does contrast primarily do for a layout?",
+                options: [
+                  "Makes the screen look busy",
+                  "Tells the eye what's most important",
+                  "Adds extra colors for variety",
+                  "Slows the user down on purpose",
+                ],
+                correctIndex: 1,
+                explanation: "Contrast is signal. Without it, every element competes equally and the brain has to do the sorting. The right contrast tells your user exactly where to start — and that's a feature, not decoration.",
+                difficulty: 1,
+              },
+              {
+                id: "dp-c1-q2",
+                type: "true_false",
+                question: "Contrast can come from size, weight, or shape — not just color.",
+                correctBool: true,
+                explanation: "Color is the loudest contrast tool, but a small label next to a giant headline carries plenty on its own. Mixing types of contrast is what makes a screen feel layered instead of shouty.",
+                difficulty: 1,
+              },
+              {
+                id: "dp-c1-q3",
+                type: "multiple_choice",
+                question: "WCAG AA requires body text to hit at least which contrast ratio?",
                 options: ["2:1", "3:1", "4.5:1", "7:1"],
                 correctIndex: 2,
-                explanation: "WCAG AA standard requires a minimum 4.5:1 contrast ratio for normal text to ensure readability for users with visual impairments.",
-                difficulty: 3,
-              },
-              {
-                id: "q14",
-                type: "true_false",
-                question: "Color is the only way to create contrast in design.",
-                correctBool: false,
-                explanation: "Contrast can be achieved through size, shape, texture, direction, and weight — not just color. Relying solely on color also excludes colorblind users.",
+                explanation: "4.5:1 is the floor for body text — anything less and a real chunk of users (low vision, glare on phones, older screens) will struggle. Hitting it isn't a constraint; it's a baseline of respect.",
                 difficulty: 2,
               },
+            ],
+          },
+          {
+            id: "dp-contrast-2",
+            title: "Spot the Bad Design",
+            description: "Find the contrast problem in a real-looking screen.",
+            xpReward: 25,
+            coinReward: 8,
+            intro: {
+              headline: "Train your eye.",
+              body: "You'll see a fake settings screen. One element has a contrast problem that would fail in production. Tap it.",
+            },
+            questions: [
               {
-                id: "q15",
+                id: "dp-c2-q1",
+                type: "spot_bad_design",
+                question: "Tap the element with a contrast problem.",
+                explanation: "The 'Save changes' button used pale grey on white — under 2:1 contrast. A primary action must be the loudest thing on the screen, not the quietest. Use a strong fill (the brand color works) and white text.",
+                difficulty: 2,
+                scene: {
+                  kind: "spot_bad",
+                  prompt: "One of these is unreadable for a lot of users. Tap it.",
+                  targetTapId: "save",
+                  screen: {
+                    bg: "#FFFFFF", padding: 16,
+                    blocks: [
+                      { kind: "title", text: "Account settings", size: 22, color: "#21263F", weight: "bold" },
+                      { kind: "spacer", size: 12 },
+                      { kind: "card", bg: "#F5F6FA", padding: 14, rounded: 14, children: [
+                        { kind: "body", text: "Email", size: 12, color: "#646A88" },
+                        { kind: "body", text: "designer@grafly.app", size: 16, color: "#21263F" },
+                      ]},
+                      { kind: "spacer", size: 12 },
+                      { kind: "card", bg: "#F5F6FA", padding: 14, rounded: 14, children: [
+                        { kind: "body", text: "Plan", size: 12, color: "#646A88" },
+                        { kind: "body", text: "Pro", size: 16, color: "#21263F" },
+                      ]},
+                      { kind: "spacer", size: 20 },
+                      { kind: "row", gap: 12, children: [
+                        { kind: "button", text: "Cancel", bg: "#F5F6FA", fg: "#21263F", tapId: "cancel" },
+                        { kind: "button", text: "Save changes", bg: "#F5F6FA", fg: "#DEE0ED", tapId: "save" },
+                      ]},
+                    ],
+                  },
+                },
+              },
+              {
+                id: "dp-c2-q2",
                 type: "multiple_choice",
-                question: "Which pairing has the highest contrast?",
-                options: ["Light grey on white", "Black on yellow", "Navy on dark blue", "Red on green"],
+                question: "When fixing a low-contrast button, the safest move is to:",
+                options: [
+                  "Add a subtle border around it",
+                  "Make the fill darker and the text white",
+                  "Increase the corner radius",
+                  "Use a lighter shade of the brand color",
+                ],
                 correctIndex: 1,
-                explanation: "Black on yellow provides extremely high contrast (approximately 11:1), which is why it's used for warning signs worldwide.",
+                explanation: "A solid dark fill with white text is the cleanest way to push contrast above 4.5:1. Borders and radius don't change perceived weight; color and value do.",
+                difficulty: 2,
+              },
+            ],
+          },
+          {
+            id: "dp-contrast-3",
+            title: "Choose the Better Design",
+            description: "Pick the version that actually works.",
+            xpReward: 25,
+            coinReward: 8,
+            intro: {
+              headline: "Two takes. One winner.",
+              body: "Both screens show the same content. One has earned its hierarchy. Pick it — and we'll explain why.",
+            },
+            questions: [
+              {
+                id: "dp-c3-q1",
+                type: "choose_better_design",
+                question: "Which onboarding screen leads the eye better?",
+                explanation: "B wins: a single dark CTA against muted supporting text creates a clear path. Two equally bold buttons split attention and slow the user down — give one action the spotlight.",
+                difficulty: 2,
+                scene: {
+                  kind: "ab_compare",
+                  prompt: "Same content, different contrast choices. Pick the stronger one.",
+                  correctIndex: 1,
+                  leftLabel: "A",
+                  rightLabel: "B",
+                  left: {
+                    bg: "#FFFFFF", padding: 14,
+                    blocks: [
+                      { kind: "title", text: "Get started", size: 20, color: "#21263F", weight: "bold" },
+                      { kind: "body", text: "Build your first project today.", size: 13, color: "#21263F" },
+                      { kind: "spacer", size: 14 },
+                      { kind: "button", text: "Create project", bg: "#0078BB", fg: "#FFFFFF" },
+                      { kind: "spacer", size: 8 },
+                      { kind: "button", text: "Browse templates", bg: "#0078BB", fg: "#FFFFFF" },
+                    ],
+                  },
+                  right: {
+                    bg: "#FFFFFF", padding: 14,
+                    blocks: [
+                      { kind: "title", text: "Get started", size: 20, color: "#21263F", weight: "bold" },
+                      { kind: "body", text: "Build your first project today.", size: 13, color: "#646A88" },
+                      { kind: "spacer", size: 14 },
+                      { kind: "button", text: "Create project", bg: "#0078BB", fg: "#FFFFFF" },
+                      { kind: "spacer", size: 8 },
+                      { kind: "button", text: "Browse templates", bg: "#FFFFFF", fg: "#0078BB", outline: true },
+                    ],
+                  },
+                },
+              },
+            ],
+          },
+        ],
+      },
+
+      // ========== MODULE 2: TYPOGRAPHY ==========
+      {
+        id: "dp-typography",
+        courseId: "design-principles",
+        title: "Typography",
+        icon: "text-outline",
+        description: "Set type that earns trust at a glance.",
+        prerequisites: ["dp-contrast"],
+        lessons: [
+          {
+            id: "dp-typo-1",
+            title: "Type Has a Job",
+            description: "Headlines lead. Body explains. Labels orient.",
+            xpReward: 20,
+            coinReward: 5,
+            intro: {
+              headline: "Every text style is a promise.",
+              body: "Bigger, bolder text says 'start here.' Smaller, calmer text says 'detail.' If the sizes don't match the priorities, the user feels the friction — even if they can't name it.",
+              scene: {
+                kind: "good_vs_bad",
+                goodNote: "Three sizes, clear roles — eye lands on the headline first.",
+                badNote: "Everything is the same size. The page has no entry point.",
+                good: {
+                  bg: "#FFFFFF", padding: 16,
+                  blocks: [
+                    { kind: "title", text: "New in Grafly", size: 24, color: "#21263F", weight: "bold" },
+                    { kind: "subtitle", text: "Faster lessons, better feedback", size: 14, color: "#646A88" },
+                    { kind: "spacer", size: 12 },
+                    { kind: "body", text: "We rebuilt the lesson engine to react in under 50ms — taps feel instant.", size: 13, color: "#21263F" },
+                  ],
+                },
+                bad: {
+                  bg: "#FFFFFF", padding: 16,
+                  blocks: [
+                    { kind: "body", text: "New in Grafly", size: 14, color: "#21263F" },
+                    { kind: "body", text: "Faster lessons, better feedback", size: 14, color: "#21263F" },
+                    { kind: "spacer", size: 8 },
+                    { kind: "body", text: "We rebuilt the lesson engine to react in under 50ms — taps feel instant.", size: 14, color: "#21263F" },
+                  ],
+                },
+              },
+            },
+            questions: [
+              {
+                id: "dp-t1-q1",
+                type: "multiple_choice",
+                question: "What's the main job of a typographic hierarchy?",
+                options: [
+                  "Show off the font you bought",
+                  "Tell the reader where to look first, second, third",
+                  "Fill the page with variety",
+                  "Match a competitor's look",
+                ],
+                correctIndex: 1,
+                explanation: "Hierarchy is a roadmap. The reader's eye should hop from headline to subhead to body without thinking. Variety alone doesn't help — intent does.",
+                difficulty: 1,
+              },
+              {
+                id: "dp-t1-q2",
+                type: "true_false",
+                question: "Body text usually reads best between 14 and 18px on mobile.",
+                correctBool: true,
+                explanation: "Below 14 starts feeling cramped on small screens; above 18 starts feeling like an alert. 14–18 is the sweet spot for paragraphs you actually want people to read.",
+                difficulty: 1,
+              },
+              {
+                id: "dp-t1-q3",
+                type: "multiple_choice",
+                question: "A comfortable line height for body text is about:",
+                options: ["1.0× the font size", "1.2× the font size", "1.5× the font size", "2.5× the font size"],
+                correctIndex: 2,
+                explanation: "~1.5 gives lines enough breathing room without losing paragraph cohesion. 1.0 feels like a wall of text; 2.5 reads like a list of disconnected sentences.",
+                difficulty: 2,
+              },
+            ],
+          },
+          {
+            id: "dp-typo-2",
+            title: "Pick the Better Headline",
+            description: "Two headlines, one is doing its job.",
+            xpReward: 25,
+            coinReward: 8,
+            intro: {
+              headline: "Headlines earn the rest of the page.",
+              body: "If the headline doesn't land, no one reads the body. Look at both versions and pick the one that gives the headline real weight.",
+            },
+            questions: [
+              {
+                id: "dp-t2-q1",
+                type: "choose_better_design",
+                question: "Which headline treatment carries more confidence?",
+                explanation: "B wins because the headline is much larger than the supporting text — a clear 2-3× ratio. When headline and body are nearly the same size, neither one leads, and the page feels flat.",
+                difficulty: 2,
+                scene: {
+                  kind: "ab_compare",
+                  correctIndex: 1,
+                  leftLabel: "A",
+                  rightLabel: "B",
+                  left: {
+                    bg: "#FFFFFF", padding: 14,
+                    blocks: [
+                      { kind: "title", text: "Design that ships.", size: 18, color: "#21263F", weight: "bold" },
+                      { kind: "spacer", size: 6 },
+                      { kind: "body", text: "From idea to production in one tool.", size: 16, color: "#21263F" },
+                    ],
+                  },
+                  right: {
+                    bg: "#FFFFFF", padding: 14,
+                    blocks: [
+                      { kind: "title", text: "Design that ships.", size: 28, color: "#21263F", weight: "black" },
+                      { kind: "spacer", size: 6 },
+                      { kind: "body", text: "From idea to production in one tool.", size: 14, color: "#646A88" },
+                    ],
+                  },
+                },
+              },
+              {
+                id: "dp-t2-q2",
+                type: "true_false",
+                question: "Mixing 4+ fonts on one screen usually strengthens hierarchy.",
+                correctBool: false,
+                explanation: "More fonts means more competing voices. Two type families is the working maximum — one for headlines, one for everything else. Hierarchy comes from size and weight, not extra typefaces.",
+                difficulty: 2,
+              },
+            ],
+          },
+          {
+            id: "dp-typo-3",
+            title: "Stack the Hierarchy",
+            description: "Reorder the blocks so the most important one leads.",
+            xpReward: 25,
+            coinReward: 8,
+            intro: {
+              headline: "Order is hierarchy.",
+              body: "Even before you change a font, deciding what comes first sets the tone. Drag the blocks into the order a user would expect to scan them.",
+            },
+            questions: [
+              {
+                id: "dp-t3-q1",
+                type: "drag_drop_layout",
+                question: "Order this product card so the eye lands the right way.",
+                explanation: "Lead with the product name (identity), follow with the price (the decision), then the description (justification), then the action (commit). Putting the button first makes users commit before they understand.",
+                difficulty: 3,
+                scene: {
+                  kind: "drag_layout",
+                  prompt: "Tap the arrows to put these blocks in the order a buyer would scan them.",
+                  correctOrder: ["name", "price", "desc", "cta"],
+                  cards: [
+                    { id: "cta", label: "Add to cart", sub: "Primary action", tone: "accent" },
+                    { id: "desc", label: "Hand-bound notebook", sub: "Body description" },
+                    { id: "name", label: "Field Journal", sub: "Product name" },
+                    { id: "price", label: "$28", sub: "Price" },
+                  ],
+                },
+              },
+            ],
+          },
+        ],
+      },
+
+      // ========== MODULE 3: SPACING ==========
+      {
+        id: "dp-spacing",
+        courseId: "design-principles",
+        title: "Spacing",
+        icon: "expand-outline",
+        description: "Whitespace isn't empty — it's structure.",
+        prerequisites: ["dp-typography"],
+        lessons: [
+          {
+            id: "dp-space-1",
+            title: "Whitespace Works",
+            description: "Why breathing room is a design tool.",
+            xpReward: 20,
+            coinReward: 5,
+            intro: {
+              headline: "Space is a tool, not leftover.",
+              body: "Whitespace groups things, separates things, and gives the eye somewhere to rest between them. Used well, it makes a screen feel calm and confident — not empty.",
+              scene: {
+                kind: "good_vs_bad",
+                goodNote: "Generous spacing: each item has room. Easy to scan.",
+                badNote: "No spacing: items collide. The eye doesn't know where one ends.",
+                good: {
+                  bg: "#FFFFFF", padding: 16,
+                  blocks: [
+                    { kind: "card", bg: "#F5F6FA", padding: 14, rounded: 14, children: [
+                      { kind: "body", text: "Inbox", size: 16, color: "#21263F", weight: "bold" },
+                      { kind: "body", text: "12 unread messages", size: 13, color: "#646A88" },
+                    ]},
+                    { kind: "spacer", size: 12 },
+                    { kind: "card", bg: "#F5F6FA", padding: 14, rounded: 14, children: [
+                      { kind: "body", text: "Drafts", size: 16, color: "#21263F", weight: "bold" },
+                      { kind: "body", text: "3 saved", size: 13, color: "#646A88" },
+                    ]},
+                  ],
+                },
+                bad: {
+                  bg: "#FFFFFF", padding: 4,
+                  blocks: [
+                    { kind: "card", bg: "#F5F6FA", padding: 4, rounded: 4, children: [
+                      { kind: "body", text: "Inbox", size: 16, color: "#21263F", weight: "bold" },
+                      { kind: "body", text: "12 unread messages", size: 13, color: "#646A88" },
+                    ]},
+                    { kind: "card", bg: "#F5F6FA", padding: 4, rounded: 4, children: [
+                      { kind: "body", text: "Drafts", size: 16, color: "#21263F", weight: "bold" },
+                      { kind: "body", text: "3 saved", size: 13, color: "#646A88" },
+                    ]},
+                  ],
+                },
+              },
+            },
+            questions: [
+              {
+                id: "dp-s1-q1",
+                type: "multiple_choice",
+                question: "Whitespace between two elements primarily signals:",
+                options: [
+                  "That you ran out of content",
+                  "That those elements are unrelated, or that one is finished",
+                  "That the screen needs more padding everywhere",
+                  "That the design isn't done yet",
+                ],
+                correctIndex: 1,
+                explanation: "Proximity creates relationship. When two things sit close, the brain reads them as a group. Pull them apart and you've quietly said 'these are different.' Use space to express structure.",
+                difficulty: 1,
+              },
+              {
+                id: "dp-s1-q2",
+                type: "true_false",
+                question: "Items in the same group should have less space between them than between groups.",
+                correctBool: true,
+                explanation: "This is the law of proximity. Tight spacing inside a group, looser spacing between groups. Without that contrast, every item floats equally and the structure disappears.",
+                difficulty: 1,
+              },
+              {
+                id: "dp-s1-q3",
+                type: "multiple_choice",
+                question: "A consistent spacing scale (4, 8, 12, 16, 24…) helps because:",
+                options: [
+                  "It looks more mathematical",
+                  "It removes guesswork and creates visual rhythm",
+                  "It makes the file size smaller",
+                  "It's required by accessibility",
+                ],
+                correctIndex: 1,
+                explanation: "A scale gives every spacing decision an answer. Components from different parts of the app land on the same rhythm, which is why a system feels 'designed' instead of stitched together.",
+                difficulty: 2,
+              },
+            ],
+          },
+          {
+            id: "dp-space-2",
+            title: "Spot the Spacing Mistake",
+            description: "Find the cramped element.",
+            xpReward: 25,
+            coinReward: 8,
+            intro: {
+              headline: "When spacing breaks, hierarchy breaks.",
+              body: "Look at this card. One element is suffocating. Tap it.",
+            },
+            questions: [
+              {
+                id: "dp-s2-q1",
+                type: "spot_bad_design",
+                question: "Tap the element with a spacing problem.",
+                explanation: "The 'Continue' button sits flush against the body text — no breathing room, no visual separation between explanation and action. A primary action needs space around it so the user feels invited to tap, not crowded into it.",
+                difficulty: 2,
+                scene: {
+                  kind: "spot_bad",
+                  prompt: "Something here doesn't have enough room. Tap it.",
+                  targetTapId: "continue",
+                  screen: {
+                    bg: "#FFFFFF", padding: 16,
+                    blocks: [
+                      { kind: "card", bg: "#F5F6FA", padding: 18, rounded: 16, children: [
+                        { kind: "title", text: "Verify your email", size: 18, color: "#21263F", weight: "bold", tapId: "title" },
+                        { kind: "spacer", size: 10 },
+                        { kind: "body", text: "We sent a code to your inbox. Enter it to keep going.", size: 13, color: "#646A88", tapId: "body" },
+                        { kind: "button", text: "Continue", bg: "#0078BB", fg: "#FFFFFF", tapId: "continue" },
+                      ]},
+                    ],
+                  },
+                },
+              },
+            ],
+          },
+          {
+            id: "dp-space-3",
+            title: "Reorder for Clarity",
+            description: "Group these list items by relationship.",
+            xpReward: 25,
+            coinReward: 8,
+            intro: {
+              headline: "Order tells a story.",
+              body: "Settings screens with no logic feel chaotic. Drag these into a sensible flow.",
+            },
+            questions: [
+              {
+                id: "dp-s3-q1",
+                type: "drag_drop_layout",
+                question: "Order these settings the way a user would expect them.",
+                explanation: "Personal identity (profile) leads, then how the app behaves for you (notifications), then the deeper stuff (privacy), and destructive actions (sign out) live last. Putting 'Sign out' near the top is a classic mistake — it invites accidents.",
+                difficulty: 3,
+                scene: {
+                  kind: "drag_layout",
+                  prompt: "Tap the arrows to put settings in the order users expect.",
+                  correctOrder: ["profile", "notif", "privacy", "signout"],
+                  cards: [
+                    { id: "signout", label: "Sign out", sub: "Destructive", tone: "danger" },
+                    { id: "notif", label: "Notifications", sub: "App behavior" },
+                    { id: "profile", label: "Profile", sub: "Identity" },
+                    { id: "privacy", label: "Privacy", sub: "Account" },
+                  ],
+                },
+              },
+            ],
+          },
+        ],
+      },
+
+      // ========== MODULE 4: COLOR ==========
+      {
+        id: "dp-color",
+        courseId: "design-principles",
+        title: "Color",
+        icon: "color-filter-outline",
+        description: "Use color with intent — not as decoration.",
+        prerequisites: ["dp-contrast"],
+        lessons: [
+          {
+            id: "dp-color-1",
+            title: "Color Has a Job",
+            description: "Brand, mood, and meaning, all at once.",
+            xpReward: 20,
+            coinReward: 5,
+            intro: {
+              headline: "Color is a signal, not paint.",
+              body: "Red means stop. Green means go. Your brand color means 'this is the thing to do.' Every color you use should be doing one of those three jobs — never just decorating.",
+              scene: {
+                kind: "good_vs_bad",
+                goodNote: "One brand color, used only for primary actions. Easy to find what to tap.",
+                badNote: "Color used everywhere — nothing stands out, and the brand color loses meaning.",
+                good: {
+                  bg: "#FFFFFF", padding: 16,
+                  blocks: [
+                    { kind: "title", text: "Your trip", size: 22, color: "#21263F", weight: "bold" },
+                    { kind: "body", text: "3 days in Lisbon", size: 14, color: "#646A88" },
+                    { kind: "spacer", size: 14 },
+                    { kind: "button", text: "Book now", bg: "#0078BB", fg: "#FFFFFF" },
+                  ],
+                },
+                bad: {
+                  bg: "#FFFFFF", padding: 16,
+                  blocks: [
+                    { kind: "title", text: "Your trip", size: 22, color: "#0078BB", weight: "bold" },
+                    { kind: "body", text: "3 days in Lisbon", size: 14, color: "#FF7BD0" },
+                    { kind: "spacer", size: 14 },
+                    { kind: "button", text: "Book now", bg: "#0078BB", fg: "#FFFFFF" },
+                  ],
+                },
+              },
+            },
+            questions: [
+              {
+                id: "dp-co1-q1",
+                type: "multiple_choice",
+                question: "Why use only one accent color for primary actions?",
+                options: [
+                  "Because designers like minimalism",
+                  "So the user instantly knows where to tap",
+                  "Because more colors cost more to print",
+                  "It's required by app stores",
+                ],
+                correctIndex: 1,
+                explanation: "If your accent color appears everywhere, it stops meaning 'tap here.' Reserve it for the most important action on each screen and the user learns to spot the path forward in a glance.",
+                difficulty: 1,
+              },
+              {
+                id: "dp-co1-q2",
+                type: "true_false",
+                question: "Red is generally associated with destructive or warning actions.",
+                correctBool: true,
+                explanation: "Red is wired into us as 'caution.' Use it for delete, error, or stop — not for normal links or buttons. Misusing it teaches users to ignore the warning.",
+                difficulty: 1,
+              },
+              {
+                id: "dp-co1-q3",
+                type: "multiple_choice",
+                question: "A solid neutral palette usually contains:",
+                options: [
+                  "One grey",
+                  "5–6 greys at different values",
+                  "Only pure black and pure white",
+                  "Every color in the rainbow at low saturation",
+                ],
+                correctIndex: 1,
+                explanation: "Real interfaces need light backgrounds, soft surfaces, dividers, secondary text, primary text — all greys. A handful of grey values gives you a working system; one grey forces you to fake everything else.",
+                difficulty: 2,
+              },
+            ],
+          },
+          {
+            id: "dp-color-2",
+            title: "Pick the Right Palette",
+            description: "Two takes on the same brand.",
+            xpReward: 25,
+            coinReward: 8,
+            intro: {
+              headline: "The right color can carry the brand.",
+              body: "Both versions show the same product. One feels considered. Pick it — and we'll look at why.",
+            },
+            questions: [
+              {
+                id: "dp-co2-q1",
+                type: "choose_better_design",
+                question: "Which palette feels more like a real product?",
+                explanation: "B wins because it commits: one strong accent, neutral background, calm supporting text. A throws three brand colors in equal amounts — nothing leads, and the brand never gets a chance to register.",
+                difficulty: 2,
+                scene: {
+                  kind: "ab_compare",
+                  correctIndex: 1,
+                  leftLabel: "A",
+                  rightLabel: "B",
+                  left: {
+                    bg: "#E3ED43", padding: 14,
+                    blocks: [
+                      { kind: "title", text: "Today's plan", size: 22, color: "#FF7BD0", weight: "bold" },
+                      { kind: "body", text: "3 tasks left", size: 13, color: "#0078BB" },
+                      { kind: "spacer", size: 12 },
+                      { kind: "button", text: "Start", bg: "#FF7BD0", fg: "#FFFFFF" },
+                    ],
+                  },
+                  right: {
+                    bg: "#FFFFFF", padding: 14,
+                    blocks: [
+                      { kind: "title", text: "Today's plan", size: 22, color: "#21263F", weight: "bold" },
+                      { kind: "body", text: "3 tasks left", size: 13, color: "#646A88" },
+                      { kind: "spacer", size: 12 },
+                      { kind: "button", text: "Start", bg: "#0078BB", fg: "#FFFFFF" },
+                    ],
+                  },
+                },
+              },
+            ],
+          },
+          {
+            id: "dp-color-3",
+            title: "5-Second Brand Recall",
+            description: "Glance, then answer.",
+            xpReward: 30,
+            coinReward: 10,
+            intro: {
+              headline: "First impressions are real.",
+              body: "We'll show you a screen for five seconds. Just glance — don't memorize. Then we'll ask what stuck.",
+            },
+            questions: [
+              {
+                id: "dp-co3-q1",
+                type: "five_second_test",
+                question: "Glance at this screen, then answer.",
+                explanation: "The lime headline carries the page — it's the largest, brightest element. The pink button is loud too, but lime is where your eye lands first. That's a deliberate hierarchy choice doing its job.",
+                difficulty: 2,
+                scene: {
+                  kind: "five_sec",
+                  durationMs: 5000,
+                  screen: {
+                    bg: "#21263F", padding: 24,
+                    blocks: [
+                      { kind: "spacer", size: 40 },
+                      { kind: "title", text: "Lift Off", size: 36, color: "#E3ED43", weight: "black" },
+                      { kind: "spacer", size: 8 },
+                      { kind: "body", text: "Your weekly product roadmap, in one place.", size: 14, color: "#DEE0ED" },
+                      { kind: "spacer", size: 32 },
+                      { kind: "button", text: "Launch dashboard", bg: "#FF7BD0", fg: "#FFFFFF", large: true },
+                    ],
+                  },
+                  followUp: {
+                    question: "What was the dominant brand color?",
+                    options: ["Green", "Pink", "Yellow / lime", "Orange"],
+                    correctIndex: 2,
+                    explanation: "The lime headline carries the page — it's the largest, brightest element. The pink button is loud too, but lime is the moment your eye lands first.",
+                  },
+                },
+              },
+            ],
+          },
+        ],
+      },
+
+      // ========== MODULE 5: HIERARCHY ==========
+      {
+        id: "dp-hierarchy",
+        courseId: "design-principles",
+        title: "Hierarchy",
+        icon: "layers-outline",
+        description: "Tell the eye where to go, in what order.",
+        prerequisites: ["dp-typography", "dp-spacing"],
+        lessons: [
+          {
+            id: "dp-hier-1",
+            title: "The Eye Path",
+            description: "Most layouts have a 'first read.' Yours should too.",
+            xpReward: 20,
+            coinReward: 5,
+            intro: {
+              headline: "Every screen has a first read.",
+              body: "Whether you planned it or not, the user's eye is going to land somewhere first. Hierarchy is the choice to make that landing intentional. Size, color, contrast, and position all conspire to lead.",
+              scene: {
+                kind: "good_vs_bad",
+                goodNote: "Clear first-read: big number, then label, then context.",
+                badNote: "Three competing emphasis levels — none of them wins.",
+                good: {
+                  bg: "#FFFFFF", padding: 16,
+                  blocks: [
+                    { kind: "body", text: "REVENUE", size: 11, color: "#646A88" },
+                    { kind: "title", text: "$48,210", size: 36, color: "#21263F", weight: "black" },
+                    { kind: "body", text: "+12% from last month", size: 13, color: "#138354" },
+                  ],
+                },
+                bad: {
+                  bg: "#FFFFFF", padding: 16,
+                  blocks: [
+                    { kind: "title", text: "REVENUE", size: 18, color: "#21263F", weight: "bold" },
+                    { kind: "title", text: "$48,210", size: 18, color: "#21263F", weight: "bold" },
+                    { kind: "title", text: "+12% from last month", size: 18, color: "#21263F", weight: "bold" },
+                  ],
+                },
+              },
+            },
+            questions: [
+              {
+                id: "dp-h1-q1",
+                type: "multiple_choice",
+                question: "Visual hierarchy primarily uses what to lead the eye?",
+                options: [
+                  "Animations",
+                  "Differences in size, weight, color, and position",
+                  "More text",
+                  "Drop shadows on everything",
+                ],
+                correctIndex: 1,
+                explanation: "Hierarchy is built from contrast: this is bigger, that's bolder, this is brighter, that's higher on the page. Take away those differences and there's no hierarchy left to read.",
+                difficulty: 1,
+              },
+              {
+                id: "dp-h1-q2",
+                type: "true_false",
+                question: "If everything on a screen is bold, hierarchy gets stronger.",
+                correctBool: false,
+                explanation: "If everything's bold, nothing is. Hierarchy needs a high-low contrast — bold against regular, big against small. Saturating one channel kills the contrast you needed.",
+                difficulty: 1,
+              },
+              {
+                id: "dp-h1-q3",
+                type: "multiple_choice",
+                question: "Which is usually the strongest position for the most important element?",
+                options: [
+                  "Bottom-right corner",
+                  "Top-left or upper-center, where reading begins",
+                  "Anywhere with a drop shadow",
+                  "Inside a footer",
+                ],
+                correctIndex: 1,
+                explanation: "In left-to-right reading cultures, the eye starts top-left. Putting the most important thing where the eye already lands gives you hierarchy almost for free.",
+                difficulty: 2,
+              },
+            ],
+          },
+          {
+            id: "dp-hier-2",
+            title: "Find the CTA",
+            description: "Tap the primary action on this fake screen.",
+            xpReward: 25,
+            coinReward: 8,
+            intro: {
+              headline: "A real screen has one main action.",
+              body: "Hierarchy makes the next step obvious. Look at this screen and tap what the user should do first.",
+            },
+            questions: [
+              {
+                id: "dp-h2-q1",
+                type: "find_the_cta",
+                question: "Tap the primary call-to-action.",
+                explanation: "'Start free trial' wins — solid fill, brand color, white text, top of the action zone. Secondary actions like 'Sign in' and 'Learn more' use lighter weights so they don't compete. The hierarchy makes the next step impossible to miss.",
+                difficulty: 2,
+                scene: {
+                  kind: "find_cta",
+                  prompt: "Where's the next step? Tap it.",
+                  correctTapId: "primary",
+                  screen: {
+                    bg: "#FFFFFF", padding: 16,
+                    blocks: [
+                      { kind: "spacer", size: 12 },
+                      { kind: "title", text: "Build faster.", size: 28, color: "#21263F", weight: "black", tapId: "headline" },
+                      { kind: "spacer", size: 6 },
+                      { kind: "body", text: "Design, prototype, and ship — all in one place.", size: 14, color: "#646A88", tapId: "subhead" },
+                      { kind: "spacer", size: 18 },
+                      { kind: "button", text: "Start free trial", bg: "#0078BB", fg: "#FFFFFF", large: true, tapId: "primary" },
+                      { kind: "spacer", size: 10 },
+                      { kind: "button", text: "Sign in", bg: "#FFFFFF", fg: "#21263F", outline: true, tapId: "signin" },
+                      { kind: "spacer", size: 12 },
+                      { kind: "body", text: "Learn more", size: 13, color: "#646A88", align: "center", tapId: "learn" },
+                    ],
+                  },
+                },
+              },
+              {
+                id: "dp-h2-q2",
+                type: "true_false",
+                question: "A screen should usually have one primary action, with secondary actions visibly quieter.",
+                correctBool: true,
+                explanation: "Two equally loud buttons split attention. Picking one as primary (filled, brand color) and demoting the other (outline, neutral) gives the user a clear path without removing options.",
+                difficulty: 1,
+              },
+            ],
+          },
+          {
+            id: "dp-hier-3",
+            title: "Order the Layout",
+            description: "Sequence sections of a landing page.",
+            xpReward: 25,
+            coinReward: 8,
+            intro: {
+              headline: "Order is half of hierarchy.",
+              body: "Even before sizes and colors, the order you stack sections in shapes the story the user reads. Drag these sections into a flow that converts.",
+            },
+            questions: [
+              {
+                id: "dp-h3-q1",
+                type: "drag_drop_layout",
+                question: "Order these landing-page sections from top to bottom.",
+                explanation: "Hero leads (what & why), social proof builds trust, features explain how, then the final CTA closes. Putting features before the hero forces the reader to learn details before they know what the product even is.",
+                difficulty: 3,
+                scene: {
+                  kind: "drag_layout",
+                  prompt: "Order these from top of the page to bottom.",
+                  correctOrder: ["hero", "proof", "features", "cta"],
+                  cards: [
+                    { id: "features", label: "Feature grid", sub: "How it works" },
+                    { id: "cta", label: "Final CTA", sub: "Close the deal", tone: "accent" },
+                    { id: "hero", label: "Hero headline", sub: "What & why" },
+                    { id: "proof", label: "Logos / testimonials", sub: "Trust" },
+                  ],
+                },
+              },
+            ],
+          },
+        ],
+      },
+
+      // ========== MODULE 6: UX BASICS ==========
+      {
+        id: "dp-ux",
+        courseId: "design-principles",
+        title: "UX Basics",
+        icon: "compass-outline",
+        description: "Design the path, not just the picture.",
+        prerequisites: ["dp-hierarchy", "dp-color"],
+        lessons: [
+          {
+            id: "dp-ux-1",
+            title: "Users Scan, Not Read",
+            description: "Build for skim, not study.",
+            xpReward: 20,
+            coinReward: 5,
+            intro: {
+              headline: "Nobody reads the whole screen.",
+              body: "Users scan for the thing they came to do. If your screen forces them to read every word to find it, you've lost them. Hierarchy, scanning patterns, and obvious actions are how UX shows respect for attention.",
+              scene: {
+                kind: "good_vs_bad",
+                goodNote: "Scannable: big label, clear value, obvious action.",
+                badNote: "Wall of text: no entry point, no escape route.",
+                good: {
+                  bg: "#FFFFFF", padding: 16,
+                  blocks: [
+                    { kind: "title", text: "Free shipping", size: 22, color: "#21263F", weight: "bold" },
+                    { kind: "body", text: "On orders over $50.", size: 14, color: "#646A88" },
+                    { kind: "spacer", size: 12 },
+                    { kind: "button", text: "Shop now", bg: "#0078BB", fg: "#FFFFFF" },
+                  ],
+                },
+                bad: {
+                  bg: "#FFFFFF", padding: 16,
+                  blocks: [
+                    { kind: "body", text: "We are excited to announce that you may be eligible for our free shipping promotion which applies to qualifying orders over $50 placed between today and the end of this month, subject to terms and conditions.", size: 13, color: "#21263F", lines: 6 },
+                  ],
+                },
+              },
+            },
+            questions: [
+              {
+                id: "dp-u1-q1",
+                type: "multiple_choice",
+                question: "What's the single biggest UX win in most layouts?",
+                options: [
+                  "Adding more animations",
+                  "Reducing the words and amplifying the structure",
+                  "Using more fonts",
+                  "Filling every pixel with information",
+                ],
+                correctIndex: 1,
+                explanation: "Cutting copy and surfacing structure (headlines, lists, buttons) lets users find what they need at a glance. Most UX problems aren't 'add more' — they're 'remove enough.'",
+                difficulty: 1,
+              },
+              {
+                id: "dp-u1-q2",
+                type: "true_false",
+                question: "A user's first action on a screen should be obvious within a few seconds.",
+                correctBool: true,
+                explanation: "If the next step takes more than a couple seconds to find, users hesitate, scroll back, or leave. Make the primary action loud and the secondary actions visibly quieter.",
+                difficulty: 1,
+              },
+              {
+                id: "dp-u1-q3",
+                type: "multiple_choice",
+                question: "An empty state is best treated as:",
+                options: [
+                  "Wasted space — fill it with marketing",
+                  "An invitation to take the first action",
+                  "An error to apologize for",
+                  "A reason to hide the screen",
+                ],
+                correctIndex: 1,
+                explanation: "Empty states are the cheapest onboarding you'll ever build. Show what success looks like, give one clear action, and the user has a reason to take their first step instead of a reason to leave.",
+                difficulty: 2,
+              },
+            ],
+          },
+          {
+            id: "dp-ux-2",
+            title: "5-Second First Impression",
+            description: "Glance at this landing screen, then answer.",
+            xpReward: 30,
+            coinReward: 10,
+            intro: {
+              headline: "Five seconds decide the rest.",
+              body: "Users form a first impression in well under five seconds. We'll show you a real-looking landing screen for that long, then ask what you got from it.",
+            },
+            questions: [
+              {
+                id: "dp-u2-q1",
+                type: "five_second_test",
+                question: "Glance at this landing page, then answer.",
+                explanation: "Strong landing pages let one message land first. The headline 'Plan your week' is enormous — that's the answer most people walk away with, even after only five seconds. That's the design earning its hierarchy.",
+                difficulty: 2,
+                scene: {
+                  kind: "five_sec",
+                  durationMs: 5000,
+                  screen: {
+                    bg: "#FFFFFF", padding: 24,
+                    blocks: [
+                      { kind: "spacer", size: 30 },
+                      { kind: "title", text: "Plan your week.", size: 34, color: "#21263F", weight: "black" },
+                      { kind: "spacer", size: 8 },
+                      { kind: "body", text: "Three minutes on Monday. The rest of your week, sorted.", size: 14, color: "#646A88" },
+                      { kind: "spacer", size: 24 },
+                      { kind: "button", text: "Try it free", bg: "#0078BB", fg: "#FFFFFF", large: true },
+                      { kind: "spacer", size: 10 },
+                      { kind: "body", text: "No credit card needed", size: 12, color: "#646A88", align: "center" },
+                    ],
+                  },
+                  followUp: {
+                    question: "What was the main thing that screen wanted you to do?",
+                    options: [
+                      "Read a long article",
+                      "Plan your week",
+                      "Buy a hardware product",
+                      "Sign up for a newsletter",
+                    ],
+                    correctIndex: 1,
+                    explanation: "The headline says it, the button reinforces it. When the headline and the primary action point at the same job, your message lands even on a quick glance.",
+                  },
+                },
+              },
+            ],
+          },
+          {
+            id: "dp-ux-3",
+            title: "Spot the UX Trap",
+            description: "Find the friction in this checkout step.",
+            xpReward: 25,
+            coinReward: 8,
+            intro: {
+              headline: "Friction kills good intentions.",
+              body: "Even users who want to convert will bail when something feels off. Find the trap on this checkout screen.",
+            },
+            questions: [
+              {
+                id: "dp-u3-q1",
+                type: "spot_bad_design",
+                question: "Tap the element that adds unnecessary friction.",
+                explanation: "'Cancel' sits right next to 'Pay now' with the same size and weight, dressed in a loud red — one wrong tap and a user loses their place. Destructive or back-out actions should be visually quieter, or moved away from the primary action entirely.",
+                difficulty: 3,
+                scene: {
+                  kind: "spot_bad",
+                  prompt: "Something here will cost conversions. Tap it.",
+                  targetTapId: "cancel",
+                  screen: {
+                    bg: "#FFFFFF", padding: 16,
+                    blocks: [
+                      { kind: "title", text: "Confirm payment", size: 22, color: "#21263F", weight: "bold", tapId: "title" },
+                      { kind: "spacer", size: 8 },
+                      { kind: "body", text: "Total: $48.00", size: 16, color: "#21263F", tapId: "total" },
+                      { kind: "spacer", size: 18 },
+                      { kind: "row", gap: 10, children: [
+                        { kind: "button", text: "Cancel", bg: "#DC2A3A", fg: "#FFFFFF", large: true, tapId: "cancel" },
+                        { kind: "button", text: "Pay now", bg: "#0078BB", fg: "#FFFFFF", large: true, tapId: "pay" },
+                      ]},
+                    ],
+                  },
+                },
+              },
+              {
+                id: "dp-u3-q2",
+                type: "multiple_choice",
+                question: "On a destructive screen, the safer pattern is:",
+                options: [
+                  "Two equally bold buttons side-by-side",
+                  "Primary action prominent, destructive action quiet or separated",
+                  "Hide the destructive action behind a long-press",
+                  "Use the same color for both buttons",
+                ],
+                correctIndex: 1,
+                explanation: "Destructive actions deserve respect, not equal billing. Make the safe path obvious and demote the destructive one — outline, neutral color, or moved out of the action row entirely.",
                 difficulty: 2,
               },
             ],
@@ -339,6 +1151,7 @@ export const COURSES: Course[] = [
       },
     ],
   },
+
   {
     id: "typography",
     title: "Typography",

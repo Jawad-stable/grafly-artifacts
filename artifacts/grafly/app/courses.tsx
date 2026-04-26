@@ -150,7 +150,7 @@ export default function CoursesScreen() {
                   flexDirection: "row", alignItems: "center", justifyContent: "space-between",
                 }}>
                   <Text style={{ fontSize: 11, fontFamily: "Nunito_800ExtraBold", color: onCard }}>
-                    {completedCount}/{totalLessons} lessons
+                    {course.nodes.length} modules · {completedCount}/{totalLessons} lessons
                   </Text>
                   <Text style={{ fontSize: 11, fontFamily: "Nunito_800ExtraBold", color: onCard }}>
                     {progress}%

@@ -328,16 +328,24 @@ function NodeItem({
   );
 }
 
-function NodeSheet({ node, course, isCompleted, isLocked, visible, onClose }: {
+function NodeSheet({ node, course, isCompleted, isLocked, visible, onClose, completedLessons }: {
   node: SkillNode | null; course: Course | null;
   isCompleted: boolean; isLocked: boolean;
   visible: boolean; onClose: () => void;
+  completedLessons: string[];
 }) {
   const colors = useColors();
   const insets = useSafeAreaInsets();
   if (!node || !course) return null;
   const totalXP = node.lessons.reduce((s, l) => s + l.xpReward, 0);
   const totalCoins = node.lessons.reduce((s, l) => s + l.coinReward, 0);
+  const completedInModule = node.lessons.filter((l) => completedLessons.includes(l.id)).length;
+  const totalInModule = node.lessons.length;
+  const moduleProgress = totalInModule > 0 ? completedInModule / totalInModule : 0;
+  const ringSize = 64;
+  const ringStroke = 6;
+  const ringR = (ringSize - ringStroke) / 2;
+  const ringC = 2 * Math.PI * ringR;
 
   return (
     <Modal visible={visible} animationType="slide" transparent onRequestClose={onClose}>
@@ -382,6 +390,68 @@ function NodeSheet({ node, course, isCompleted, isLocked, visible, onClose }: {
           {node.description}
         </Text>
 
+        {/* Per-module progress ring */}
+        <View
+          style={{
+            flexDirection: "row",
+            alignItems: "center",
+            gap: 14,
+            backgroundColor: colors.background,
+            borderRadius: 18,
+            borderWidth: 1,
+            borderColor: colors.border,
+            padding: 14,
+            marginBottom: 16,
+          }}
+        >
+          <View style={{ width: ringSize, height: ringSize, alignItems: "center", justifyContent: "center" }}>
+            <Svg width={ringSize} height={ringSize}>
+              <Circle
+                cx={ringSize / 2}
+                cy={ringSize / 2}
+                r={ringR}
+                stroke={colors.muted}
+                strokeWidth={ringStroke}
+                fill="none"
+              />
+              <Circle
+                cx={ringSize / 2}
+                cy={ringSize / 2}
+                r={ringR}
+                stroke={isCompleted ? colors.success : course.color}
+                strokeWidth={ringStroke}
+                strokeLinecap="round"
+                fill="none"
+                strokeDasharray={ringC}
+                strokeDashoffset={ringC * (1 - moduleProgress)}
+                transform={`rotate(-90 ${ringSize / 2} ${ringSize / 2})`}
+              />
+            </Svg>
+            <View style={{ position: "absolute", alignItems: "center", justifyContent: "center" }}>
+              <Text style={{ fontSize: 13, fontFamily: "Nunito_900Black", color: colors.foreground }}>
+                {completedInModule}/{totalInModule}
+              </Text>
+            </View>
+          </View>
+          <View style={{ flex: 1 }}>
+            <Text style={{ fontSize: 11, fontFamily: "Nunito_800ExtraBold", color: course.color, letterSpacing: 1.4 }}>
+              MODULE PROGRESS
+            </Text>
+            <Text style={{ marginTop: 4, fontSize: 14, fontFamily: "Nunito_800ExtraBold", color: colors.foreground }}>
+              {isCompleted
+                ? "Module mastered — practice anytime."
+                : completedInModule === 0
+                ? "Brand new module. Let's begin."
+                : `${totalInModule - completedInModule} lesson${totalInModule - completedInModule === 1 ? "" : "s"} to go.`}
+            </Text>
+          </View>
+          {isCompleted && (
+            <View style={{ width: 28, height: 28, borderRadius: 14, backgroundColor: colors.success, alignItems: "center", justifyContent: "center" }}>
+              <Icon name="checkmark" size={16} color={"#FFFFFF"} />
+            </View>
+          )}
+        </View>
+
         {/* Stats row */}
         <View style={{ flexDirection: "row", gap: 10, marginBottom: 20 }}>
           {[
@@ -407,27 +477,46 @@ function NodeSheet({ node, course, isCompleted, isLocked, visible, onClose }: {
 
         {/* Lesson list */}
         <View style={{ marginBottom: 20 }}>
-          {node.lessons.map((lesson, i) => (
-            <View key={lesson.id} style={{
-              flexDirection: "row", alignItems: "center", gap: 12,
-              paddingVertical: 12,
-              borderTopWidth: i === 0 ? 1 : 0, borderBottomWidth: 1, borderColor: colors.border,
-            }}>
-              <Text style={{
-                fontSize: 11,
-                fontFamily: "Nunito_800ExtraBold",
-                color: colors.mutedForeground,
-                width: 22,
+          {node.lessons.map((lesson, i) => {
+            const lessonDone = completedLessons.includes(lesson.id);
+            return (
+              <View key={lesson.id} style={{
+                flexDirection: "row", alignItems: "center", gap: 12,
+                paddingVertical: 12,
+                borderTopWidth: i === 0 ? 1 : 0, borderBottomWidth: 1, borderColor: colors.border,
               }}>
-                {String(i + 1).padStart(2, "0")}
-              </Text>
-              <Text style={{ flex: 1, fontSize: 14, fontFamily: "Nunito_600SemiBold", color: colors.foreground }}>{lesson.title}</Text>
-              <View style={{ flexDirection: "row", alignItems: "center", gap: 3 }}>
-                <Icon name="flash" size={12} color={colors.accent} />
-                <Text style={{ fontSize: 12, fontFamily: "Nunito_800ExtraBold", color: colors.mutedForeground }}>+{lesson.xpReward}</Text>
+                <View
+                  style={{
+                    width: 22,
+                    height: 22,
+                    borderRadius: 11,
+                    backgroundColor: lessonDone ? colors.success : "transparent",
+                    borderWidth: lessonDone ? 0 : 1.5,
+                    borderColor: colors.border,
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                >
+                  {lessonDone ? (
+                    <Icon name="checkmark" size={13} color={"#FFFFFF"} />
+                  ) : (
+                    <Text style={{
+                      fontSize: 10,
+                      fontFamily: "Nunito_800ExtraBold",
+                      color: colors.mutedForeground,
+                    }}>
+                      {String(i + 1).padStart(2, "0")}
+                    </Text>
+                  )}
+                </View>
+                <Text style={{ flex: 1, fontSize: 14, fontFamily: "Nunito_600SemiBold", color: lessonDone ? colors.mutedForeground : colors.foreground, textDecorationLine: lessonDone ? "line-through" : "none" }}>{lesson.title}</Text>
+                <View style={{ flexDirection: "row", alignItems: "center", gap: 3 }}>
+                  <Icon name="flash" size={12} color={colors.accent} />
+                  <Text style={{ fontSize: 12, fontFamily: "Nunito_800ExtraBold", color: colors.mutedForeground }}>+{lesson.xpReward}</Text>
+                </View>
               </View>
-            </View>
-          ))}
+            );
+          })}
         </View>
 
         {!isLocked ? (
@@ -565,6 +654,47 @@ export default function TreeScreen() {
           <CoursesButton onPress={() => setPickerVisible(true)} />
         </View>
       </View>
+
+      {course.id === "design-principles" && (
+        <View style={{ paddingHorizontal: 24, marginBottom: 6 }}>
+          <PressScale
+            onPress={() => router.push({ pathname: "/course-intro", params: { courseId: course.id } })}
+            style={{
+              backgroundColor: course.color + "1A",
+              borderRadius: 16,
+              borderWidth: 1,
+              borderColor: course.color + "55",
+              paddingVertical: 10,
+              paddingHorizontal: 14,
+              flexDirection: "row",
+              alignItems: "center",
+              gap: 10,
+            }}
+          >
+            <View
+              style={{
+                width: 30,
+                height: 30,
+                borderRadius: 10,
+                backgroundColor: course.color,
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <Icon name="sparkles" size={16} color={onCourse} />
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={{ fontSize: 11, fontFamily: "Nunito_800ExtraBold", color: course.color, letterSpacing: 1.2 }}>
+                NEW · COURSE WELCOME
+              </Text>
+              <Text style={{ fontSize: 13, fontFamily: "Nunito_800ExtraBold", color: colors.foreground, marginTop: 1 }}>
+                See what you'll learn
+              </Text>
+            </View>
+            <Icon name="arrow-forward" size={16} color={course.color} />
+          </PressScale>
+        </View>
+      )}
 
       <ScrollView
         style={{ flex: 1 }}
@@ -842,6 +972,7 @@ export default function TreeScreen() {
         isLocked={selectedNode ? isNodeLocked(selectedNode) : false}
         visible={sheetVisible}
         onClose={() => setSheetVisible(false)}
+        completedLessons={state.completedLessons}
       />
 
       <CoursePickerModal
