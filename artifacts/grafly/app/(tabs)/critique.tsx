@@ -41,6 +41,7 @@ import { pickRandomLocalDesign, type LocalDesign } from "@/data/localDesigns";
 import { PressScale } from "@/components/PressScale";
 import { BOTTOM_BAR_WIDTH } from "@/constants/layout";
 import { AI_BOT } from "@/constants/assets";
+import { BrandSquiggle } from "@/components/BrandSquiggle";
 
 const SMOOTH = Easing.out(Easing.cubic);
 
@@ -710,6 +711,24 @@ export default function CritiqueScreen() {
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.background }}>
+      {/* Brand backdrop — same drifting squiggle motif as home, tree
+          and shop. Sits behind everything at low alpha so the
+          mentor screen feels part of the same Grafly visual world. */}
+      <View
+        pointerEvents="none"
+        style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0, overflow: "hidden" }}
+      >
+        <View style={{ position: "absolute", top: SCREEN_H * 0.12, left: -30 }}>
+          <BrandSquiggle variant="loop" width={160} height={95} color={colors.brand.cyan} opacity={0.07} drift delay={300} />
+        </View>
+        <View style={{ position: "absolute", top: SCREEN_H * 0.46, left: SCREEN_W - 110 }}>
+          <BrandSquiggle variant="tube" width={110} height={180} color={colors.brand.pink} opacity={0.06} strokeWidth={5} drift delay={1600} />
+        </View>
+        <View style={{ position: "absolute", top: SCREEN_H * 0.78, left: SCREEN_W * 0.18 }}>
+          <BrandSquiggle variant="wave" width={210} height={34} color={colors.brand.lime} opacity={0.09} strokeWidth={4} drift delay={1000} />
+        </View>
+      </View>
+
       <KeyboardAvoidingView
         behavior="padding"
         keyboardVerticalOffset={0}
@@ -729,45 +748,88 @@ export default function CritiqueScreen() {
           }}
         >
           <View style={{ flex: 1 }}>
-            <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
-              <View style={{
-                width: 8, height: 8, borderRadius: 4,
-                backgroundColor: state.isPro ? colors.success : colors.accent,
-              }} />
-              <Text style={{
-                fontSize: 11, fontFamily: "Nunito_800ExtraBold",
-                color: colors.mutedForeground, letterSpacing: 1.4,
-              }}>
+            {/* Brand-colored eyebrow pill — replaces the old plain
+                gray dot + label. Reads as a confident chip in the
+                Grafly visual language. */}
+            <View
+              style={{
+                alignSelf: "flex-start",
+                flexDirection: "row",
+                alignItems: "center",
+                gap: 6,
+                paddingHorizontal: 10,
+                paddingVertical: 5,
+                borderRadius: 100,
+                backgroundColor: colors.brand.cyan + "1A",
+                borderWidth: 1,
+                borderColor: colors.brand.cyan + "55",
+              }}
+            >
+              <View
+                style={{
+                  width: 6,
+                  height: 6,
+                  borderRadius: 3,
+                  backgroundColor: state.isPro ? colors.success : colors.brand.cyan,
+                }}
+              />
+              <Text
+                style={{
+                  fontSize: 10,
+                  fontFamily: "Nunito_800ExtraBold",
+                  color: colors.brand.cyanDeep,
+                  letterSpacing: 1.4,
+                }}
+              >
                 AI MENTOR
               </Text>
             </View>
             <Text style={{
               fontSize: 30, fontFamily: "Nunito_800ExtraBold",
               color: colors.foreground, letterSpacing: -0.8, lineHeight: 34,
-              marginTop: 2,
+              marginTop: 4,
             }}>
               Critique
             </Text>
           </View>
 
-          <View style={{
-            paddingHorizontal: 12, paddingVertical: 8,
-            borderRadius: 100, backgroundColor: colors.card,
-            borderWidth: 1, borderColor: colors.border,
-            flexDirection: "row", alignItems: "center", gap: 6,
-          }}>
+          {/* Sessions-left chip — both states use a bright brand
+              gradient so navy text passes AA in both directions
+              (Pro is a light-cyan range, Free is lime). Avoids the
+              "white on cyanDeep" 2.7:1 contrast trap. */}
+          <LinearGradient
+            colors={
+              state.isPro
+                ? ["#4FC3FF", colors.brand.cyan]
+                : [colors.brand.lime, "#C7D11A"]
+            }
+            start={{ x: 0, y: 0 }}
+            end={{ x: 0, y: 1 }}
+            style={{
+              paddingHorizontal: 12, paddingVertical: 8,
+              borderRadius: 100,
+              flexDirection: "row", alignItems: "center", gap: 6,
+              shadowColor: state.isPro ? colors.brand.cyan : colors.brand.lime,
+              shadowOffset: { width: 0, height: 4 },
+              shadowOpacity: 0.32,
+              shadowRadius: 8,
+              elevation: 3,
+            }}
+          >
             <Icon
               name={state.isPro ? "infinite" : "flash"}
               size={13}
-              color={state.isPro ? colors.success : colors.accent}
+              color={colors.brand.navy}
+              weight="fill"
             />
             <Text style={{
               fontSize: 12, fontFamily: "Nunito_800ExtraBold",
-              color: colors.foreground, letterSpacing: -0.2,
+              color: colors.brand.navy,
+              letterSpacing: -0.2,
             }}>
               {state.isPro ? "Unlimited" : `${sessionsLeft} left`}
             </Text>
-          </View>
+          </LinearGradient>
 
           <PressScale
             onPress={loadNewDesign}
@@ -964,26 +1026,71 @@ export default function CritiqueScreen() {
                 </Pressable>
               </Animated.View>
 
-              {/* Mentor identity row above the opener — compact */}
+              {/* Mentor identity row — bigger, brighter, and more
+                  inviting. AiBot sits inside a soft cyan halo with a
+                  small live "online" dot. The role tag is now in
+                  brand cyan instead of muted gray so the mentor
+                  feels present and alive. */}
               <Animated.View
                 entering={FadeInDown.duration(480).easing(SMOOTH).delay(220)}
                 onLayout={onMentorRowLayout}
-                style={{ flexDirection: "row", alignItems: "center", gap: 10, marginTop: MENTOR_ROW_MARGIN_TOP, marginBottom: MENTOR_ROW_MARGIN_BOTTOM }}
+                style={{ flexDirection: "row", alignItems: "center", gap: 12, marginTop: MENTOR_ROW_MARGIN_TOP, marginBottom: MENTOR_ROW_MARGIN_BOTTOM }}
               >
-                <AiBot size={28} />
-                <View>
+                <View
+                  style={{
+                    width: 56,
+                    height: 56,
+                    borderRadius: 28,
+                    backgroundColor: colors.brand.cyan + "1F",
+                    borderWidth: 1.5,
+                    borderColor: colors.brand.cyan + "55",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    shadowColor: colors.brand.cyan,
+                    shadowOffset: { width: 0, height: 4 },
+                    shadowOpacity: 0.35,
+                    shadowRadius: 10,
+                    elevation: 4,
+                  }}
+                >
+                  <AiBot size={32} />
+                  {/* Online status dot */}
+                  <View
+                    style={{
+                      position: "absolute",
+                      right: 0,
+                      bottom: 2,
+                      width: 14,
+                      height: 14,
+                      borderRadius: 7,
+                      backgroundColor: colors.success,
+                      borderWidth: 2,
+                      borderColor: colors.background,
+                    }}
+                  />
+                </View>
+                <View style={{ flex: 1 }}>
                   <Text style={{
-                    fontSize: 13, fontFamily: "Nunito_800ExtraBold",
-                    color: colors.foreground, letterSpacing: -0.2,
+                    fontSize: 16, fontFamily: "Nunito_800ExtraBold",
+                    color: colors.foreground, letterSpacing: -0.3,
                   }}>
                     Grafly
                   </Text>
-                  <Text style={{
-                    fontSize: 10, fontFamily: "Nunito_800ExtraBold",
-                    color: colors.mutedForeground, letterSpacing: 1,
-                  }}>
-                    DESIGN MENTOR
-                  </Text>
+                  <View style={{ flexDirection: "row", alignItems: "center", gap: 6, marginTop: 2 }}>
+                    <Text style={{
+                      fontSize: 10, fontFamily: "Nunito_800ExtraBold",
+                      color: colors.brand.cyanDeep, letterSpacing: 1.2,
+                    }}>
+                      DESIGN MENTOR
+                    </Text>
+                    <View style={{ width: 3, height: 3, borderRadius: 1.5, backgroundColor: colors.mutedForeground }} />
+                    <Text style={{
+                      fontSize: 10, fontFamily: "Nunito_800ExtraBold",
+                      color: colors.success, letterSpacing: 1.2,
+                    }}>
+                      ONLINE
+                    </Text>
+                  </View>
                 </View>
               </Animated.View>
             </>
@@ -991,14 +1098,12 @@ export default function CritiqueScreen() {
 
           {messages.map((m, i) => {
             const isUser = m.role === "user";
-            // Brand pairing: navy text on cyan (~5.9:1, AA pass) — same
-            // pairing as the wordmark on the brand identity sheet, and
-            // avoids the failed 2.56:1 contrast of white on cyan.
-            const bubbleBg = isUser ? colors.brand.cyan : "#FFFFFF";
+            // User bubbles: navy on cyan (~5.9:1 AA pass).
+            // Assistant bubbles: navy on a soft cyan-tinted white
+            // (#F2FBFE) — gives Grafly's voice its own gentle brand
+            // wash so the mentor messages stand out on the off-white
+            // backdrop without sacrificing 14:1+ readability.
             const bubbleFg = isUser ? colors.brand.navy : "#21263F";
-            // The first assistant message in the pre-chat view IS the
-            // opener bubble — measure its real height so the card sizing
-            // math self-corrects when the opener text is long / scaled.
             const isOpener = !chatStarted && i === 0 && !isUser;
             return (
               <Animated.View
@@ -1008,44 +1113,71 @@ export default function CritiqueScreen() {
                 style={{
                   alignSelf: isUser ? "flex-end" : "flex-start",
                   maxWidth: "88%",
-                  backgroundColor: bubbleBg,
-                  paddingHorizontal: 16,
-                  paddingVertical: 12,
-                  borderRadius: 22,
-                  borderBottomRightRadius: isUser ? 6 : 22,
-                  borderBottomLeftRadius: !isUser ? 6 : 22,
-                  borderWidth: 0,
-                  shadowColor: isUser ? "#00A4FA" : "#000",
-                  shadowOffset: { width: 0, height: 2 },
-                  shadowOpacity: isUser ? 0.15 : 0.06,
-                  shadowRadius: 6,
-                  elevation: isUser ? 3 : 1,
                 }}
               >
-                {!isUser ? (
-                  <TypewriterText
-                    text={m.content}
-                    active={i === animateIndex}
-                    onTick={() => scrollRef.current?.scrollToEnd({ animated: false })}
-                    onDone={() => setAnimateIndex(-1)}
+                {isUser ? (
+                  // User bubble: bright-cyan gradient (light-cyan ->
+                  // brand cyan). Both stops are light enough that
+                  // navy text stays AA-compliant across the entire
+                  // gradient — using cyanDeep here drops contrast to
+                  // ~3.1:1 which fails for body text.
+                  <LinearGradient
+                    colors={["#4FC3FF", colors.brand.cyan]}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 1 }}
                     style={{
-                      fontSize: 14,
-                      lineHeight: 21,
-                      fontFamily: "Nunito_600SemiBold",
-                      color: bubbleFg,
-                    }}
-                  />
-                ) : (
-                  <Text
-                    style={{
-                      fontSize: 14,
-                      lineHeight: 21,
-                      fontFamily: "Nunito_600SemiBold",
-                      color: bubbleFg,
+                      paddingHorizontal: 16,
+                      paddingVertical: 12,
+                      borderRadius: 22,
+                      borderBottomRightRadius: 6,
+                      shadowColor: colors.brand.cyan,
+                      shadowOffset: { width: 0, height: 4 },
+                      shadowOpacity: 0.32,
+                      shadowRadius: 10,
+                      elevation: 4,
                     }}
                   >
-                    {m.content}
-                  </Text>
+                    <Text
+                      style={{
+                        fontSize: 14,
+                        lineHeight: 21,
+                        fontFamily: "Nunito_600SemiBold",
+                        color: bubbleFg,
+                      }}
+                    >
+                      {m.content}
+                    </Text>
+                  </LinearGradient>
+                ) : (
+                  <View
+                    style={{
+                      backgroundColor: "#F2FBFE",
+                      paddingHorizontal: 16,
+                      paddingVertical: 12,
+                      borderRadius: 22,
+                      borderBottomLeftRadius: 6,
+                      borderLeftWidth: 3,
+                      borderLeftColor: colors.brand.cyan,
+                      shadowColor: "#000",
+                      shadowOffset: { width: 0, height: 4 },
+                      shadowOpacity: 0.08,
+                      shadowRadius: 10,
+                      elevation: 2,
+                    }}
+                  >
+                    <TypewriterText
+                      text={m.content}
+                      active={i === animateIndex}
+                      onTick={() => scrollRef.current?.scrollToEnd({ animated: false })}
+                      onDone={() => setAnimateIndex(-1)}
+                      style={{
+                        fontSize: 14,
+                        lineHeight: 21,
+                        fontFamily: "Nunito_600SemiBold",
+                        color: bubbleFg,
+                      }}
+                    />
+                  </View>
                 )}
               </Animated.View>
             );
@@ -1055,36 +1187,51 @@ export default function CritiqueScreen() {
             <View
               style={{
                 alignSelf: "flex-start",
-                backgroundColor: colors.card,
+                backgroundColor: "#F2FBFE",
                 paddingHorizontal: 16,
                 paddingVertical: 14,
                 borderRadius: 22,
                 borderBottomLeftRadius: 6,
-                borderWidth: 1,
-                borderColor: colors.border,
+                borderLeftWidth: 3,
+                borderLeftColor: colors.brand.cyan,
                 flexDirection: "row",
                 gap: 10,
                 alignItems: "center",
+                shadowColor: "#000",
+                shadowOffset: { width: 0, height: 4 },
+                shadowOpacity: 0.08,
+                shadowRadius: 10,
+                elevation: 2,
               }}
             >
               <AiBot size={22} spinning />
-              <Text style={{ fontSize: 12, fontFamily: "Nunito_600SemiBold", color: colors.mutedForeground }}>
+              <Text style={{ fontSize: 12, fontFamily: "Nunito_800ExtraBold", color: colors.brand.cyanDeep, letterSpacing: 0.3 }}>
                 Grafly is Graflying ...
               </Text>
             </View>
           )}
 
           {rewardedThisDesign && (
-            <Animated.View entering={FadeIn} style={{
-              alignSelf: "center", marginTop: 6,
-              backgroundColor: colors.success + "20",
-              paddingHorizontal: 14, paddingVertical: 8, borderRadius: 100,
-              flexDirection: "row", alignItems: "center", gap: 6,
-            }}>
-              <Icon name="flash" size={14} color={colors.success} />
-              <Text style={{ fontSize: 12, fontFamily: "Nunito_800ExtraBold", color: colors.success, letterSpacing: 0.2 }}>
-                +{XP_PER_SESSION} XP earned
-              </Text>
+            <Animated.View entering={FadeIn} style={{ alignSelf: "center", marginTop: 6 }}>
+              <LinearGradient
+                colors={[colors.brand.lime, "#C7D11A"]}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 0, y: 1 }}
+                style={{
+                  paddingHorizontal: 14, paddingVertical: 8, borderRadius: 100,
+                  flexDirection: "row", alignItems: "center", gap: 6,
+                  shadowColor: colors.brand.lime,
+                  shadowOffset: { width: 0, height: 4 },
+                  shadowOpacity: 0.4,
+                  shadowRadius: 10,
+                  elevation: 4,
+                }}
+              >
+                <Icon name="flash" size={14} color={colors.brand.navy} weight="fill" />
+                <Text style={{ fontSize: 12, fontFamily: "Nunito_800ExtraBold", color: colors.brand.navy, letterSpacing: 0.3 }}>
+                  +{XP_PER_SESSION} XP earned ✨
+                </Text>
+              </LinearGradient>
             </Animated.View>
           )}
         </ScrollView>
@@ -1163,26 +1310,55 @@ export default function CritiqueScreen() {
                   ...(Platform.OS === "web" ? { outlineStyle: "none" as any } : {}),
                 }}
               />
+              {/* Send button — cyan gradient when active so the
+                  primary action is the most visible thing in the
+                  composer. Falls back to a flat border tint when
+                  empty / sending so users get a clear "ready vs not"
+                  affordance. */}
               <PressScale
                 onPress={handleSend}
                 disabled={!input.trim() || sending}
                 style={{
-                  backgroundColor:
-                    input.trim() && !sending ? colors.foreground : colors.border,
                   width: 40,
                   height: 40,
                   borderRadius: 20,
-                  alignItems: "center",
-                  justifyContent: "center",
+                  overflow: "hidden",
+                  shadowColor: input.trim() && !sending ? colors.brand.cyan : "transparent",
+                  shadowOffset: { width: 0, height: 4 },
+                  shadowOpacity: 0.4,
+                  shadowRadius: 8,
+                  elevation: input.trim() && !sending ? 4 : 0,
                 }}
               >
-                <Icon
-                  name="arrow-up"
-                  size={18}
-                  color={
-                    input.trim() && !sending ? colors.background : colors.mutedForeground
-                  }
-                />
+                {input.trim() && !sending ? (
+                  <LinearGradient
+                    colors={[colors.brand.cyan, colors.brand.cyanDeep]}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 1 }}
+                    style={{
+                      width: 40,
+                      height: 40,
+                      borderRadius: 20,
+                      alignItems: "center",
+                      justifyContent: "center",
+                    }}
+                  >
+                    <Icon name="arrow-up" size={18} color={colors.brand.navy} weight="bold" />
+                  </LinearGradient>
+                ) : (
+                  <View
+                    style={{
+                      width: 40,
+                      height: 40,
+                      borderRadius: 20,
+                      backgroundColor: colors.border,
+                      alignItems: "center",
+                      justifyContent: "center",
+                    }}
+                  >
+                    <Icon name="arrow-up" size={18} color={colors.mutedForeground} />
+                  </View>
+                )}
               </PressScale>
             </View>
           </View>
