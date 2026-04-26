@@ -14,6 +14,7 @@ import { useGame } from "@/context/GameContext";
 import { COURSES } from "@/constants/lessons";
 import { GraflyMascot } from "@/components/GraflyMascot";
 import { PressScale } from "@/components/PressScale";
+import { CourseCardMotion } from "@/components/CourseCardMotion";
 import { onBrand } from "@/constants/contrast";
 
 export default function CoursesScreen() {
@@ -103,6 +104,8 @@ export default function CoursesScreen() {
                 }}
               >
                 <View style={{ flex: 1, flexDirection: "row" }}>
+                  <CourseCardMotion onCard={onCard} accent={colors.accent} />
+
                   <View style={{ flex: 1, paddingHorizontal: 18, paddingTop: 16, paddingBottom: 12 }}>
                     <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
                       <Icon name={course.icon as any} size={12} color={onCard + "DD"} />
@@ -136,11 +139,6 @@ export default function CoursesScreen() {
                   </View>
 
                   <View style={{ width: 130, position: "relative", overflow: "hidden" }}>
-                    <View style={{
-                      position: "absolute", left: 12, top: 14,
-                      width: 24, height: 24, borderRadius: 12,
-                      backgroundColor: colors.accent,
-                    }} />
                     <View style={{
                       position: "absolute", right: 4, bottom: 4,
                       width: 130, height: 130, alignItems: "center", justifyContent: "center",
