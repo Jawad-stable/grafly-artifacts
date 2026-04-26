@@ -2,6 +2,7 @@ import React, { createContext, useContext, useReducer, useEffect, useRef, useSta
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { supabase } from "@/services/supabase";
 import { useAuth } from "@/context/AuthContext";
+import { setVoiceEnabled } from "@/services/voiceService";
 
 export type PlacementLevel =
   | "novice"
@@ -312,6 +313,11 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
     setHydrated(false);
     loadState();
   }, [user?.id]);
+
+  // Mirror voiceEnabled into the AsyncStorage key voiceService reads.
+  useEffect(() => {
+    setVoiceEnabled(state.voiceEnabled);
+  }, [state.voiceEnabled]);
 
   // Sync state changes to AsyncStorage + Supabase (debounced 1.5s)
   useEffect(() => {

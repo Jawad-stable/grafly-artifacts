@@ -602,9 +602,19 @@ export default function LessonScreen() {
       setCoinsEarned((c) => c + lessonCoins);
       completeLesson(currentLesson.id, lessonXP, lessonCoins);
       const nextLesson = lessonIdx + 1;
-      if (nextLesson >= allLessons.length) setAllDone(true);
+      const moduleDone = nextLesson >= allLessons.length;
+      if (moduleDone) setAllDone(true);
       setShowSummary(true);
       setMascotState(heartsLost === 0 ? "celebrate" : "correct");
+
+      // Voice feedback on summary appearance — module-complete takes precedence.
+      if (moduleDone && node) {
+        voiceService.playModuleComplete(node.title);
+      } else if (heartsLost === 0) {
+        voiceService.playPerfectLesson();
+      } else {
+        voiceService.playLessonComplete();
+      }
     } else {
       setQuestionIdx(nextQ);
       setAnswered(false);

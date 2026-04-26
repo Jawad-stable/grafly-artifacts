@@ -30,6 +30,7 @@ import { useGame, getXPProgress } from "@/context/GameContext";
 import { COURSES, getAllLessons } from "@/constants/lessons";
 import { LOGO } from "@/constants/assets";
 import { GraflyMascot } from "@/components/GraflyMascot";
+import { voiceService } from "@/services/voiceService";
 import { AText } from "@/components/AText";
 import { PressScale } from "@/components/PressScale";
 import { LinearGradient } from "expo-linear-gradient";
@@ -351,6 +352,7 @@ function LevelUpOverlay() {
     if (state.showLevelUp) {
       scale.value = withTiming(1, { duration: 280, easing: Easing.out(Easing.cubic) });
       opacity.value = withTiming(1, { duration: 300 });
+      voiceService.playLevelUp(state.newLevel);
     }
   }, [state.showLevelUp]);
 

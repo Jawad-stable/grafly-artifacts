@@ -15,6 +15,19 @@ async function isVoiceEnabled(): Promise<boolean> {
   }
 }
 
+async function setVoiceEnabled(enabled: boolean): Promise<void> {
+  try {
+    await AsyncStorage.setItem(VOICE_PREF_KEY, enabled ? "true" : "false");
+  } catch {}
+  if (!enabled && currentSound) {
+    try {
+      await currentSound.stopAsync?.();
+      await currentSound.unloadAsync?.();
+    } catch {}
+    currentSound = null;
+  }
+}
+
 async function playAudioBuffer(base64Audio: string): Promise<void> {
   if (Platform.OS === "web") {
     try {
@@ -80,6 +93,8 @@ async function speak(text: string): Promise<void> {
   } catch {}
 }
 
+export { setVoiceEnabled };
+
 export const voiceService = {
   playStreakCelebration: () =>
     speak("You're on fire! Keep that streak alive."),
@@ -87,6 +102,10 @@ export const voiceService = {
     speak(`Level ${level} unlocked. You're becoming a real designer.`),
   playLessonComplete: () =>
     speak("Lesson done. XP earned. You're moving forward."),
+  playPerfectLesson: () =>
+    speak("Perfect lesson. Not a single heart lost."),
+  playModuleComplete: (moduleTitle: string) =>
+    speak(`Module complete. You finished ${moduleTitle}. The patterns are clicking.`),
   playCorrectAnswer: () => speak("Exactly right."),
   playWrongAnswer: () => speak("Not quite — let's keep going."),
   playCritiqueReady: () =>
