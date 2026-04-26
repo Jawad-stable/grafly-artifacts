@@ -1064,12 +1064,13 @@ export default function CritiqueScreen() {
 
           {messages.map((m, i) => {
             const isUser = m.role === "user";
-            // User bubbles: navy on cyan (~5.9:1 AA pass).
-            // Assistant bubbles: navy on a soft cyan-tinted white
-            // (#F2FBFE) — gives Grafly's voice its own gentle brand
-            // wash so the mentor messages stand out on the off-white
-            // backdrop without sacrificing 14:1+ readability.
-            const bubbleFg = isUser ? colors.brand.navy : "#21263F";
+            // User bubbles: white text on a deep-blue gradient
+            // (cyanDeep -> deeper navy-blue). White on cyanDeep is
+            // ~5.0:1 which passes AA — and matches the user's
+            // request for white-on-blue rather than navy-on-bright.
+            // Assistant bubbles keep the soft cyan-tinted off-white
+            // background with navy text (14:1+).
+            const bubbleFg = isUser ? "#FFFFFF" : "#21263F";
             const isOpener = !chatStarted && i === 0 && !isUser;
             return (
               <Animated.View
@@ -1082,13 +1083,12 @@ export default function CritiqueScreen() {
                 }}
               >
                 {isUser ? (
-                  // User bubble: bright-cyan gradient (light-cyan ->
-                  // brand cyan). Both stops are light enough that
-                  // navy text stays AA-compliant across the entire
-                  // gradient — using cyanDeep here drops contrast to
-                  // ~3.1:1 which fails for body text.
+                  // User bubble: deep-blue gradient (cyanDeep ->
+                  // navy-blue). White text passes AA (~5.0:1+ on
+                  // cyanDeep, ~10:1 on navy-blue) and reads as the
+                  // confident "you said this" voice in the chat.
                   <LinearGradient
-                    colors={["#4FC3FF", colors.brand.cyan]}
+                    colors={[colors.brand.cyanDeep, "#1E4D8B"]}
                     start={{ x: 0, y: 0 }}
                     end={{ x: 1, y: 1 }}
                     style={{
@@ -1096,7 +1096,7 @@ export default function CritiqueScreen() {
                       paddingVertical: 12,
                       borderRadius: 22,
                       borderBottomRightRadius: 6,
-                      shadowColor: colors.brand.cyan,
+                      shadowColor: colors.brand.cyanDeep,
                       shadowOffset: { width: 0, height: 4 },
                       shadowOpacity: 0.32,
                       shadowRadius: 10,
@@ -1115,29 +1115,25 @@ export default function CritiqueScreen() {
                     </Text>
                   </LinearGradient>
                 ) : (
-                  // Assistant bubble. The corner closest to the
-                  // mentor star is sharp:
-                  //   • pre-chat opener: star sits ABOVE in the
-                  //     identity row → sharp TOP-LEFT
-                  //   • chatting: star sits BELOW the bubble (a
-                  //     small AiBot rendered after this bubble) →
-                  //     sharp BOTTOM-LEFT
-                  // No more colored left accent stripe.
+                  // Assistant bubble. The mentor star always sits
+                  // ABOVE the bubble (in the identity row pre-chat,
+                  // or as a small AiBot rendered just before each
+                  // assistant message once chatting). The bubble
+                  // corner closest to the star is sharp → TOP-LEFT.
+                  // No drop shadow on assistant bubbles per request.
                   <>
+                    {!isOpener && (
+                      <View style={{ marginBottom: 6, marginLeft: 2 }}>
+                        <AiBot size={22} />
+                      </View>
+                    )}
                     <View
                       style={{
                         backgroundColor: "#F2FBFE",
                         paddingHorizontal: 16,
                         paddingVertical: 12,
                         borderRadius: 22,
-                        ...(isOpener
-                          ? { borderTopLeftRadius: 6 }
-                          : { borderBottomLeftRadius: 6 }),
-                        shadowColor: "#000",
-                        shadowOffset: { width: 0, height: 4 },
-                        shadowOpacity: 0.08,
-                        shadowRadius: 10,
-                        elevation: 2,
+                        borderTopLeftRadius: 6,
                       }}
                     >
                       <TypewriterText
@@ -1153,11 +1149,6 @@ export default function CritiqueScreen() {
                         }}
                       />
                     </View>
-                    {!isOpener && (
-                      <View style={{ marginTop: 6, marginLeft: 2 }}>
-                        <AiBot size={22} />
-                      </View>
-                    )}
                   </>
                 )}
               </Animated.View>
@@ -1165,33 +1156,28 @@ export default function CritiqueScreen() {
           })}
 
           {sending && (
-            // Typing indicator — same shape language as the
-            // assistant bubble: sharp BOTTOM-LEFT (the star side),
-            // no colored left stripe.
+            // Typing indicator — matches the assistant bubble:
+            // small spinning star ABOVE, sharp TOP-LEFT corner on
+            // the bubble, no drop shadow.
             <View style={{ alignSelf: "flex-start" }}>
+              <View style={{ marginBottom: 6, marginLeft: 2 }}>
+                <AiBot size={22} spinning />
+              </View>
               <View
                 style={{
                   backgroundColor: "#F2FBFE",
                   paddingHorizontal: 16,
                   paddingVertical: 14,
                   borderRadius: 22,
-                  borderBottomLeftRadius: 6,
+                  borderTopLeftRadius: 6,
                   flexDirection: "row",
                   gap: 10,
                   alignItems: "center",
-                  shadowColor: "#000",
-                  shadowOffset: { width: 0, height: 4 },
-                  shadowOpacity: 0.08,
-                  shadowRadius: 10,
-                  elevation: 2,
                 }}
               >
                 <Text style={{ fontSize: 12, fontFamily: "Nunito_800ExtraBold", color: colors.brand.cyanDeep, letterSpacing: 0.3 }}>
                   Grafly is Graflying ...
                 </Text>
-              </View>
-              <View style={{ marginTop: 6, marginLeft: 2 }}>
-                <AiBot size={22} spinning />
               </View>
             </View>
           )}
