@@ -191,6 +191,9 @@ function ShopCard({ item, onBuy }: { item: ShopItem; onBuy: (item: ShopItem) => 
                 : fg + "AA";
               return (
                 <>
+                  {!canAfford && (
+                    <Icon name="lock-closed" size={13} color={onPill} weight="bold" />
+                  )}
                   <Icon name="coin" size={15} color={onPill} weight="fill" />
                   <Text
                     style={{

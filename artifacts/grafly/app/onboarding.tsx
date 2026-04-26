@@ -1378,13 +1378,17 @@ export default function OnboardingScreen() {
                     <PressScale
                       onPress={finishWithoutAccount}
                       disabled={busy}
-                      style={{ paddingVertical: 14, alignItems: "center", width: "100%" }}
+                      accessibilityRole="button"
+                      accessibilityLabel="Skip account creation"
+                      style={{ paddingVertical: 16, paddingHorizontal: 16, alignItems: "center", width: "100%" }}
                     >
                       <Text style={{
                         fontSize: 14,
                         fontFamily: "Nunito_800ExtraBold",
-                        color: colors.mutedForeground,
+                        color: colors.foreground,
                         letterSpacing: -0.2,
+                        textDecorationLine: "underline",
+                        textDecorationColor: colors.foreground,
                       }}>
                         Skip for now
                       </Text>

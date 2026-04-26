@@ -372,7 +372,9 @@ export default function AuthScreen() {
               <PressScale
                 onPress={() => switchMode("reset")}
                 scaleTo={0.98}
-                style={{ alignSelf: "flex-end", paddingVertical: 4, paddingHorizontal: 4 }}
+                accessibilityRole="button"
+                accessibilityLabel="Forgot password"
+                style={{ alignSelf: "flex-end", paddingVertical: 12, paddingHorizontal: 12 }}
               >
                 <Text style={{
                   fontSize: 13, fontFamily: "Nunito_800ExtraBold",

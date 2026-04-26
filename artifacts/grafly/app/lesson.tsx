@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   View,
   Text,
@@ -6,6 +6,8 @@ import {
   TouchableOpacity,
   Platform,
   TextInput,
+  Alert,
+  BackHandler,
 } from "react-native";
 import Animated, {
   useSharedValue,
@@ -504,6 +506,20 @@ export default function LessonScreen() {
   const [heartsLost, setHeartsLost] = useState(0);
   const [allDone, setAllDone] = useState(false);
   const [mascotState, setMascotState] = useState<MascotState>("idle");
+  const [outOfHearts, setOutOfHearts] = useState(false);
+  const paywallTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Cancel any pending paywall redirect if the screen unmounts. Without
+  // this, a user who left the lesson via Android back during the overlay
+  // would still get teleported to the paywall from another screen.
+  useEffect(() => {
+    return () => {
+      if (paywallTimerRef.current) {
+        clearTimeout(paywallTimerRef.current);
+        paywallTimerRef.current = null;
+      }
+    };
+  }, []);
 
   const currentLesson = allLessons[lessonIdx];
   const questions = useMemo(
@@ -519,6 +535,58 @@ export default function LessonScreen() {
   const progressPercent = totalQuestions > 0 ? (questionIdx / totalQuestions) * 100 : 0;
 
   const paddingTop = insets.top + (Platform.OS === "web" ? 67 : 0);
+
+  // Centralized exit guard. If the user is mid-lesson (not on the summary,
+  // not on the intro card before the first question), confirm before
+  // dropping their progress. On the summary screen, just exit immediately
+  // because there is nothing to lose.
+  const confirmExit = useCallback(() => {
+    const onSafeScreen =
+      showSummary || (!!currentLesson?.intro && !introDismissed && questionIdx === 0);
+    const exitNow = () => {
+      if (paywallTimerRef.current) {
+        clearTimeout(paywallTimerRef.current);
+        paywallTimerRef.current = null;
+      }
+      if (router.canGoBack()) router.back();
+      else router.replace("/");
+    };
+    // Once the out-of-hearts overlay is up, the lesson is effectively
+    // already over. Skip the confirmation dialog and just leave cleanly.
+    if (outOfHearts || onSafeScreen) {
+      exitNow();
+      return;
+    }
+    if (Platform.OS === "web") {
+      const ok =
+        typeof window !== "undefined"
+          ? window.confirm("Exit lesson? Your progress for this lesson will be lost.")
+          : true;
+      if (ok) exitNow();
+      return;
+    }
+    Alert.alert(
+      "Exit lesson?",
+      "Your progress for this lesson will be lost.",
+      [
+        { text: "Keep going", style: "cancel" },
+        { text: "Exit", style: "destructive", onPress: exitNow },
+      ],
+      { cancelable: true },
+    );
+  }, [showSummary, currentLesson, introDismissed, questionIdx, outOfHearts]);
+
+  // Intercept Android hardware back so it can't silently nuke lesson
+  // progress. iOS uses the swipe gesture, which is opt-in and feels
+  // more deliberate, so we leave that alone.
+  useEffect(() => {
+    if (Platform.OS !== "android") return;
+    const sub = BackHandler.addEventListener("hardwareBackPress", () => {
+      confirmExit();
+      return true;
+    });
+    return () => sub.remove();
+  }, [confirmExit]);
 
   if (!node || !currentLesson || !currentQ) {
     return (
@@ -582,7 +650,12 @@ export default function LessonScreen() {
       setHeartsLost((h) => h + 1);
       voiceService.playWrongAnswer();
       if (state.hearts - 1 <= 0) {
-        setTimeout(() => router.replace("/paywall" as any), 1200);
+        setOutOfHearts(true);
+        if (paywallTimerRef.current) clearTimeout(paywallTimerRef.current);
+        paywallTimerRef.current = setTimeout(() => {
+          paywallTimerRef.current = null;
+          router.replace("/paywall" as any);
+        }, 1600);
         return;
       }
     }
@@ -761,10 +834,7 @@ export default function LessonScreen() {
       <View style={{ flex: 1, backgroundColor: colors.background }}>
         <View style={{ paddingTop: paddingTop + 8, paddingHorizontal: 24, paddingBottom: 12, flexDirection: "row", alignItems: "center", gap: 14 }}>
           <PressScale
-            onPress={() => {
-              if (router.canGoBack()) router.back();
-              else router.replace("/");
-            }}
+            onPress={confirmExit}
             style={{ width: 38, height: 38, borderRadius: 100, backgroundColor: colors.card, alignItems: "center", justifyContent: "center" }}
           >
             <Icon name="close" size={20} color={colors.foreground} />
@@ -792,10 +862,7 @@ export default function LessonScreen() {
       <View style={{ paddingTop: paddingTop + 8, paddingHorizontal: 24, paddingBottom: 12 }}>
         <View style={{ flexDirection: "row", alignItems: "center", gap: 14 }}>
           <PressScale
-            onPress={() => {
-              if (router.canGoBack()) router.back();
-              else router.replace("/");
-            }}
+            onPress={confirmExit}
             style={{ width: 38, height: 38, borderRadius: 100, backgroundColor: colors.card, alignItems: "center", justifyContent: "center" }}
           >
             <Icon name="close" size={20} color={colors.foreground} />
@@ -936,6 +1003,59 @@ export default function LessonScreen() {
               color={isCorrect ? colors.success : colors.destructive}
             />
           </PressScale>
+        </Animated.View>
+      )}
+
+      {/* Out-of-hearts overlay — gives the user a moment to register
+          WHY they are about to be sent to the paywall, instead of a
+          silent teleport. (Nielsen: visibility of system status.) */}
+      {outOfHearts && (
+        <Animated.View
+          entering={FadeIn.duration(180)}
+          style={{
+            position: "absolute",
+            top: 0, left: 0, right: 0, bottom: 0,
+            backgroundColor: colors.foreground + "E6",
+            alignItems: "center",
+            justifyContent: "center",
+            paddingHorizontal: 32,
+          }}
+          pointerEvents="auto"
+        >
+          <View style={{
+            backgroundColor: colors.background,
+            borderRadius: 24,
+            paddingVertical: 28,
+            paddingHorizontal: 24,
+            alignItems: "center",
+            gap: 10,
+            width: "100%",
+            maxWidth: 320,
+          }}>
+            <View style={{ flexDirection: "row", gap: 4, marginBottom: 4 }}>
+              {[...Array(5)].map((_, i) => (
+                <Icon key={i} name="heart-outline" size={22} color={colors.destructive} />
+              ))}
+            </View>
+            <Text style={{
+              fontSize: 22,
+              fontFamily: "Nunito_800ExtraBold",
+              color: colors.foreground,
+              letterSpacing: -0.5,
+              textAlign: "center",
+            }}>
+              Out of hearts
+            </Text>
+            <Text style={{
+              fontSize: 14,
+              fontFamily: "Nunito_600SemiBold",
+              color: colors.mutedForeground,
+              textAlign: "center",
+              lineHeight: 20,
+            }}>
+              Take a breather while we line up your options.
+            </Text>
+          </View>
         </Animated.View>
       )}
     </View>

@@ -153,7 +153,9 @@ export default function ProfileScreen() {
               <TouchableOpacity
                 onPress={() => { setNameInput(state.username); setEditingName(true); }}
                 style={{ flexDirection: "row", alignItems: "center", gap: 6 }}
-                hitSlop={{ top: 6, bottom: 6, left: 6, right: 6 }}
+                hitSlop={{ top: 18, bottom: 18, left: 18, right: 18 }}
+                accessibilityRole="button"
+                accessibilityLabel="Edit username"
               >
                 <AText
                   style={{ fontSize: 22, fontFamily: "Nunito_800ExtraBold", color: colors.foreground, letterSpacing: -0.4 }}
