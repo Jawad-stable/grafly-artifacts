@@ -87,9 +87,9 @@ function TabIcon({
   const isLight = state.themeMode === "light";
 
   const activeColor = colors.primary;
-  const inactiveColor = isLight
-    ? colors.primaryForeground + "AA"
-    : "#FFFFFF99";
+  // Tab pill is intentionally dark in both themes, so inactive icons are
+  // always rendered in translucent white for legibility regardless of theme.
+  const inactiveColor = isLight ? "#FFFFFFAA" : "#FFFFFF99";
 
   const scale = useSharedValue(focused ? 1.12 : 1);
   const glow = useSharedValue(focused ? 1 : 0);
@@ -223,9 +223,7 @@ export default function TabLayout() {
                     : colors.card + "F2",
                   borderRadius: pillRadius,
                   borderWidth: 1,
-                  borderColor: isLight
-                    ? colors.primaryForeground + "1F"
-                    : "#FFFFFF12",
+                  borderColor: isLight ? "#FFFFFF1F" : "#FFFFFF12",
                 },
               ]}
             />
@@ -238,9 +236,7 @@ export default function TabLayout() {
                 left: 16,
                 right: 16,
                 height: 1,
-                backgroundColor: isLight
-                  ? colors.primaryForeground + "26"
-                  : "#FFFFFF1F",
+                backgroundColor: isLight ? "#FFFFFF26" : "#FFFFFF1F",
                 borderRadius: 1,
               }}
             />

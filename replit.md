@@ -23,7 +23,7 @@ The project is a pnpm workspace monorepo using TypeScript, comprising the Grafly
 ## Grafly Mobile App (Expo/React Native)
 - **Framework**: Expo (React Native), expo-router v6.
 - **State Management**: React Context with AsyncStorage for persistence and Supabase for cloud sync (`GameContext.tsx`).
-- **Theming**: Dark-first initially, but now defaults to light theme. Uses `constants/colors.ts` for a WCAG 2.1 AA compliant color palette. All hex values must use tokens from this file. `constants/contrast.ts` provides utility functions for contrast ratio checks.
+- **Theming**: Dark-first initially, but now defaults to light theme. Uses `constants/colors.ts` for a WCAG 2.1 AA compliant color palette aligned to the Grafly 2026 brand: vibrant cyan `#00A4FA` (primary), lime `#E3ED43` (accent), pink `#FF7BD0`, navy `#21263F` (foreground/dark), off-white `#F5F6FA` (light bg). On primary cyan fills, foreground text is brand navy (AA-safe ~5.9:1); a deeper cyan `#0078BB` (`primaryDeep`) is available when white text is needed. All hex values must use tokens from this file (or the exposed `colors.brand` map). `constants/contrast.ts` provides utility functions for contrast ratio checks.
 - **Typography**: Custom Teshrin fonts (Regular, Medium, Bold) are used.
 - **Navigation**:
     - Floating frosted-glass tab bar with subtle press feedback.
