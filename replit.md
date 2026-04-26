@@ -66,5 +66,6 @@ The project is a pnpm workspace monorepo using TypeScript, comprising the Grafly
     - `expo-linear-gradient`
     - `expo-blur`
     - `react-native-keyboard-controller`
-- **Expo Packages (in use)**: `expo-av`, `expo-image-picker`, `expo-blur`, `expo-haptics`.
+- **Expo Packages (in use)**: `expo-av`, `expo-image-picker`, `expo-blur`, `expo-haptics`, `expo-sharing` (dev screenshot share sheet on native).
+- **Screen capture**: `react-native-view-shot` powers the floating dev-only screenshot button (`components/DevScreenshotButton.tsx`, mounted in `app/_layout.tsx`). Visible only when `__DEV__`. Web → triggers a PNG download; iOS/Android → opens the native share sheet. The capture target is a `View ref` with `collapsable={false}` wrapping `<RootLayoutNav />`.
 - **Build Tool**: EAS Build (`eas-cli`) for Android builds.

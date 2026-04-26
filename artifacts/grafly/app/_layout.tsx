@@ -3,8 +3,8 @@ import { Feather } from "@expo/vector-icons";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Redirect, Stack, useSegments } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
-import React, { useEffect } from "react";
-import { LogBox } from "react-native";
+import React, { useEffect, useRef } from "react";
+import { LogBox, View } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { KeyboardProvider } from "react-native-keyboard-controller";
 import { SafeAreaProvider } from "react-native-safe-area-context";
@@ -13,6 +13,7 @@ LogBox.ignoreLogs([
   "Unable to activate keep awake",
 ]);
 
+import { DevScreenshotButton } from "@/components/DevScreenshotButton";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { AuthProvider, useAuth } from "@/context/AuthContext";
 import { GameProvider, useGame } from "@/context/GameContext";
@@ -104,6 +105,12 @@ export default function RootLayout() {
 
   if (!fontsLoaded && !fontError) return null;
 
+  // Ref pointing at the wrapping View that gets captured by the
+  // dev-only screenshot button. `collapsable={false}` is mandatory —
+  // without it RN may flatten the View away on Android and the
+  // capture target disappears.
+  const captureRef = useRef<View>(null);
+
   return (
     <SafeAreaProvider>
       <ErrorBoundary>
@@ -112,7 +119,10 @@ export default function RootLayout() {
             <KeyboardProvider>
               <AuthProvider>
                 <GameProvider>
-                  <RootLayoutNav />
+                  <View ref={captureRef} collapsable={false} style={{ flex: 1 }}>
+                    <RootLayoutNav />
+                  </View>
+                  <DevScreenshotButton targetRef={captureRef} />
                 </GameProvider>
               </AuthProvider>
             </KeyboardProvider>
