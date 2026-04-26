@@ -11,5 +11,5 @@ import { useGame } from "@/context/GameContext";
 export function useColors() {
   const { state } = useGame();
   const palette = state.themeMode === "light" ? colors.light : colors.dark;
-  return { ...palette, radius: colors.radius };
+  return { ...palette, radius: colors.radius, brand: colors.brand };
 }

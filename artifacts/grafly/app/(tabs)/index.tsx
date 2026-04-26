@@ -566,7 +566,7 @@ export default function HomeScreen() {
           </View>
           <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
             <LinearGradient
-              colors={["#5CC4FC", "#0078BB"]}
+              colors={[colors.brand.cyan, colors.brand.cyanDeep]}
               start={{ x: 0, y: 0 }}
               end={{ x: 0, y: 1 }}
               style={{
@@ -575,13 +575,16 @@ export default function HomeScreen() {
                 paddingHorizontal: 12, paddingVertical: 6,
               }}
             >
-              <Icon name="flame" size={14} color="#FFFFFF" weight="fill" />
-              <Text style={{ fontSize: 13, fontFamily: "Nunito_800ExtraBold", color: "#FFFFFF" }}>
+              {/* Navy on cyan = ~5.9:1 AA pass, matches the brand
+                  identity sheet's primary pairing. White text would
+                  fail contrast on the lighter cyan top stop. */}
+              <Icon name="flame" size={14} color={colors.brand.navy} weight="fill" />
+              <Text style={{ fontSize: 13, fontFamily: "Nunito_800ExtraBold", color: colors.brand.navy }}>
                 {state.streak}
               </Text>
             </LinearGradient>
             <LinearGradient
-              colors={["#5CC4FC", "#0078BB"]}
+              colors={[colors.brand.lime, "#C7D11A"]}
               start={{ x: 0, y: 0 }}
               end={{ x: 0, y: 1 }}
               style={{
@@ -590,8 +593,8 @@ export default function HomeScreen() {
                 paddingHorizontal: 12, paddingVertical: 6,
               }}
             >
-              <Icon name="coin" size={14} color="#FFFFFF" weight="fill" />
-              <Text style={{ fontSize: 13, fontFamily: "Nunito_800ExtraBold", color: "#FFFFFF" }}>
+              <Icon name="coin" size={14} color={colors.brand.navy} weight="fill" />
+              <Text style={{ fontSize: 13, fontFamily: "Nunito_800ExtraBold", color: colors.brand.navy }}>
                 {state.coins}
               </Text>
             </LinearGradient>

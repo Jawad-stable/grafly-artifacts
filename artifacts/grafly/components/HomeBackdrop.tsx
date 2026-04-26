@@ -9,6 +9,7 @@ import Animated, {
   Easing,
   interpolate,
 } from "react-native-reanimated";
+import { BrandSquiggle } from "./BrandSquiggle";
 
 const { width: SCREEN_W, height: SCREEN_H } = Dimensions.get("window");
 
@@ -205,6 +206,19 @@ export function HomeBackdrop({
         loop={11000}
         delay={2400}
       />
+
+      {/* Brand identity squiggle motifs — the curvy tube from the 2026
+          identity sheet, rendered at very low opacity so they read as
+          watermark texture, not foreground noise. */}
+      <View pointerEvents="none" style={{ position: "absolute", top: SCREEN_H * 0.18, left: SCREEN_W - 170 }}>
+        <BrandSquiggle variant="loop" width={170} height={100} color={primary} opacity={0.07} drift delay={400} />
+      </View>
+      <View pointerEvents="none" style={{ position: "absolute", top: SCREEN_H * 0.5, left: -28 }}>
+        <BrandSquiggle variant="tube" width={110} height={180} color={accent} opacity={0.06} strokeWidth={5} drift delay={1800} />
+      </View>
+      <View pointerEvents="none" style={{ position: "absolute", top: SCREEN_H * 0.78, left: SCREEN_W * 0.5 - 80 }}>
+        <BrandSquiggle variant="wave" width={200} height={32} color={primary} opacity={0.06} strokeWidth={4} drift delay={1100} />
+      </View>
 
       {/* Sparse micro dots — quiet ambient drift */}
       <MicroDot color={foreground} size={3} top={140} left={26} alpha={0.12} loop={6200} delay={300} amp={2} />

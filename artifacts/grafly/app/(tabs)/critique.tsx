@@ -41,6 +41,7 @@ import { pickRandomLocalDesign, type LocalDesign } from "@/data/localDesigns";
 import { PressScale } from "@/components/PressScale";
 import { BOTTOM_BAR_WIDTH } from "@/constants/layout";
 import { AI_BOT } from "@/constants/assets";
+import { GraflyMascot } from "@/components/GraflyMascot";
 
 const SMOOTH = Easing.out(Easing.cubic);
 
@@ -966,7 +967,7 @@ export default function CritiqueScreen() {
                 onLayout={onMentorRowLayout}
                 style={{ flexDirection: "row", alignItems: "center", gap: 10, marginTop: MENTOR_ROW_MARGIN_TOP, marginBottom: MENTOR_ROW_MARGIN_BOTTOM }}
               >
-                <AiBot size={28} />
+                <GraflyMascot state="idle" size={36} />
                 <View>
                   <Text style={{
                     fontSize: 13, fontFamily: "Nunito_800ExtraBold",
@@ -987,8 +988,11 @@ export default function CritiqueScreen() {
 
           {messages.map((m, i) => {
             const isUser = m.role === "user";
-            const bubbleBg = isUser ? "#00A4FA" : "#FFFFFF";
-            const bubbleFg = isUser ? "#FFFFFF" : "#21263F";
+            // Brand pairing: navy text on cyan (~5.9:1, AA pass) — same
+            // pairing as the wordmark on the brand identity sheet, and
+            // avoids the failed 2.56:1 contrast of white on cyan.
+            const bubbleBg = isUser ? colors.brand.cyan : "#FFFFFF";
+            const bubbleFg = isUser ? colors.brand.navy : "#21263F";
             // The first assistant message in the pre-chat view IS the
             // opener bubble — measure its real height so the card sizing
             // math self-corrects when the opener text is long / scaled.
