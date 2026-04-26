@@ -23,6 +23,7 @@ import type {
   SceneBlock,
   LessonIntro,
 } from "@/constants/lessons";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useColors } from "@/hooks/useColors";
 import { PressScale } from "@/components/PressScale";
 import { Icon } from "@/components/Icon";
@@ -286,12 +287,14 @@ export function LessonIntroCard({
   onContinue: () => void;
 }) {
   const colors = useColors();
+  const insets = useSafeAreaInsets();
   const accent = accentColor ?? colors.primary;
 
   return (
     <Animated.View entering={FadeIn.duration(280)} style={{ flex: 1 }}>
       <ScrollView
-        contentContainerStyle={{ paddingHorizontal: 24, paddingBottom: 60, paddingTop: 8 }}
+        style={{ flex: 1 }}
+        contentContainerStyle={{ paddingHorizontal: 24, paddingBottom: 24, paddingTop: 8 }}
         showsVerticalScrollIndicator={false}
       >
         <Animated.View entering={FadeInDown.duration(420)}>
@@ -370,27 +373,38 @@ export function LessonIntroCard({
             </View>
           </Animated.View>
         )}
-
-        <Animated.View entering={FadeInDown.duration(500).delay(280)} style={{ marginTop: 28 }}>
-          <PressScale
-            onPress={onContinue}
-            style={{
-              backgroundColor: colors.foreground,
-              borderRadius: 100,
-              paddingVertical: 18,
-              alignItems: "center",
-              flexDirection: "row",
-              justifyContent: "center",
-              gap: 10,
-            }}
-          >
-            <Text style={{ fontSize: 16, fontFamily: "Nunito_800ExtraBold", color: colors.background }}>
-              Let's go
-            </Text>
-            <Icon name="arrow-forward" size={18} color={colors.background} />
-          </PressScale>
-        </Animated.View>
       </ScrollView>
+
+      {/* Sticky bottom CTA — sibling of ScrollView so it pins to the bottom */}
+      <Animated.View
+        entering={FadeInDown.duration(500).delay(280)}
+        style={{
+          paddingHorizontal: 24,
+          paddingTop: 12,
+          paddingBottom: Math.max(insets.bottom, 12) + 8,
+          backgroundColor: colors.background,
+          borderTopWidth: 1,
+          borderTopColor: colors.border,
+        }}
+      >
+        <PressScale
+          onPress={onContinue}
+          style={{
+            backgroundColor: colors.foreground,
+            borderRadius: 100,
+            paddingVertical: 18,
+            alignItems: "center",
+            flexDirection: "row",
+            justifyContent: "center",
+            gap: 10,
+          }}
+        >
+          <Text style={{ fontSize: 16, fontFamily: "Nunito_800ExtraBold", color: colors.background }}>
+            Let's go
+          </Text>
+          <Icon name="arrow-forward" size={18} color={colors.background} />
+        </PressScale>
+      </Animated.View>
     </Animated.View>
   );
 }
