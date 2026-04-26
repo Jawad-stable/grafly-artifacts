@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
   View,
   Text,
@@ -11,6 +11,7 @@ import {
   Modal,
   Pressable,
   Dimensions,
+  type LayoutChangeEvent,
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { KeyboardAvoidingView } from "react-native-keyboard-controller";
@@ -521,47 +522,129 @@ export default function CritiqueScreen() {
   // the available vertical space at a 4:5 aspect", then the height is
   // derived from that width so the aspect stays exactly 4:5.
   //
-  // These constants are the single source of truth for both the card
-  // sizing math and the onboarding ring `cardRect.top` math below — keep
-  // them in sync.
-  const HEADER_TOP_PAD = 10;
-  const HEADER_BOTTOM_PAD = 10;
-  const HEADER_CONTENT_H = 50; // mentor pill + 30/34 title + small buffer
-  const HEADER_BLOCK_H = HEADER_TOP_PAD + HEADER_CONTENT_H + HEADER_BOTTOM_PAD; // 70
+  // The heights of the surrounding blocks (header, eyebrow, mentor row,
+  // opener bubble) are MEASURED at runtime via onLayout instead of being
+  // hardcoded estimates. That way the layout self-corrects on uncommon
+  // phone sizes, with system text scaling, or whenever any block grows
+  // (e.g. a longer opener message). The composer is implicitly accounted
+  // for: the ScrollView is `flex: 1`, so its measured height already
+  // excludes the header above and composer below.
+  //
+  // The static spacing constants below (paddings / margins / gaps) are
+  // pixel values that don't change with content / font scaling, so they
+  // remain literals — they have to match the actual styles applied
+  // inside the ScrollView's pre-chat content tree.
   const SCROLL_PAD_TOP = 14; // ScrollView contentContainerStyle.paddingTop
+  const SCROLL_PAD_BOTTOM = 12; // ScrollView contentContainerStyle.paddingBottom
+  const SCROLL_GAP = 10; // ScrollView contentContainerStyle.gap (between siblings)
   const EYEBROW_MARGIN_TOP = -4;
-  const EYEBROW_H = 22;
   const EYEBROW_MARGIN_BOTTOM = 12;
-  const EYEBROW_BLOCK_H = SCROLL_PAD_TOP + EYEBROW_MARGIN_TOP + EYEBROW_H + EYEBROW_MARGIN_BOTTOM; // 44
-  const MENTOR_ROW_H = 50; // small Grafly identity row above opener
-  const OPENER_BUBBLE_H = 96; // estimated 3-line opener message bubble
-  const COMPOSER_BLOCK_H = 86; // composer pill itself + its top padding
-  const VERTICAL_GAPS = 42; // accumulated paddings/gaps between blocks (card marginBottom 10, scroll paddingBottom 12, opener-row gap 10, misc buffer 10)
-  const reservedH =
-    paddingTop +
-    HEADER_BLOCK_H +
-    EYEBROW_BLOCK_H +
-    MENTOR_ROW_H +
-    OPENER_BUBBLE_H +
-    composerLift +
-    COMPOSER_BLOCK_H +
-    VERTICAL_GAPS;
-  const cardWidthByEdge = SCREEN_W - 40; // ScrollView paddingHorizontal: 20 each side
-  const cardWidthByHeight = Math.max(0, SCREEN_H - reservedH) * (4 / 5);
-  // Soft minimum so on very tall screens the card still has visual presence,
-  // but no clamp on small screens (would force overflow → scroll, defeating
-  // the no-scroll goal). On a small phone where height-fit < edge-fit, the
-  // card may shrink to whatever the available vertical space allows.
-  const heroCardWidth = Math.max(
-    140,
-    Math.min(cardWidthByEdge, cardWidthByHeight),
+  const CARD_MARGIN_BOTTOM = 10;
+  const MENTOR_ROW_MARGIN_TOP = 6;
+  const MENTOR_ROW_MARGIN_BOTTOM = 4;
+  // Sum of every static piece of vertical spacing inside the ScrollView
+  // that surrounds the four measured blocks (eyebrow, card, mentor row,
+  // opener bubble). Gap applies between every adjacent pair of children.
+  const STATIC_SCROLL_OVERHEAD =
+    SCROLL_PAD_TOP +
+    EYEBROW_MARGIN_TOP +
+    EYEBROW_MARGIN_BOTTOM +
+    SCROLL_GAP + // eyebrow → card wrapper
+    CARD_MARGIN_BOTTOM +
+    SCROLL_GAP + // card wrapper → mentor row
+    MENTOR_ROW_MARGIN_TOP +
+    MENTOR_ROW_MARGIN_BOTTOM +
+    SCROLL_GAP + // mentor row → opener bubble
+    SCROLL_PAD_BOTTOM;
+
+  // Sensible defaults so the very first paint (before onLayout has fired)
+  // sizes the card close to its final value. Once measurements come in,
+  // the card snaps to the exact correct size.
+  const HEADER_BLOCK_H_DEFAULT = 70;
+  const EYEBROW_H_DEFAULT = 22;
+  const MENTOR_ROW_H_DEFAULT = 50;
+  const OPENER_BUBBLE_H_DEFAULT = 96;
+  const COMPOSER_BLOCK_H_DEFAULT = 86;
+
+  const [headerH, setHeaderH] = useState(HEADER_BLOCK_H_DEFAULT);
+  const [scrollH, setScrollH] = useState(0);
+  const [eyebrowH, setEyebrowH] = useState(EYEBROW_H_DEFAULT);
+  const [mentorRowH, setMentorRowH] = useState(MENTOR_ROW_H_DEFAULT);
+  const [openerBubbleH, setOpenerBubbleH] = useState(OPENER_BUBBLE_H_DEFAULT);
+
+  // First-paint fallback for the available ScrollView height: derived from
+  // the screen dims and the default header / composer estimates. As soon
+  // as the ScrollView's onLayout fires, we use the real measured value.
+  const fallbackScrollH = Math.max(
+    0,
+    SCREEN_H -
+      paddingTop -
+      HEADER_BLOCK_H_DEFAULT -
+      composerLift -
+      COMPOSER_BLOCK_H_DEFAULT,
   );
-  const heroCardHeight = Math.round(heroCardWidth * (5 / 4));
+  const effectiveScrollH = scrollH > 0 ? scrollH : fallbackScrollH;
+
+  const cardWidthByEdge = SCREEN_W - 40; // ScrollView paddingHorizontal: 20 each side
+  const cardHeightByEdge = cardWidthByEdge * (5 / 4);
+  // How much height the card itself can occupy inside the ScrollView once
+  // every other block above/below it (and their static spacing) is
+  // subtracted from the measured ScrollView height.
+  const cardHeightByHeight = Math.max(
+    0,
+    effectiveScrollH -
+      STATIC_SCROLL_OVERHEAD -
+      eyebrowH -
+      mentorRowH -
+      openerBubbleH,
+  );
+  // Soft minimum so on very tall screens the card still has visual presence.
+  // We deliberately cap the floor at `cardHeightByHeight` so it CAN'T force
+  // the content to overflow / scroll — on the smallest phones with large
+  // text scaling, the card is allowed to shrink below this minimum so the
+  // "always fits" guarantee wins over visual-presence.
+  const MIN_CARD_W = 140;
+  const MIN_CARD_H = MIN_CARD_W * (5 / 4);
+  const safeMinH = Math.min(MIN_CARD_H, cardHeightByHeight);
+  const heroCardHeight = Math.round(
+    Math.max(safeMinH, Math.min(cardHeightByEdge, cardHeightByHeight)),
+  );
+  const heroCardWidth = Math.round(heroCardHeight * (4 / 5));
   // Single source of truth for where the card actually sits on screen.
   // Used by the onboarding ring so its highlight stays glued to the card
-  // even when the constants above change.
-  const heroCardTop = paddingTop + HEADER_BLOCK_H + EYEBROW_BLOCK_H;
+  // even when any block above changes height (text scaling, longer text).
+  const heroCardTop =
+    headerH +
+    SCROLL_PAD_TOP +
+    EYEBROW_MARGIN_TOP +
+    eyebrowH +
+    EYEBROW_MARGIN_BOTTOM +
+    SCROLL_GAP;
   const heroCardLeft = Math.round((SCREEN_W - heroCardWidth) / 2);
+
+  // Stable layout callbacks. Each one only triggers a state update when
+  // the new height differs from the previous by more than half a pixel,
+  // to avoid render loops from sub-pixel layout jitter.
+  const onHeaderLayout = useCallback((e: LayoutChangeEvent) => {
+    const h = e.nativeEvent.layout.height;
+    setHeaderH((prev) => (Math.abs(prev - h) < 0.5 ? prev : h));
+  }, []);
+  const onScrollLayout = useCallback((e: LayoutChangeEvent) => {
+    const h = e.nativeEvent.layout.height;
+    setScrollH((prev) => (Math.abs(prev - h) < 0.5 ? prev : h));
+  }, []);
+  const onEyebrowLayout = useCallback((e: LayoutChangeEvent) => {
+    const h = e.nativeEvent.layout.height;
+    setEyebrowH((prev) => (Math.abs(prev - h) < 0.5 ? prev : h));
+  }, []);
+  const onMentorRowLayout = useCallback((e: LayoutChangeEvent) => {
+    const h = e.nativeEvent.layout.height;
+    setMentorRowH((prev) => (Math.abs(prev - h) < 0.5 ? prev : h));
+  }, []);
+  const onOpenerBubbleLayout = useCallback((e: LayoutChangeEvent) => {
+    const h = e.nativeEvent.layout.height;
+    setOpenerBubbleH((prev) => (Math.abs(prev - h) < 0.5 ? prev : h));
+  }, []);
   const sessionsLeft = Math.max(0, maxSessions - sessionsDone);
 
   function loadNewDesign() {
@@ -631,6 +714,7 @@ export default function CritiqueScreen() {
         {/* Compact editorial header */}
         <Animated.View
           entering={FadeInDown.duration(520).easing(Easing.out(Easing.cubic))}
+          onLayout={onHeaderLayout}
           style={{
             paddingTop: paddingTop + 10,
             paddingHorizontal: 20,
@@ -751,7 +835,8 @@ export default function CritiqueScreen() {
         <ScrollView
           ref={scrollRef}
           style={{ flex: 1 }}
-          contentContainerStyle={{ paddingHorizontal: 20, paddingTop: 14, paddingBottom: 12, gap: 10 }}
+          onLayout={onScrollLayout}
+          contentContainerStyle={{ paddingHorizontal: 20, paddingTop: SCROLL_PAD_TOP, paddingBottom: SCROLL_PAD_BOTTOM, gap: SCROLL_GAP }}
           keyboardShouldPersistTaps="handled"
         >
           {loadingDesign && (
@@ -770,7 +855,8 @@ export default function CritiqueScreen() {
               {/* Eyebrow row */}
               <Animated.View
                 entering={FadeInDown.duration(440).easing(SMOOTH).delay(60)}
-                style={{ flexDirection: "row", alignItems: "center", gap: 10, marginBottom: 12, marginTop: -4 }}
+                onLayout={onEyebrowLayout}
+                style={{ flexDirection: "row", alignItems: "center", gap: 10, marginBottom: EYEBROW_MARGIN_BOTTOM, marginTop: EYEBROW_MARGIN_TOP }}
               >
                 <View style={{
                   paddingHorizontal: 10, paddingVertical: 5, borderRadius: 100,
@@ -797,7 +883,7 @@ export default function CritiqueScreen() {
                   card stays compact. */}
               <Animated.View
                 entering={FadeInDown.duration(560).easing(SMOOTH).delay(120)}
-                style={{ alignItems: "center", marginBottom: 10 }}
+                style={{ alignItems: "center", marginBottom: CARD_MARGIN_BOTTOM }}
               >
                 <Pressable onPress={() => setImageOpen(true)}>
                   <View
@@ -877,7 +963,8 @@ export default function CritiqueScreen() {
               {/* Mentor identity row above the opener — compact */}
               <Animated.View
                 entering={FadeInDown.duration(480).easing(SMOOTH).delay(220)}
-                style={{ flexDirection: "row", alignItems: "center", gap: 10, marginTop: 6, marginBottom: 4 }}
+                onLayout={onMentorRowLayout}
+                style={{ flexDirection: "row", alignItems: "center", gap: 10, marginTop: MENTOR_ROW_MARGIN_TOP, marginBottom: MENTOR_ROW_MARGIN_BOTTOM }}
               >
                 <AiBot size={28} />
                 <View>
@@ -902,10 +989,15 @@ export default function CritiqueScreen() {
             const isUser = m.role === "user";
             const bubbleBg = isUser ? "#00A4FA" : "#FFFFFF";
             const bubbleFg = isUser ? "#FFFFFF" : "#21263F";
+            // The first assistant message in the pre-chat view IS the
+            // opener bubble — measure its real height so the card sizing
+            // math self-corrects when the opener text is long / scaled.
+            const isOpener = !chatStarted && i === 0 && !isUser;
             return (
               <Animated.View
                 key={i}
                 entering={FadeInUp.duration(360).easing(SMOOTH)}
+                onLayout={isOpener ? onOpenerBubbleLayout : undefined}
                 style={{
                   alignSelf: isUser ? "flex-end" : "flex-start",
                   maxWidth: "88%",
