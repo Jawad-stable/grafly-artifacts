@@ -15,6 +15,7 @@ import Animated, {
 import { Icon } from "@/components/Icon";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useColors } from "@/hooks/useColors";
+import { BOTTOM_BAR_WIDTH } from "@/constants/layout";
 
 const TABS = [
   { name: "index", path: "/(tabs)", icon: "home", iconOutline: "home-outline" },
@@ -91,57 +92,62 @@ export function CustomTabBar() {
   const bottomPad = Math.max(insets.bottom, Platform.OS === "web" ? 16 : 8);
 
   return (
-    <View
-      style={[
-        styles.container,
-        {
-          bottom: Platform.OS === "web" ? 16 : 16,
-          marginHorizontal: 20,
-          borderRadius: 32,
-          paddingBottom: bottomPad,
-          shadowColor: "#000",
-          shadowOffset: { width: 0, height: 8 },
-          shadowOpacity: 0.35,
-          shadowRadius: 20,
-          elevation: 16,
-        },
-      ]}
-    >
-      <BlurView
-        intensity={80}
-        tint="dark"
-        style={[StyleSheet.absoluteFill, { borderRadius: 32, overflow: "hidden" }]}
-      />
+    <View pointerEvents="box-none" style={styles.outer}>
       <View
         style={[
-          StyleSheet.absoluteFill,
+          styles.container,
           {
-            backgroundColor: colors.card + "D0",
+            width: BOTTOM_BAR_WIDTH,
             borderRadius: 32,
-            borderWidth: 1,
-            borderColor: colors.border + "60",
+            paddingBottom: bottomPad,
+            shadowColor: "#000",
+            shadowOffset: { width: 0, height: 8 },
+            shadowOpacity: 0.35,
+            shadowRadius: 20,
+            elevation: 16,
           },
         ]}
-      />
-      <View style={styles.row}>
-        {TABS.map((tab) => (
-          <TabButton
-            key={tab.name}
-            tab={tab}
-            isActive={isTabActive(tab)}
-            onPress={() => navigate(tab)}
-          />
-        ))}
+      >
+        <BlurView
+          intensity={80}
+          tint="dark"
+          style={[StyleSheet.absoluteFill, { borderRadius: 32, overflow: "hidden" }]}
+        />
+        <View
+          style={[
+            StyleSheet.absoluteFill,
+            {
+              backgroundColor: colors.card + "D0",
+              borderRadius: 32,
+              borderWidth: 1,
+              borderColor: colors.border + "60",
+            },
+          ]}
+        />
+        <View style={styles.row}>
+          {TABS.map((tab) => (
+            <TabButton
+              key={tab.name}
+              tab={tab}
+              isActive={isTabActive(tab)}
+              onPress={() => navigate(tab)}
+            />
+          ))}
+        </View>
       </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
+  outer: {
     position: "absolute",
     left: 0,
     right: 0,
+    bottom: 16,
+    alignItems: "center",
+  },
+  container: {
     overflow: "hidden",
   },
   row: {
