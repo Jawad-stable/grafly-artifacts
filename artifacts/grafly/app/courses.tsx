@@ -83,7 +83,13 @@ export default function CoursesScreen() {
           return (
             <Animated.View entering={FadeIn.delay(80 + index * 60)}>
               <PressScale
-                onPress={() => router.push({ pathname: "/(tabs)/tree", params: { courseId: course.id } })}
+                onPress={() => {
+                  if (course.id === "design-principles") {
+                    router.push({ pathname: "/course-intro", params: { courseId: course.id } });
+                  } else {
+                    router.push({ pathname: "/(tabs)/tree", params: { courseId: course.id } });
+                  }
+                }}
                 style={{
                   height: 200,
                   borderRadius: 24,
@@ -147,14 +153,48 @@ export default function CoursesScreen() {
                 <View style={{
                   paddingHorizontal: 18, paddingVertical: 12,
                   backgroundColor: onCard + "22",
-                  flexDirection: "row", alignItems: "center", justifyContent: "space-between",
+                  gap: 8,
                 }}>
-                  <Text style={{ fontSize: 11, fontFamily: "Nunito_800ExtraBold", color: onCard }}>
-                    {course.nodes.length} modules · {completedCount}/{totalLessons} lessons
-                  </Text>
-                  <Text style={{ fontSize: 11, fontFamily: "Nunito_800ExtraBold", color: onCard }}>
-                    {progress}%
-                  </Text>
+                  <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
+                    <Text style={{ fontSize: 11, fontFamily: "Nunito_800ExtraBold", color: onCard }}>
+                      {course.nodes.length} modules · {completedCount}/{totalLessons} lessons
+                    </Text>
+                    <Text style={{ fontSize: 11, fontFamily: "Nunito_800ExtraBold", color: onCard }}>
+                      {progress}%
+                    </Text>
+                  </View>
+                  {course.id === "design-principles" && course.nodes.length > 0 ? (
+                    <View style={{ flexDirection: "row", gap: 4 }}>
+                      {course.nodes.map((node) => {
+                        const moduleTotal = node.lessons.length;
+                        const moduleDone = node.lessons.filter((l) =>
+                          state.completedLessons.includes(l.id)
+                        ).length;
+                        const ratio = moduleTotal > 0 ? moduleDone / moduleTotal : 0;
+                        return (
+                          <View
+                            key={node.id}
+                            style={{
+                              flex: 1,
+                              height: 4,
+                              borderRadius: 2,
+                              backgroundColor: onCard + "33",
+                              overflow: "hidden",
+                            }}
+                          >
+                            <View
+                              style={{
+                                width: `${ratio * 100}%`,
+                                height: "100%",
+                                backgroundColor: onCard,
+                                borderRadius: 2,
+                              }}
+                            />
+                          </View>
+                        );
+                      })}
+                    </View>
+                  ) : null}
                 </View>
               </PressScale>
             </Animated.View>

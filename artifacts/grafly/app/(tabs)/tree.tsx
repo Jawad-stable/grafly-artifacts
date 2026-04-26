@@ -255,14 +255,17 @@ function CoursePickerModal({
 }
 
 function NodeItem({
-  node, course, isCompleted, isLocked, posX, onPress, tint,
+  node, course, isCompleted, isLocked, posX, onPress, tint, completedLessons,
 }: {
   node: SkillNode; course: Course; isCompleted: boolean;
   isLocked: boolean; posX: number; onPress: () => void; tint: string;
+  completedLessons: number;
 }) {
   const colors = useColors();
   const fillColor = isCompleted ? colors.success : isLocked ? colors.muted : tint;
   const haloSize = NODE_SIZE + 24;
+  const totalLessons = node.lessons.length;
+  const partial = !isCompleted && !isLocked && completedLessons > 0;
 
   return (
     <View style={{
@@ -324,6 +327,36 @@ function NodeItem({
           {node.title}
         </Text>
       </View>
+      {!isLocked && totalLessons > 0 ? (
+        <View style={{
+          marginTop: 4,
+          flexDirection: "row",
+          alignItems: "center",
+          gap: 4,
+          paddingHorizontal: 8,
+          paddingVertical: 3,
+          borderRadius: 100,
+          backgroundColor: isCompleted
+            ? colors.success + "1F"
+            : partial
+            ? fillColor + "26"
+            : colors.muted + "55",
+        }}>
+          <Icon
+            name={isCompleted ? "checkmark-circle" : partial ? "ellipse" : "ellipse-outline"}
+            size={9}
+            color={isCompleted ? colors.success : partial ? fillColor : colors.mutedForeground}
+          />
+          <Text style={{
+            fontSize: 10,
+            fontFamily: "Nunito_800ExtraBold",
+            color: isCompleted ? colors.success : partial ? fillColor : colors.mutedForeground,
+            letterSpacing: 0.4,
+          }}>
+            {completedLessons}/{totalLessons}
+          </Text>
+        </View>
+      ) : null}
     </View>
   );
 }
@@ -922,6 +955,7 @@ export default function TreeScreen() {
               const completed = isNodeCompleted(node);
               const locked = isNodeLocked(node);
               const tint = tierColor(idx, course.color);
+              const completedLessons = node.lessons.filter((l) => state.completedLessons.includes(l.id)).length;
               return (
                 <View
                   key={node.id}
@@ -934,6 +968,7 @@ export default function TreeScreen() {
                     isLocked={locked}
                     posX={posX}
                     tint={tint}
+                    completedLessons={completedLessons}
                     onPress={() => { setSelectedNode(node); setSheetVisible(true); }}
                   />
                 </View>

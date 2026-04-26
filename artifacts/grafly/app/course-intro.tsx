@@ -1,16 +1,8 @@
-import React, { useEffect, useMemo } from "react";
+import React, { useMemo } from "react";
 import { View, Text, ScrollView, Platform } from "react-native";
 import Animated, {
   FadeIn,
   FadeInDown,
-  FadeInUp,
-  Easing,
-  useSharedValue,
-  useAnimatedStyle,
-  withRepeat,
-  withTiming,
-  withSequence,
-  cancelAnimation,
 } from "react-native-reanimated";
 import { Icon } from "@/components/Icon";
 import { router, useLocalSearchParams } from "expo-router";
@@ -22,87 +14,25 @@ import { GraflyMascot } from "@/components/GraflyMascot";
 import { PressScale } from "@/components/PressScale";
 import { onBrand } from "@/constants/contrast";
 
-const VALUE_BEATS = [
-  {
-    icon: "eye-outline" as const,
-    title: "Train your eye",
-    body: "Spot the difference between forgettable and unforgettable in seconds.",
-  },
-  {
-    icon: "hand-left-outline" as const,
-    title: "Learn by doing",
-    body: "Five interactive game types — drag, tap, time, compare. Zero passive reading.",
-  },
-  {
-    icon: "bulb-outline" as const,
-    title: "Understand the why",
-    body: "Every rule lands with a real example so it actually sticks.",
-  },
-];
-
-const PREVIEW_TYPES = [
-  { label: "Spot the bad design", icon: "search-outline" as const, color: "#FF7BD0" },
-  { label: "Pick the better design", icon: "swap-horizontal-outline" as const, color: "#00A4FA" },
-  { label: "Stack the layout", icon: "layers-outline" as const, color: "#E3ED43" },
-  { label: "5-second test", icon: "timer-outline" as const, color: "#A78BFA" },
-  { label: "Find the primary CTA", icon: "locate-outline" as const, color: "#22DD88" },
-];
-
-function PreviewChip({ label, icon, color, delay }: typeof PREVIEW_TYPES[number] & { delay: number }) {
-  const colors = useColors();
-  const float = useSharedValue(0);
-
-  useEffect(() => {
-    float.value = withRepeat(
-      withSequence(
-        withTiming(-3, { duration: 1400, easing: Easing.inOut(Easing.quad) }),
-        withTiming(3, { duration: 1400, easing: Easing.inOut(Easing.quad) }),
-      ),
-      -1,
-      true,
-    );
-    return () => cancelAnimation(float);
-  }, []);
-
-  const animStyle = useAnimatedStyle(() => ({
-    transform: [{ translateY: float.value }],
-  }));
-
-  return (
-    <Animated.View entering={FadeInDown.delay(delay).duration(420)} style={animStyle}>
-      <View
-        style={{
-          flexDirection: "row",
-          alignItems: "center",
-          gap: 10,
-          backgroundColor: colors.card,
-          borderWidth: 1,
-          borderColor: colors.border,
-          borderRadius: 100,
-          paddingVertical: 12,
-          paddingHorizontal: 14,
-          marginBottom: 10,
-        }}
-      >
-        <View
-          style={{
-            width: 32,
-            height: 32,
-            borderRadius: 16,
-            backgroundColor: color + "26",
-            alignItems: "center",
-            justifyContent: "center",
-          }}
-        >
-          <Icon name={icon} size={16} color={color} />
-        </View>
-        <Text style={{ flex: 1, fontSize: 14, fontFamily: "Nunito_800ExtraBold", color: colors.foreground }}>
-          {label}
-        </Text>
-      </View>
-    </Animated.View>
-  );
+interface CourseHighlight {
+  icon: string;
+  label: string;
+  body: string;
 }
+
+const COURSE_HIGHLIGHTS: Record<string, CourseHighlight[]> = {
+  "design-principles": [
+    { icon: "eye-outline", label: "Train your eye", body: "Real screens, not theory." },
+    { icon: "game-controller-outline", label: "Play, don't read", body: "Spot, tap, choose. Quick rounds." },
+    { icon: "ribbon-outline", label: "6 modules · 18 lessons", body: "Built in the right order." },
+  ],
+};
+
+const DEFAULT_HIGHLIGHTS: CourseHighlight[] = [
+  { icon: "eye-outline", label: "Train your eye", body: "Hands-on, not theory." },
+  { icon: "game-controller-outline", label: "Play, don't read", body: "Quick interactive rounds." },
+  { icon: "ribbon-outline", label: "Earn as you go", body: "XP, coins, and streaks." },
+];
 
 export default function CourseIntroScreen() {
   const colors = useColors();
@@ -115,6 +45,7 @@ export default function CourseIntroScreen() {
     return COURSES.find((c) => c.id === id) ?? COURSES[0];
   }, [params.courseId]);
 
+  const highlights = COURSE_HIGHLIGHTS[course.id] ?? DEFAULT_HIGHLIGHTS;
   const totalLessons = course.nodes.flatMap((n) => n.lessons).length;
   const completedLessons = course.nodes
     .flatMap((n) => n.lessons)
@@ -176,7 +107,7 @@ export default function CourseIntroScreen() {
       >
         {/* Hero card */}
         <Animated.View
-          entering={FadeInDown.duration(560).easing(Easing.out(Easing.cubic))}
+          entering={FadeInDown.duration(560)}
           style={{
             backgroundColor: course.color,
             borderRadius: 28,
@@ -303,7 +234,7 @@ export default function CourseIntroScreen() {
 
         {/* Mascot welcome */}
         <Animated.View
-          entering={FadeInUp.delay(150).duration(520)}
+          entering={FadeInDown.delay(120).duration(360)}
           style={{
             flexDirection: "row",
             alignItems: "center",
@@ -323,89 +254,88 @@ export default function CourseIntroScreen() {
             >
               Ready to think like a designer?
             </Text>
-            <Text
-              style={{
-                marginTop: 4,
-                fontSize: 13,
-                fontFamily: "Nunito_600SemiBold",
-                color: colors.mutedForeground,
-                lineHeight: 18,
-              }}
-            >
-              I'll be right here cheering you on through every module.
+            <Text style={{ fontSize: 14, fontFamily: "Nunito_600SemiBold", color: colors.foreground, lineHeight: 20 }}>
+              Train your eye. One quick module at a time.
             </Text>
           </View>
         </Animated.View>
 
-        {/* Value beats */}
-        <View style={{ marginBottom: 24 }}>
-          {VALUE_BEATS.map((b, i) => (
+        {/* Highlights */}
+        <View style={{ gap: 10, marginBottom: 24 }}>
+          {highlights.map((h, i) => (
             <Animated.View
-              key={b.title}
-              entering={FadeInDown.delay(220 + i * 90).duration(440)}
+              key={i}
+              entering={FadeInDown.delay(180 + i * 80).duration(360)}
               style={{
                 flexDirection: "row",
                 gap: 14,
-                padding: 16,
+                alignItems: "center",
                 backgroundColor: colors.card,
                 borderRadius: 18,
-                marginBottom: 10,
+                padding: 16,
+                borderWidth: 1,
+                borderColor: colors.border,
               }}
             >
-              <View
-                style={{
-                  width: 44,
-                  height: 44,
-                  borderRadius: 14,
-                  backgroundColor: course.color + "22",
-                  alignItems: "center",
-                  justifyContent: "center",
-                }}
-              >
-                <Icon name={b.icon} size={22} color={course.color} />
+              <View style={{ width: 44, height: 44, borderRadius: 14, backgroundColor: course.color + "22", alignItems: "center", justifyContent: "center" }}>
+                <Icon name={h.icon as any} size={22} color={course.color} />
               </View>
               <View style={{ flex: 1 }}>
-                <Text
-                  style={{
-                    fontSize: 15,
-                    fontFamily: "Nunito_800ExtraBold",
-                    color: colors.foreground,
-                    marginBottom: 4,
-                  }}
-                >
-                  {b.title}
+                <Text style={{ fontSize: 14, fontFamily: "Nunito_800ExtraBold", color: colors.foreground, marginBottom: 2 }}>
+                  {h.label}
                 </Text>
-                <Text
-                  style={{
-                    fontSize: 13,
-                    fontFamily: "Nunito_600SemiBold",
-                    color: colors.mutedForeground,
-                    lineHeight: 18,
-                  }}
-                >
-                  {b.body}
+                <Text style={{ fontSize: 12, fontFamily: "Nunito_600SemiBold", color: colors.mutedForeground, lineHeight: 17 }}>
+                  {h.body}
                 </Text>
               </View>
             </Animated.View>
           ))}
         </View>
 
-        {/* Preview of game types */}
-        <Animated.View entering={FadeIn.delay(500).duration(420)} style={{ marginBottom: 22 }}>
-          <Text
-            style={{
-              fontSize: 11,
-              fontFamily: "Nunito_800ExtraBold",
-              color: colors.mutedForeground,
-              letterSpacing: 1.5,
-              marginBottom: 10,
-            }}
-          >
-            FIVE GAME TYPES YOU'LL PLAY
-          </Text>
-          <View>
-            {PREVIEW_TYPES.map((p, i) => (
-              <PreviewChip key={p.label} {...p} delay={520 + i * 80} />
+        {/* Module outline */}
+        <Animated.View entering={FadeInDown.delay(420).duration(360)} style={{ marginBottom: 28 }}>
+          <View style={{ flexDirection: "row", alignItems: "center", gap: 10, marginBottom: 12 }}>
+            <View style={{ paddingHorizontal: 10, paddingVertical: 5, borderRadius: 100, backgroundColor: course.color + "22" }}>
+              <Text style={{ fontSize: 11, fontFamily: "Nunito_800ExtraBold", color: course.color, letterSpacing: 1.4 }}>
+                THE PATH
+              </Text>
+            </View>
+            <View style={{ flex: 1, height: 1, backgroundColor: colors.border }} />
+          </View>
+          <View style={{ gap: 8 }}>
+            {course.nodes.map((node, idx) => (
+              <View
+                key={node.id}
+                style={{
+                  flexDirection: "row",
+                  alignItems: "center",
+                  gap: 12,
+                  paddingVertical: 10,
+                  borderBottomWidth: idx === course.nodes.length - 1 ? 0 : 1,
+                  borderColor: colors.border,
+                }}
+              >
+                <View style={{
+                  width: 30, height: 30, borderRadius: 15,
+                  backgroundColor: course.color,
+                  alignItems: "center", justifyContent: "center",
+                }}>
+                  <Text style={{ fontSize: 12, fontFamily: "Nunito_800ExtraBold", color: onCourse }}>
+                    {idx + 1}
+                  </Text>
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Text style={{ fontSize: 14, fontFamily: "Nunito_800ExtraBold", color: colors.foreground, letterSpacing: -0.2 }}>
+                    {node.title}
+                  </Text>
+                  <Text style={{ fontSize: 11, fontFamily: "Nunito_600SemiBold", color: colors.mutedForeground }} numberOfLines={1}>
+                    {node.description}
+                  </Text>
+                </View>
+                <Text style={{ fontSize: 11, fontFamily: "Nunito_800ExtraBold", color: colors.mutedForeground, letterSpacing: 0.4 }}>
+                  {node.lessons.length} LESSONS
+                </Text>
+              </View>
             ))}
           </View>
         </Animated.View>
@@ -413,7 +343,7 @@ export default function CourseIntroScreen() {
         {/* Progress hint */}
         {completedLessons > 0 && (
           <Animated.View
-            entering={FadeIn.delay(900)}
+            entering={FadeIn.delay(500)}
             style={{
               backgroundColor: colors.card,
               borderRadius: 16,

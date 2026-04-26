@@ -1649,3 +1649,12 @@ export function findNodeById(nodeId: string): SkillNode | undefined {
 export function findCourseByNodeId(nodeId: string): Course | undefined {
   return COURSES.find((c) => c.nodes.some((n) => n.id === nodeId));
 }
+
+export const MODULE_UNLOCK_MESSAGES: Record<string, string> = {
+  "dp-contrast": "Contrast unlocked. Your designs will pop.",
+  "dp-typography": "Typography unlocked. Your words now carry weight.",
+  "dp-spacing": "Spacing unlocked. Your layouts can breathe.",
+  "dp-color": "Color unlocked. Palettes that work for you.",
+  "dp-hierarchy": "Hierarchy unlocked. Guide every eye.",
+  "dp-ux-basics": "UX basics down. Your screens feel obvious.",
+};

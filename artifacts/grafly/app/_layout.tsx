@@ -70,6 +70,10 @@ function RootLayoutNav() {
           options={{ headerShown: false, presentation: "fullScreenModal", animation: "slide_from_bottom" }}
         />
         <Stack.Screen
+          name="course-intro"
+          options={{ headerShown: false, animation: "slide_from_right" }}
+        />
+        <Stack.Screen
           name="leaderboard"
           options={{ headerShown: false }}
         />
