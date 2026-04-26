@@ -148,7 +148,7 @@ export const COURSES: Course[] = [
             coinReward: 5,
             intro: {
               headline: "Contrast is how design speaks.",
-              body: "Without contrast, everything blends. With it, the eye knows exactly where to land first. Look at the same screen with — and without — it.",
+              body: "Without it, everything blends. With it, the eye knows where to land first.",
               scene: {
                 kind: "good_vs_bad",
                 goodNote: "High contrast: the headline pops, the action is unmissable.",
@@ -185,7 +185,7 @@ export const COURSES: Course[] = [
                   "Slows the user down on purpose",
                 ],
                 correctIndex: 1,
-                explanation: "Contrast is signal. Without it, every element competes equally and the brain has to do the sorting. The right contrast tells your user exactly where to start — and that's a feature, not decoration.",
+                explanation: "Contrast is signal. Without it, every element competes equally. The right contrast tells the eye where to start.",
                 difficulty: 1,
               },
               {
@@ -193,7 +193,7 @@ export const COURSES: Course[] = [
                 type: "true_false",
                 question: "Contrast can come from size, weight, or shape — not just color.",
                 correctBool: true,
-                explanation: "Color is the loudest contrast tool, but a small label next to a giant headline carries plenty on its own. Mixing types of contrast is what makes a screen feel layered instead of shouty.",
+                explanation: "Color is the loudest tool, but size and weight carry plenty too. Mixing types is what makes a screen feel layered.",
                 difficulty: 1,
               },
               {
@@ -202,7 +202,7 @@ export const COURSES: Course[] = [
                 question: "WCAG AA requires body text to hit at least which contrast ratio?",
                 options: ["2:1", "3:1", "4.5:1", "7:1"],
                 correctIndex: 2,
-                explanation: "4.5:1 is the floor for body text — anything less and a real chunk of users (low vision, glare on phones, older screens) will struggle. Hitting it isn't a constraint; it's a baseline of respect.",
+                explanation: "4.5:1 is the floor for body text. Below that, low vision and screen glare make it unreadable for many.",
                 difficulty: 2,
               },
             ],
@@ -215,14 +215,14 @@ export const COURSES: Course[] = [
             coinReward: 8,
             intro: {
               headline: "Train your eye.",
-              body: "You'll see a fake settings screen. One element has a contrast problem that would fail in production. Tap it.",
+              body: "One element on this screen would fail in production. Tap it.",
             },
             questions: [
               {
                 id: "dp-c2-q1",
                 type: "spot_bad_design",
                 question: "Tap the element with a contrast problem.",
-                explanation: "The 'Save changes' button used pale grey on white — under 2:1 contrast. A primary action must be the loudest thing on the screen, not the quietest. Use a strong fill (the brand color works) and white text.",
+                explanation: "'Save changes' is pale grey on white — under 2:1. A primary action should be the loudest thing on screen, not the quietest.",
                 difficulty: 2,
                 scene: {
                   kind: "spot_bad",
@@ -262,7 +262,7 @@ export const COURSES: Course[] = [
                   "Use a lighter shade of the brand color",
                 ],
                 correctIndex: 1,
-                explanation: "A solid dark fill with white text is the cleanest way to push contrast above 4.5:1. Borders and radius don't change perceived weight; color and value do.",
+                explanation: "Dark fill + white text is the cleanest way past 4.5:1. Borders and radius don't change weight — color does.",
                 difficulty: 2,
               },
             ],
@@ -275,14 +275,14 @@ export const COURSES: Course[] = [
             coinReward: 8,
             intro: {
               headline: "Two takes. One winner.",
-              body: "Both screens show the same content. One has earned its hierarchy. Pick it — and we'll explain why.",
+              body: "Same content, two takes. Pick the one that earned its hierarchy.",
             },
             questions: [
               {
                 id: "dp-c3-q1",
                 type: "choose_better_design",
                 question: "Which onboarding screen leads the eye better?",
-                explanation: "B wins: a single dark CTA against muted supporting text creates a clear path. Two equally bold buttons split attention and slow the user down — give one action the spotlight.",
+                explanation: "B wins. One dark CTA against muted text creates a clear path. Two equally bold buttons just split attention.",
                 difficulty: 2,
                 scene: {
                   kind: "ab_compare",
@@ -336,7 +336,7 @@ export const COURSES: Course[] = [
             coinReward: 5,
             intro: {
               headline: "Every text style is a promise.",
-              body: "Bigger, bolder text says 'start here.' Smaller, calmer text says 'detail.' If the sizes don't match the priorities, the user feels the friction — even if they can't name it.",
+              body: "Bigger and bolder says 'start here.' Smaller and calmer says 'detail.' Match sizes to priorities or users feel the friction.",
               scene: {
                 kind: "good_vs_bad",
                 goodNote: "Three sizes, clear roles — eye lands on the headline first.",
@@ -373,7 +373,7 @@ export const COURSES: Course[] = [
                   "Match a competitor's look",
                 ],
                 correctIndex: 1,
-                explanation: "Hierarchy is a roadmap. The reader's eye should hop from headline to subhead to body without thinking. Variety alone doesn't help — intent does.",
+                explanation: "Hierarchy is a roadmap. The eye should hop from headline to subhead to body without thinking.",
                 difficulty: 1,
               },
               {
@@ -381,7 +381,7 @@ export const COURSES: Course[] = [
                 type: "true_false",
                 question: "Body text usually reads best between 14 and 18px on mobile.",
                 correctBool: true,
-                explanation: "Below 14 starts feeling cramped on small screens; above 18 starts feeling like an alert. 14–18 is the sweet spot for paragraphs you actually want people to read.",
+                explanation: "Below 14 feels cramped, above 18 feels like an alert. 14–18 is the sweet spot for paragraph text.",
                 difficulty: 1,
               },
               {
@@ -390,7 +390,7 @@ export const COURSES: Course[] = [
                 question: "A comfortable line height for body text is about:",
                 options: ["1.0× the font size", "1.2× the font size", "1.5× the font size", "2.5× the font size"],
                 correctIndex: 2,
-                explanation: "~1.5 gives lines enough breathing room without losing paragraph cohesion. 1.0 feels like a wall of text; 2.5 reads like a list of disconnected sentences.",
+                explanation: "~1.5 gives lines breathing room without losing cohesion. 1.0 reads as a wall, 2.5 falls apart.",
                 difficulty: 2,
               },
             ],
@@ -403,14 +403,14 @@ export const COURSES: Course[] = [
             coinReward: 8,
             intro: {
               headline: "Headlines earn the rest of the page.",
-              body: "If the headline doesn't land, no one reads the body. Look at both versions and pick the one that gives the headline real weight.",
+              body: "If the headline doesn't land, no one reads the body. Pick the version that gives it real weight.",
             },
             questions: [
               {
                 id: "dp-t2-q1",
                 type: "choose_better_design",
                 question: "Which headline treatment carries more confidence?",
-                explanation: "B wins because the headline is much larger than the supporting text — a clear 2-3× ratio. When headline and body are nearly the same size, neither one leads, and the page feels flat.",
+                explanation: "B wins. Headline is 2–3× the body — a clear lead. When sizes are close, neither one leads.",
                 difficulty: 2,
                 scene: {
                   kind: "ab_compare",
@@ -440,7 +440,7 @@ export const COURSES: Course[] = [
                 type: "true_false",
                 question: "Mixing 4+ fonts on one screen usually strengthens hierarchy.",
                 correctBool: false,
-                explanation: "More fonts means more competing voices. Two type families is the working maximum — one for headlines, one for everything else. Hierarchy comes from size and weight, not extra typefaces.",
+                explanation: "More fonts means more competing voices. Two families is the cap. Hierarchy comes from size and weight, not extra typefaces.",
                 difficulty: 2,
               },
             ],
@@ -453,14 +453,14 @@ export const COURSES: Course[] = [
             coinReward: 8,
             intro: {
               headline: "Order is hierarchy.",
-              body: "Even before you change a font, deciding what comes first sets the tone. Drag the blocks into the order a user would expect to scan them.",
+              body: "Before you change a font, the order you stack things in sets the tone. Sort these the way a user would scan them.",
             },
             questions: [
               {
                 id: "dp-t3-q1",
                 type: "drag_drop_layout",
                 question: "Order this product card so the eye lands the right way.",
-                explanation: "Lead with the product name (identity), follow with the price (the decision), then the description (justification), then the action (commit). Putting the button first makes users commit before they understand.",
+                explanation: "Name first (identity), price (the decision), description (justification), then action (commit). Buttons first ask users to commit before they understand.",
                 difficulty: 3,
                 scene: {
                   kind: "drag_layout",
@@ -496,7 +496,7 @@ export const COURSES: Course[] = [
             coinReward: 5,
             intro: {
               headline: "Space is a tool, not leftover.",
-              body: "Whitespace groups things, separates things, and gives the eye somewhere to rest between them. Used well, it makes a screen feel calm and confident — not empty.",
+              body: "Whitespace groups, separates, and lets the eye rest. Used well, a screen feels calm — not empty.",
               scene: {
                 kind: "good_vs_bad",
                 goodNote: "Generous spacing: each item has room. Easy to scan.",
@@ -542,7 +542,7 @@ export const COURSES: Course[] = [
                   "That the design isn't done yet",
                 ],
                 correctIndex: 1,
-                explanation: "Proximity creates relationship. When two things sit close, the brain reads them as a group. Pull them apart and you've quietly said 'these are different.' Use space to express structure.",
+                explanation: "Proximity creates relationship. Things close together read as a group; apart, they read as separate. Use space to express structure.",
                 difficulty: 1,
               },
               {
@@ -550,7 +550,7 @@ export const COURSES: Course[] = [
                 type: "true_false",
                 question: "Items in the same group should have less space between them than between groups.",
                 correctBool: true,
-                explanation: "This is the law of proximity. Tight spacing inside a group, looser spacing between groups. Without that contrast, every item floats equally and the structure disappears.",
+                explanation: "Law of proximity: tight inside a group, loose between groups. Without that contrast, structure disappears.",
                 difficulty: 1,
               },
               {
@@ -564,7 +564,7 @@ export const COURSES: Course[] = [
                   "It's required by accessibility",
                 ],
                 correctIndex: 1,
-                explanation: "A scale gives every spacing decision an answer. Components from different parts of the app land on the same rhythm, which is why a system feels 'designed' instead of stitched together.",
+                explanation: "A scale gives every spacing choice an answer. Same rhythm everywhere is what makes a system feel designed.",
                 difficulty: 2,
               },
             ],
@@ -584,7 +584,7 @@ export const COURSES: Course[] = [
                 id: "dp-s2-q1",
                 type: "spot_bad_design",
                 question: "Tap the element with a spacing problem.",
-                explanation: "The 'Continue' button sits flush against the body text — no breathing room, no visual separation between explanation and action. A primary action needs space around it so the user feels invited to tap, not crowded into it.",
+                explanation: "'Continue' sits flush against the text — no breathing room. A primary action needs space around it so users feel invited, not crowded.",
                 difficulty: 2,
                 scene: {
                   kind: "spot_bad",
@@ -620,7 +620,7 @@ export const COURSES: Course[] = [
                 id: "dp-s3-q1",
                 type: "drag_drop_layout",
                 question: "Order these settings the way a user would expect them.",
-                explanation: "Personal identity (profile) leads, then how the app behaves for you (notifications), then the deeper stuff (privacy), and destructive actions (sign out) live last. Putting 'Sign out' near the top is a classic mistake — it invites accidents.",
+                explanation: "Identity first (profile), then behavior (notifications), then account (privacy). Sign out lives last — putting it up top invites accidents.",
                 difficulty: 3,
                 scene: {
                   kind: "drag_layout",
@@ -656,7 +656,7 @@ export const COURSES: Course[] = [
             coinReward: 5,
             intro: {
               headline: "Color is a signal, not paint.",
-              body: "Red means stop. Green means go. Your brand color means 'this is the thing to do.' Every color you use should be doing one of those three jobs — never just decorating.",
+              body: "Red means stop. Green means go. Your brand color means 'tap here.' Every color should do a job — never just decorate.",
               scene: {
                 kind: "good_vs_bad",
                 goodNote: "One brand color, used only for primary actions. Easy to find what to tap.",
@@ -693,7 +693,7 @@ export const COURSES: Course[] = [
                   "It's required by app stores",
                 ],
                 correctIndex: 1,
-                explanation: "If your accent color appears everywhere, it stops meaning 'tap here.' Reserve it for the most important action on each screen and the user learns to spot the path forward in a glance.",
+                explanation: "If your accent shows up everywhere, it stops meaning 'tap here.' Reserve it for the primary action.",
                 difficulty: 1,
               },
               {
@@ -701,7 +701,7 @@ export const COURSES: Course[] = [
                 type: "true_false",
                 question: "Red is generally associated with destructive or warning actions.",
                 correctBool: true,
-                explanation: "Red is wired into us as 'caution.' Use it for delete, error, or stop — not for normal links or buttons. Misusing it teaches users to ignore the warning.",
+                explanation: "Red reads as caution. Reserve it for delete, error, or stop — using it elsewhere teaches users to ignore the warning.",
                 difficulty: 1,
               },
               {
@@ -715,7 +715,7 @@ export const COURSES: Course[] = [
                   "Every color in the rainbow at low saturation",
                 ],
                 correctIndex: 1,
-                explanation: "Real interfaces need light backgrounds, soft surfaces, dividers, secondary text, primary text — all greys. A handful of grey values gives you a working system; one grey forces you to fake everything else.",
+                explanation: "Real interfaces need backgrounds, surfaces, dividers, and two text shades — all greys. A handful of values is a working system.",
                 difficulty: 2,
               },
             ],
@@ -728,14 +728,14 @@ export const COURSES: Course[] = [
             coinReward: 8,
             intro: {
               headline: "The right color can carry the brand.",
-              body: "Both versions show the same product. One feels considered. Pick it — and we'll look at why.",
+              body: "Same product, two palettes. Pick the one that feels considered.",
             },
             questions: [
               {
                 id: "dp-co2-q1",
                 type: "choose_better_design",
                 question: "Which palette feels more like a real product?",
-                explanation: "B wins because it commits: one strong accent, neutral background, calm supporting text. A throws three brand colors in equal amounts — nothing leads, and the brand never gets a chance to register.",
+                explanation: "B commits: one accent, neutral background, calm supporting text. A spreads three brand colors equally — nothing leads.",
                 difficulty: 2,
                 scene: {
                   kind: "ab_compare",
@@ -772,14 +772,14 @@ export const COURSES: Course[] = [
             coinReward: 10,
             intro: {
               headline: "First impressions are real.",
-              body: "We'll show you a screen for five seconds. Just glance — don't memorize. Then we'll ask what stuck.",
+              body: "We'll flash a screen for five seconds. Just glance — don't memorize. Then we'll ask what stuck.",
             },
             questions: [
               {
                 id: "dp-co3-q1",
                 type: "five_second_test",
                 question: "Glance at this screen, then answer.",
-                explanation: "The lime headline carries the page — it's the largest, brightest element. The pink button is loud too, but lime is where your eye lands first. That's a deliberate hierarchy choice doing its job.",
+                explanation: "The lime headline carries the page — biggest, brightest. The pink button is loud, but lime lands first. Hierarchy doing its job.",
                 difficulty: 2,
                 scene: {
                   kind: "five_sec",
@@ -799,7 +799,7 @@ export const COURSES: Course[] = [
                     question: "What was the dominant brand color?",
                     options: ["Green", "Pink", "Yellow / lime", "Orange"],
                     correctIndex: 2,
-                    explanation: "The lime headline carries the page — it's the largest, brightest element. The pink button is loud too, but lime is the moment your eye lands first.",
+                    explanation: "The lime headline is biggest and brightest. Even with a loud pink button, lime is where the eye lands first.",
                   },
                 },
               },
@@ -825,7 +825,7 @@ export const COURSES: Course[] = [
             coinReward: 5,
             intro: {
               headline: "Every screen has a first read.",
-              body: "Whether you planned it or not, the user's eye is going to land somewhere first. Hierarchy is the choice to make that landing intentional. Size, color, contrast, and position all conspire to lead.",
+              body: "The eye lands somewhere first whether you planned it or not. Hierarchy is the choice to make that landing intentional.",
               scene: {
                 kind: "good_vs_bad",
                 goodNote: "Clear first-read: big number, then label, then context.",
@@ -860,7 +860,7 @@ export const COURSES: Course[] = [
                   "Drop shadows on everything",
                 ],
                 correctIndex: 1,
-                explanation: "Hierarchy is built from contrast: this is bigger, that's bolder, this is brighter, that's higher on the page. Take away those differences and there's no hierarchy left to read.",
+                explanation: "Hierarchy is built from contrast — bigger, bolder, brighter, higher. Take those away and there's no hierarchy to read.",
                 difficulty: 1,
               },
               {
@@ -868,7 +868,7 @@ export const COURSES: Course[] = [
                 type: "true_false",
                 question: "If everything on a screen is bold, hierarchy gets stronger.",
                 correctBool: false,
-                explanation: "If everything's bold, nothing is. Hierarchy needs a high-low contrast — bold against regular, big against small. Saturating one channel kills the contrast you needed.",
+                explanation: "If everything's bold, nothing is. Hierarchy needs a high–low contrast: bold against regular, big against small.",
                 difficulty: 1,
               },
               {
@@ -882,7 +882,7 @@ export const COURSES: Course[] = [
                   "Inside a footer",
                 ],
                 correctIndex: 1,
-                explanation: "In left-to-right reading cultures, the eye starts top-left. Putting the most important thing where the eye already lands gives you hierarchy almost for free.",
+                explanation: "In left-to-right cultures, the eye starts top-left. Put the most important thing where the eye already lands.",
                 difficulty: 2,
               },
             ],
@@ -902,7 +902,7 @@ export const COURSES: Course[] = [
                 id: "dp-h2-q1",
                 type: "find_the_cta",
                 question: "Tap the primary call-to-action.",
-                explanation: "'Start free trial' wins — solid fill, brand color, white text, top of the action zone. Secondary actions like 'Sign in' and 'Learn more' use lighter weights so they don't compete. The hierarchy makes the next step impossible to miss.",
+                explanation: "'Start free trial' wins — solid fill, brand color, top of the action zone. Secondary actions use lighter weights so they don't compete.",
                 difficulty: 2,
                 scene: {
                   kind: "find_cta",
@@ -930,7 +930,7 @@ export const COURSES: Course[] = [
                 type: "true_false",
                 question: "A screen should usually have one primary action, with secondary actions visibly quieter.",
                 correctBool: true,
-                explanation: "Two equally loud buttons split attention. Picking one as primary (filled, brand color) and demoting the other (outline, neutral) gives the user a clear path without removing options.",
+                explanation: "Two equally loud buttons split attention. Pick one as primary, demote the other to outline. Same options, clearer path.",
                 difficulty: 1,
               },
             ],
@@ -943,14 +943,14 @@ export const COURSES: Course[] = [
             coinReward: 8,
             intro: {
               headline: "Order is half of hierarchy.",
-              body: "Even before sizes and colors, the order you stack sections in shapes the story the user reads. Drag these sections into a flow that converts.",
+              body: "Before sizes and colors, section order shapes the story. Sort these into a flow that converts.",
             },
             questions: [
               {
                 id: "dp-h3-q1",
                 type: "drag_drop_layout",
                 question: "Order these landing-page sections from top to bottom.",
-                explanation: "Hero leads (what & why), social proof builds trust, features explain how, then the final CTA closes. Putting features before the hero forces the reader to learn details before they know what the product even is.",
+                explanation: "Hero leads (what & why), proof builds trust, features explain how, final CTA closes. Features first asks readers for details before they know the product.",
                 difficulty: 3,
                 scene: {
                   kind: "drag_layout",
@@ -986,7 +986,7 @@ export const COURSES: Course[] = [
             coinReward: 5,
             intro: {
               headline: "Nobody reads the whole screen.",
-              body: "Users scan for the thing they came to do. If your screen forces them to read every word to find it, you've lost them. Hierarchy, scanning patterns, and obvious actions are how UX shows respect for attention.",
+              body: "Users scan for what they came to do. If they have to read every word to find it, you've lost them.",
               scene: {
                 kind: "good_vs_bad",
                 goodNote: "Scannable: big label, clear value, obvious action.",
@@ -1020,7 +1020,7 @@ export const COURSES: Course[] = [
                   "Filling every pixel with information",
                 ],
                 correctIndex: 1,
-                explanation: "Cutting copy and surfacing structure (headlines, lists, buttons) lets users find what they need at a glance. Most UX problems aren't 'add more' — they're 'remove enough.'",
+                explanation: "Cutting copy and surfacing structure lets users find what they need at a glance. Most UX wins are 'remove enough,' not 'add more.'",
                 difficulty: 1,
               },
               {
@@ -1028,7 +1028,7 @@ export const COURSES: Course[] = [
                 type: "true_false",
                 question: "A user's first action on a screen should be obvious within a few seconds.",
                 correctBool: true,
-                explanation: "If the next step takes more than a couple seconds to find, users hesitate, scroll back, or leave. Make the primary action loud and the secondary actions visibly quieter.",
+                explanation: "If the next step takes more than a couple seconds to find, users hesitate. Loud primary action, quiet secondary ones.",
                 difficulty: 1,
               },
               {
@@ -1042,7 +1042,7 @@ export const COURSES: Course[] = [
                   "A reason to hide the screen",
                 ],
                 correctIndex: 1,
-                explanation: "Empty states are the cheapest onboarding you'll ever build. Show what success looks like, give one clear action, and the user has a reason to take their first step instead of a reason to leave.",
+                explanation: "Empty states are the cheapest onboarding you have. Show what success looks like and give one clear action.",
                 difficulty: 2,
               },
             ],
@@ -1055,14 +1055,14 @@ export const COURSES: Course[] = [
             coinReward: 10,
             intro: {
               headline: "Five seconds decide the rest.",
-              body: "Users form a first impression in well under five seconds. We'll show you a real-looking landing screen for that long, then ask what you got from it.",
+              body: "First impressions form in under five seconds. We'll flash a real-looking landing screen and ask what stuck.",
             },
             questions: [
               {
                 id: "dp-u2-q1",
                 type: "five_second_test",
                 question: "Glance at this landing page, then answer.",
-                explanation: "Strong landing pages let one message land first. The headline 'Plan your week' is enormous — that's the answer most people walk away with, even after only five seconds. That's the design earning its hierarchy.",
+                explanation: "Strong landing pages let one message land first. The huge 'Plan your week' headline is what most people walk away with — hierarchy doing its job.",
                 difficulty: 2,
                 scene: {
                   kind: "five_sec",
@@ -1110,7 +1110,7 @@ export const COURSES: Course[] = [
                 id: "dp-u3-q1",
                 type: "spot_bad_design",
                 question: "Tap the element that adds unnecessary friction.",
-                explanation: "'Cancel' sits right next to 'Pay now' with the same size and weight, dressed in a loud red — one wrong tap and a user loses their place. Destructive or back-out actions should be visually quieter, or moved away from the primary action entirely.",
+                explanation: "'Cancel' sits beside 'Pay now' — same size, loud red. One wrong tap and the user loses their place. Destructive actions should be quieter or moved away.",
                 difficulty: 3,
                 scene: {
                   kind: "spot_bad",
@@ -1142,7 +1142,7 @@ export const COURSES: Course[] = [
                   "Use the same color for both buttons",
                 ],
                 correctIndex: 1,
-                explanation: "Destructive actions deserve respect, not equal billing. Make the safe path obvious and demote the destructive one — outline, neutral color, or moved out of the action row entirely.",
+                explanation: "Destructive actions deserve respect, not equal billing. Make the safe path obvious; demote the destructive one to outline or move it out of the row.",
                 difficulty: 2,
               },
             ],
