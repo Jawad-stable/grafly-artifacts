@@ -1026,49 +1026,15 @@ export default function CritiqueScreen() {
                 </Pressable>
               </Animated.View>
 
-              {/* Mentor identity row — bigger, brighter, and more
-                  inviting. AiBot sits inside a soft cyan halo with a
-                  small live "online" dot. The role tag is now in
-                  brand cyan instead of muted gray so the mentor
-                  feels present and alive. */}
+              {/* Mentor identity row — bare AiBot star (no circle
+                  halo). Role tag is brand cyan with a small green
+                  ONLINE dot inline next to the label. */}
               <Animated.View
                 entering={FadeInDown.duration(480).easing(SMOOTH).delay(220)}
                 onLayout={onMentorRowLayout}
                 style={{ flexDirection: "row", alignItems: "center", gap: 12, marginTop: MENTOR_ROW_MARGIN_TOP, marginBottom: MENTOR_ROW_MARGIN_BOTTOM }}
               >
-                <View
-                  style={{
-                    width: 56,
-                    height: 56,
-                    borderRadius: 28,
-                    backgroundColor: colors.brand.cyan + "1F",
-                    borderWidth: 1.5,
-                    borderColor: colors.brand.cyan + "55",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    shadowColor: colors.brand.cyan,
-                    shadowOffset: { width: 0, height: 4 },
-                    shadowOpacity: 0.35,
-                    shadowRadius: 10,
-                    elevation: 4,
-                  }}
-                >
-                  <AiBot size={32} />
-                  {/* Online status dot */}
-                  <View
-                    style={{
-                      position: "absolute",
-                      right: 0,
-                      bottom: 2,
-                      width: 14,
-                      height: 14,
-                      borderRadius: 7,
-                      backgroundColor: colors.success,
-                      borderWidth: 2,
-                      borderColor: colors.background,
-                    }}
-                  />
-                </View>
+                <AiBot size={36} />
                 <View style={{ flex: 1 }}>
                   <Text style={{
                     fontSize: 16, fontFamily: "Nunito_800ExtraBold",
@@ -1083,7 +1049,7 @@ export default function CritiqueScreen() {
                     }}>
                       DESIGN MENTOR
                     </Text>
-                    <View style={{ width: 3, height: 3, borderRadius: 1.5, backgroundColor: colors.mutedForeground }} />
+                    <View style={{ width: 4, height: 4, borderRadius: 2, backgroundColor: colors.success }} />
                     <Text style={{
                       fontSize: 10, fontFamily: "Nunito_800ExtraBold",
                       color: colors.success, letterSpacing: 1.2,
@@ -1149,65 +1115,84 @@ export default function CritiqueScreen() {
                     </Text>
                   </LinearGradient>
                 ) : (
-                  <View
-                    style={{
-                      backgroundColor: "#F2FBFE",
-                      paddingHorizontal: 16,
-                      paddingVertical: 12,
-                      borderRadius: 22,
-                      borderBottomLeftRadius: 6,
-                      borderLeftWidth: 3,
-                      borderLeftColor: colors.brand.cyan,
-                      shadowColor: "#000",
-                      shadowOffset: { width: 0, height: 4 },
-                      shadowOpacity: 0.08,
-                      shadowRadius: 10,
-                      elevation: 2,
-                    }}
-                  >
-                    <TypewriterText
-                      text={m.content}
-                      active={i === animateIndex}
-                      onTick={() => scrollRef.current?.scrollToEnd({ animated: false })}
-                      onDone={() => setAnimateIndex(-1)}
+                  // Assistant bubble. The corner closest to the
+                  // mentor star is sharp:
+                  //   • pre-chat opener: star sits ABOVE in the
+                  //     identity row → sharp TOP-LEFT
+                  //   • chatting: star sits BELOW the bubble (a
+                  //     small AiBot rendered after this bubble) →
+                  //     sharp BOTTOM-LEFT
+                  // No more colored left accent stripe.
+                  <>
+                    <View
                       style={{
-                        fontSize: 14,
-                        lineHeight: 21,
-                        fontFamily: "Nunito_600SemiBold",
-                        color: bubbleFg,
+                        backgroundColor: "#F2FBFE",
+                        paddingHorizontal: 16,
+                        paddingVertical: 12,
+                        borderRadius: 22,
+                        ...(isOpener
+                          ? { borderTopLeftRadius: 6 }
+                          : { borderBottomLeftRadius: 6 }),
+                        shadowColor: "#000",
+                        shadowOffset: { width: 0, height: 4 },
+                        shadowOpacity: 0.08,
+                        shadowRadius: 10,
+                        elevation: 2,
                       }}
-                    />
-                  </View>
+                    >
+                      <TypewriterText
+                        text={m.content}
+                        active={i === animateIndex}
+                        onTick={() => scrollRef.current?.scrollToEnd({ animated: false })}
+                        onDone={() => setAnimateIndex(-1)}
+                        style={{
+                          fontSize: 14,
+                          lineHeight: 21,
+                          fontFamily: "Nunito_600SemiBold",
+                          color: bubbleFg,
+                        }}
+                      />
+                    </View>
+                    {!isOpener && (
+                      <View style={{ marginTop: 6, marginLeft: 2 }}>
+                        <AiBot size={22} />
+                      </View>
+                    )}
+                  </>
                 )}
               </Animated.View>
             );
           })}
 
           {sending && (
-            <View
-              style={{
-                alignSelf: "flex-start",
-                backgroundColor: "#F2FBFE",
-                paddingHorizontal: 16,
-                paddingVertical: 14,
-                borderRadius: 22,
-                borderBottomLeftRadius: 6,
-                borderLeftWidth: 3,
-                borderLeftColor: colors.brand.cyan,
-                flexDirection: "row",
-                gap: 10,
-                alignItems: "center",
-                shadowColor: "#000",
-                shadowOffset: { width: 0, height: 4 },
-                shadowOpacity: 0.08,
-                shadowRadius: 10,
-                elevation: 2,
-              }}
-            >
-              <AiBot size={22} spinning />
-              <Text style={{ fontSize: 12, fontFamily: "Nunito_800ExtraBold", color: colors.brand.cyanDeep, letterSpacing: 0.3 }}>
-                Grafly is Graflying ...
-              </Text>
+            // Typing indicator — same shape language as the
+            // assistant bubble: sharp BOTTOM-LEFT (the star side),
+            // no colored left stripe.
+            <View style={{ alignSelf: "flex-start" }}>
+              <View
+                style={{
+                  backgroundColor: "#F2FBFE",
+                  paddingHorizontal: 16,
+                  paddingVertical: 14,
+                  borderRadius: 22,
+                  borderBottomLeftRadius: 6,
+                  flexDirection: "row",
+                  gap: 10,
+                  alignItems: "center",
+                  shadowColor: "#000",
+                  shadowOffset: { width: 0, height: 4 },
+                  shadowOpacity: 0.08,
+                  shadowRadius: 10,
+                  elevation: 2,
+                }}
+              >
+                <Text style={{ fontSize: 12, fontFamily: "Nunito_800ExtraBold", color: colors.brand.cyanDeep, letterSpacing: 0.3 }}>
+                  Grafly is Graflying ...
+                </Text>
+              </View>
+              <View style={{ marginTop: 6, marginLeft: 2 }}>
+                <AiBot size={22} spinning />
+              </View>
             </View>
           )}
 
