@@ -1,0 +1,31 @@
+kind = "video"
+previewPath = "/intro-outro/"
+title = "Grafly Intro & Outro"
+version = "1.0.0"
+id = "artifacts/intro-outro"
+router = "path"
+
+[[integratedSkills]]
+name = "video-js"
+version = "1.0.0"
+
+[[services]]
+name = "web"
+paths = [ "/intro-outro/" ]
+localPort = 21477
+
+[services.development]
+run = "pnpm --filter @workspace/intro-outro run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/intro-outro", "run", "build" ]
+publicDir = "artifacts/intro-outro/dist/public"
+serve = "static"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "21477"
+BASE_PATH = "/intro-outro/"
