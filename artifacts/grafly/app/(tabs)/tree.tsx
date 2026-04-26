@@ -19,6 +19,7 @@ import { COURSES, type SkillNode, type Course } from "@/constants/lessons";
 import { PressScale } from "@/components/PressScale";
 import { onBrand } from "@/constants/contrast";
 import { TreeBackdrop } from "@/components/TreeBackdrop";
+import { BrandSquiggle } from "@/components/BrandSquiggle";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 const NODE_SIZE = 68;
@@ -697,42 +698,83 @@ export default function TreeScreen() {
       </View>
 
       {course.id === "design-principles" && (
-        <View style={{ paddingHorizontal: 24, marginBottom: 6 }}>
+        <View style={{ paddingHorizontal: 24, marginBottom: 14 }}>
           <PressScale
             onPress={() => router.push({ pathname: "/course-intro", params: { courseId: course.id } })}
             style={{
-              backgroundColor: course.color + "1A",
-              borderRadius: 16,
-              borderWidth: 1,
-              borderColor: course.color + "55",
-              paddingVertical: 10,
-              paddingHorizontal: 14,
+              backgroundColor: course.color,
+              borderRadius: 22,
+              paddingVertical: 18,
+              paddingHorizontal: 18,
               flexDirection: "row",
               alignItems: "center",
-              gap: 10,
+              gap: 14,
+              overflow: "hidden",
+              shadowColor: course.color,
+              shadowOffset: { width: 0, height: 8 },
+              shadowOpacity: 0.32,
+              shadowRadius: 16,
+              elevation: 6,
             }}
           >
+            {/* Brand squiggle flourish — sits behind the content as a
+                low-opacity watermark, gives the card the same brand
+                texture as the home/tree backdrops. */}
+            <View pointerEvents="none" style={{ position: "absolute", right: -12, top: -6 }}>
+              <BrandSquiggle
+                variant="loop"
+                width={140}
+                height={88}
+                color={onCourse}
+                opacity={0.18}
+                strokeWidth={5}
+              />
+            </View>
+            <View pointerEvents="none" style={{ position: "absolute", left: -28, bottom: -34 }}>
+              <BrandSquiggle
+                variant="tube"
+                width={70}
+                height={120}
+                color={onCourse}
+                opacity={0.12}
+                strokeWidth={4}
+              />
+            </View>
+
             <View
               style={{
-                width: 30,
-                height: 30,
-                borderRadius: 10,
-                backgroundColor: course.color,
+                width: 44,
+                height: 44,
+                borderRadius: 14,
+                backgroundColor: onCourse + "26",
+                borderWidth: 1,
+                borderColor: onCourse + "55",
                 alignItems: "center",
                 justifyContent: "center",
               }}
             >
-              <Icon name="sparkles" size={16} color={onCourse} />
+              <Icon name="sparkles" size={22} color={onCourse} weight="fill" />
             </View>
             <View style={{ flex: 1 }}>
-              <Text style={{ fontSize: 11, fontFamily: "Nunito_800ExtraBold", color: course.color, letterSpacing: 1.2 }}>
+              <Text style={{ fontSize: 11, fontFamily: "Nunito_800ExtraBold", color: onCourse + "CC", letterSpacing: 1.4, marginBottom: 3 }}>
                 NEW · COURSE WELCOME
               </Text>
-              <Text style={{ fontSize: 13, fontFamily: "Nunito_800ExtraBold", color: colors.foreground, marginTop: 1 }}>
+              <Text style={{ fontSize: 18, fontFamily: "Nunito_800ExtraBold", color: onCourse, letterSpacing: -0.3, lineHeight: 22 }}>
                 See what you'll learn
               </Text>
             </View>
-            <Icon name="arrow-forward" size={16} color={course.color} />
+            <View
+              style={{
+                width: 32,
+                height: 32,
+                borderRadius: 16,
+                backgroundColor: onCourse,
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <Icon name="arrow-forward" size={16} color={course.color} weight="bold" />
+            </View>
           </PressScale>
         </View>
       )}
