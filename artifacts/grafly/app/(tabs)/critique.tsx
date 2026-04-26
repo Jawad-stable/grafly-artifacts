@@ -101,17 +101,21 @@ const ONBOARDING_KEY = "grafly:critique_onboarding_seen_v1";
 
 const { width: SCREEN_W, height: SCREEN_H } = Dimensions.get("window");
 
+// Warm, conversational openers in Grafly's voice — short greeting + a
+// single curious question on its own line. Light emoji garnish (1 per
+// opener, never decorative). Matches the friendlier mentor prompt on
+// the server so the conversation feels consistent from turn 1.
 const OPENER_TEMPLATES: Array<(title: string) => string> = [
-  (t) => `What is the first thing your eye lands on in "${t}", and why do you think the designer made that choice?`,
-  (t) => `Spend a few seconds with "${t}". What feeling does it give you, and which visual element is doing most of the work?`,
-  (t) => `If you had to describe "${t}" in three words, what would they be? Pick one and tell me why.`,
-  (t) => `Looking at "${t}", what is the clearest visual hierarchy decision the designer made? Where does your eye go second?`,
-  (t) => `What problem do you think "${t}" is trying to solve for the user, and how does the layout support that?`,
-  (t) => `Critique "${t}" like a friendly mentor. What is one thing that works really well, and one thing you would push further?`,
-  (t) => `Imagine you opened "${t}" for the first time. What action does the screen invite you to take, and how do you know?`,
-  (t) => `In "${t}", how do color and typography work together to set the mood? Which one is leading?`,
-  (t) => `What design principle (contrast, balance, rhythm, hierarchy) is most visible in "${t}"? Show me where.`,
-  (t) => `If "${t}" had to lose one element to feel cleaner, which would you cut and why?`,
+  (t) => `Hey! 👀 Take a slow breath and look at "${t}".\n\nWhat's the very first thing your eye lands on, and why do you think the designer pulled it forward?`,
+  (t) => `Oh nice, this one's fun ✨\n\nSpend a few seconds with "${t}". What feeling does it give you, and which visual element is doing most of the work?`,
+  (t) => `Mmm, love this one 💛\n\nIf you had to describe "${t}" in three words, what would they be? Pick one and tell me why.`,
+  (t) => `Okay, eyes on "${t}" with me 🙂\n\nWhat's the clearest hierarchy move the designer made? Where does your eye go second?`,
+  (t) => `Hey hey! Let's dig in 🎨\n\nWhat problem do you think "${t}" is trying to solve for the user — and how does the layout support that?`,
+  (t) => `Alright, mentor mode on 🔥\n\nLooking at "${t}", what's one thing that genuinely works, and one thing you'd push further?`,
+  (t) => `Imagine you just opened "${t}" for the first time 👀\n\nWhat action is the screen quietly inviting you to take? How do you know?`,
+  (t) => `Ohh good one ✨\n\nIn "${t}", how are color and typography teaming up to set the mood? Which one is leading the dance?`,
+  (t) => `Quick design hunt 📐\n\nWhich principle — contrast, balance, rhythm, or hierarchy — is loudest in "${t}"? Show me where you see it.`,
+  (t) => `If "${t}" had to lose one element to feel cleaner ✍️\n\nwhich would you cut, and what would the screen feel like without it?`,
 ];
 
 function pickOpener(title: string): string {
