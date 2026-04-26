@@ -18,6 +18,7 @@ import { useGame } from "@/context/GameContext";
 import { COURSES, type SkillNode, type Course } from "@/constants/lessons";
 import { PressScale } from "@/components/PressScale";
 import { onBrand } from "@/constants/contrast";
+import { TreeBackdrop } from "@/components/TreeBackdrop";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 const NODE_SIZE = 68;
@@ -653,6 +654,13 @@ export default function TreeScreen() {
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.background }}>
+      {/* Animated immersive backdrop — glow blobs, floating shapes, sparkles */}
+      <TreeBackdrop
+        courseColor={course.color}
+        foreground={colors.foreground}
+        accent={colors.accent}
+      />
+
       {/* Editorial header with hamburger */}
       <View style={{
         paddingTop: paddingTop + 12,
