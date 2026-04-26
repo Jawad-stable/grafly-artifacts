@@ -93,15 +93,16 @@ function ShopCard({ item, onBuy }: { item: ShopItem; onBuy: (item: ShopItem) => 
         anim,
       ]}
     >
-      {/* Brand squiggle flourish — same watermark treatment as the
-          tree welcome card and home backdrop. */}
-      <View pointerEvents="none" style={{ position: "absolute", right: -18, top: -10 }}>
+      {/* Brand squiggle flourish — placed top-LEFT behind the icon
+          chip so the price pill on the right has clean, uncluttered
+          space and stays readable. */}
+      <View pointerEvents="none" style={{ position: "absolute", left: -22, top: -14 }}>
         <BrandSquiggle
           variant="loop"
-          width={130}
-          height={80}
+          width={120}
+          height={75}
           color={fg}
-          opacity={isLight ? 0.14 : 0.18}
+          opacity={isLight ? 0.13 : 0.16}
           strokeWidth={4}
         />
       </View>
@@ -145,6 +146,11 @@ function ShopCard({ item, onBuy }: { item: ShopItem; onBuy: (item: ShopItem) => 
         </Text>
       </View>
 
+      {/* Price pill — uniformly high contrast and lifted off the
+          colored card with a shadow so the price never gets lost.
+          Coin icon and number share the same color (navy on light
+          pill, white on dark pill) so the whole pill reads as one
+          confident block instead of two competing brand colors. */}
       <TouchableOpacity
         onPress={handlePress}
         activeOpacity={0.85}
@@ -152,42 +158,53 @@ function ShopCard({ item, onBuy }: { item: ShopItem; onBuy: (item: ShopItem) => 
         style={{
           flexDirection: "row",
           alignItems: "center",
-          gap: 5,
-          backgroundColor: owned ? fg + "33" : canAfford ? fg : fg + "22",
+          gap: 6,
+          backgroundColor: owned ? fg + "33" : canAfford ? fg : fg + "30",
           borderRadius: 100,
-          paddingHorizontal: 14,
-          paddingVertical: 9,
+          paddingHorizontal: 16,
+          paddingVertical: 10,
           borderWidth: owned ? 1 : 0,
           borderColor: owned ? fg + "66" : "transparent",
+          shadowColor: "#000",
+          shadowOffset: { width: 0, height: 3 },
+          shadowOpacity: canAfford && !owned ? 0.18 : 0,
+          shadowRadius: 6,
+          elevation: canAfford && !owned ? 4 : 0,
         }}
       >
         {owned ? (
           <>
-            <Icon name="checkmark" size={14} color={fg} weight="bold" />
-            <Text style={{ fontSize: 13, fontFamily: "Nunito_800ExtraBold", color: fg }}>
+            <Icon name="checkmark" size={15} color={fg} weight="bold" />
+            <Text style={{ fontSize: 14, fontFamily: "Nunito_800ExtraBold", color: fg }}>
               Active
             </Text>
           </>
         ) : (
           <>
-            {/* Coin icon stays in the item's brand color as a visual
-                cue. Price text uses navy on the white button (or the
-                item color on the navy button) for AA-safe contrast. */}
-            <Icon
-              name="coin"
-              size={14}
-              color={canAfford ? item.iconColor : fg + "AA"}
-              weight="fill"
-            />
-            <Text
-              style={{
-                fontSize: 14,
-                fontFamily: "Nunito_800ExtraBold",
-                color: canAfford ? (isLight ? "#21263F" : item.iconColor) : fg + "AA",
-              }}
-            >
-              {item.cost}
-            </Text>
+            {/* Pill text color = the OPPOSITE of the card foreground.
+                Light pill (white) → navy text. Dark pill (navy) →
+                white text. Always 12:1+ contrast, never blends with
+                the squiggle. */}
+            {(() => {
+              const onPill = canAfford
+                ? (isLight ? "#21263F" : "#FFFFFF")
+                : fg + "AA";
+              return (
+                <>
+                  <Icon name="coin" size={15} color={onPill} weight="fill" />
+                  <Text
+                    style={{
+                      fontSize: 15,
+                      fontFamily: "Nunito_800ExtraBold",
+                      color: onPill,
+                      letterSpacing: 0.2,
+                    }}
+                  >
+                    {item.cost}
+                  </Text>
+                </>
+              );
+            })()}
           </>
         )}
       </TouchableOpacity>
