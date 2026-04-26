@@ -111,15 +111,24 @@ function SlideEditor() {
   }, [currentIndex, navigate]);
 
   return (
-    <div className="select-none">
-      {slides.map((slide, index) => (
-        <div
-          key={slide.id}
-          style={{ display: index === currentIndex ? "block" : "none" }}
-        >
-          <slide.Component />
-        </div>
-      ))}
+    <div className="select-none relative h-screen w-screen overflow-hidden">
+      {slides.map((slide, index) => {
+        const isActive = index === currentIndex;
+        return (
+          <div
+            key={slide.id}
+            aria-hidden={!isActive}
+            className="absolute inset-0 transition-opacity duration-300 ease-in-out"
+            style={{
+              opacity: isActive ? 1 : 0,
+              pointerEvents: isActive ? "auto" : "none",
+              zIndex: isActive ? 1 : 0,
+            }}
+          >
+            <slide.Component />
+          </div>
+        );
+      })}
     </div>
   );
 }
