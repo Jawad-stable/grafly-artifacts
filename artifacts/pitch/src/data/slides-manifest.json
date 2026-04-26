@@ -1,0 +1,50 @@
+[
+  {
+    "id": "9c1b3e60-3a2f-4f8a-9d22-7c9d12e4a101",
+    "position": 1,
+    "filepath": "src/pages/slides/Title.tsx",
+    "title": "Title",
+    "description": "Cold-open title card with Grafly wordmark, tagline, and idle mascot.",
+    "speakerNotes": ""
+  },
+  {
+    "id": "9c1b3e60-3a2f-4f8a-9d22-7c9d12e4a102",
+    "position": 2,
+    "filepath": "src/pages/slides/Problem.tsx",
+    "title": "The Problem",
+    "description": "Why we built Grafly — design education is passive and theory-heavy.",
+    "speakerNotes": ""
+  },
+  {
+    "id": "9c1b3e60-3a2f-4f8a-9d22-7c9d12e4a103",
+    "position": 3,
+    "filepath": "src/pages/slides/Audience.tsx",
+    "title": "Who it's for",
+    "description": "Aspiring designers, students, and career-switchers.",
+    "speakerNotes": ""
+  },
+  {
+    "id": "9c1b3e60-3a2f-4f8a-9d22-7c9d12e4a104",
+    "position": 4,
+    "filepath": "src/pages/slides/WhatsNext.tsx",
+    "title": "What's next",
+    "description": "Near-term roadmap: more games, Arabic language, and more features.",
+    "speakerNotes": ""
+  },
+  {
+    "id": "9c1b3e60-3a2f-4f8a-9d22-7c9d12e4a106",
+    "position": 5,
+    "filepath": "src/pages/slides/FuturePlans.tsx",
+    "title": "If we had more time",
+    "description": "Stretch goals — what we'd build with more runway.",
+    "speakerNotes": ""
+  },
+  {
+    "id": "9c1b3e60-3a2f-4f8a-9d22-7c9d12e4a105",
+    "position": 6,
+    "filepath": "src/pages/slides/Closing.tsx",
+    "title": "Closing",
+    "description": "Dark-mode thank-you card with celebrating mascot and CTAs.",
+    "speakerNotes": ""
+  }
+]
