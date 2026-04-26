@@ -3,6 +3,12 @@ import { useVideoPlayer } from '@/lib/video';
 import { IntroMark } from './video_scenes/IntroMark';
 import { IntroLockup } from './video_scenes/IntroLockup';
 import { IntroTagline } from './video_scenes/IntroTagline';
+import { GamifiedTracks } from './video_scenes/GamifiedTracks';
+import { MiniGames } from './video_scenes/MiniGames';
+import { AIMentor } from './video_scenes/AIMentor';
+import { Progression } from './video_scenes/Progression';
+import { ShopAndCoins } from './video_scenes/ShopAndCoins';
+import { LeaderboardsAndPro } from './video_scenes/LeaderboardsAndPro';
 import { OutroThanks } from './video_scenes/OutroThanks';
 import { OutroSignoff } from './video_scenes/OutroSignoff';
 
@@ -20,12 +26,31 @@ const SCENE_DURATIONS = {
   intro_mark:    1800,  // brand icon animates in, ambient particles begin
   intro_lockup:  2400,  // wordmark resolves alongside mark, mascot enters
   intro_tagline: 2800,  // tagline "Learn design by actually designing." resolves and holds
+  // FEATURES (~108s total)
+  feature_tracks:       18000,
+  feature_minigames:    18000,
+  feature_aimentor:     18000,
+  feature_progression:  18000,
+  feature_shop:         18000,
+  feature_leaderboards: 20000,
   // OUTRO (~6s total)
   outro_thanks:  2400,  // celebrate-mascot enters, "Thanks for watching" appears
   outro_signoff: 3200,  // wordmark + tagline echo, hold on a clean freeze frame
 };
 
-const SCENE_COMPONENTS = [IntroMark, IntroLockup, IntroTagline, OutroThanks, OutroSignoff];
+const SCENE_COMPONENTS = [
+  IntroMark, 
+  IntroLockup, 
+  IntroTagline, 
+  GamifiedTracks,
+  MiniGames,
+  AIMentor,
+  Progression,
+  ShopAndCoins,
+  LeaderboardsAndPro,
+  OutroThanks, 
+  OutroSignoff
+];
 
 export default function VideoTemplate() {
   const { currentScene, currentSceneKey } = useVideoPlayer({ durations: SCENE_DURATIONS, loop: false });

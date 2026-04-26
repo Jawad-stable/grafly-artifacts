@@ -1,6 +1,6 @@
 kind = "video"
 previewPath = "/intro-outro/"
-title = "Grafly Intro & Outro"
+title = "Grafly Brand Reel"
 version = "1.0.0"
 id = "artifacts/intro-outro"
 router = "path"
