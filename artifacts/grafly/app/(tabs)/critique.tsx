@@ -546,7 +546,7 @@ export default function CritiqueScreen() {
     composerLift +
     COMPOSER_BLOCK_H +
     VERTICAL_GAPS;
-  const cardWidthByEdge = SCREEN_W - 28;
+  const cardWidthByEdge = SCREEN_W - 40; // ScrollView paddingHorizontal: 20 each side
   const cardWidthByHeight = Math.max(0, SCREEN_H - reservedH) * (4 / 5);
   // Soft minimum so on very tall screens the card still has visual presence,
   // but no clamp on small screens (would force overflow → scroll, defeating
@@ -698,7 +698,7 @@ export default function CritiqueScreen() {
         {design && chatStarted && (
           <Animated.View
             entering={FadeInDown.duration(420).easing(SMOOTH)}
-            style={{ paddingHorizontal: 14, paddingTop: 4, paddingBottom: 8 }}
+            style={{ paddingHorizontal: 20, paddingTop: 4, paddingBottom: 8 }}
           >
             <Pressable
               onPress={() => setImageOpen(true)}
@@ -751,7 +751,7 @@ export default function CritiqueScreen() {
         <ScrollView
           ref={scrollRef}
           style={{ flex: 1 }}
-          contentContainerStyle={{ paddingHorizontal: 14, paddingTop: 14, paddingBottom: 12, gap: 10 }}
+          contentContainerStyle={{ paddingHorizontal: 20, paddingTop: 14, paddingBottom: 12, gap: 10 }}
           keyboardShouldPersistTaps="handled"
         >
           {loadingDesign && (
