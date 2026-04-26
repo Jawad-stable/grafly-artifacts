@@ -29,6 +29,7 @@ import Animated, {
 import { Icon } from "@/components/Icon";
 import { router } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { LinearGradient } from "expo-linear-gradient";
 import { useColors } from "@/hooks/useColors";
 import { useGame } from "@/context/GameContext";
 import {
@@ -174,9 +175,11 @@ type OnboardStep = {
 function CritiqueOnboarding({
   insets,
   onClose,
+  cardRect,
 }: {
   insets: { top: number; bottom: number };
   onClose: () => void;
+  cardRect: { left: number; top: number; width: number; height: number };
 }) {
   const colors = useColors();
   const [step, setStep] = useState(0);
@@ -200,6 +203,12 @@ function CritiqueOnboarding({
   const tabBarHeight = 62 + tabBottomPad;
   const composerY = SCREEN_H - tabBarHeight - 12 - 70;
 
+  // Tooltip for the card step sits below the card, with a small gap.
+  const cardTooltipTop = Math.min(
+    cardRect.top + cardRect.height + 18,
+    SCREEN_H - 280,
+  );
+
   const STEPS: OnboardStep[] = [
     {
       title: "Welcome to Critique",
@@ -215,8 +224,14 @@ function CritiqueOnboarding({
     {
       title: "Tap the photo to expand",
       body: "Tap any design image to open it full-screen and study every pixel up close.",
-      ring: { left: 14, top: headerTop + 100, w: SCREEN_W - 28, h: 200, radius: 24 },
-      tooltip: { top: headerTop + 320 },
+      ring: {
+        left: cardRect.left,
+        top: cardRect.top,
+        w: cardRect.width,
+        h: cardRect.height,
+        radius: 24,
+      },
+      tooltip: { top: cardTooltipTop },
     },
     {
       title: "Chat to earn XP",
@@ -499,9 +514,54 @@ export default function CritiqueScreen() {
   const tabBarBottomOffset = 12;
   const composerLift = tabBarHeight + tabBarBottomOffset + 12;
 
-  // Hero image: taller, capped higher, so the today's-design card feels
-  // like a true featured slab rather than a thumbnail with a body block.
-  const heroCardImageHeight = Math.min(Math.round(SCREEN_H * 0.44), 440);
+  // Compact 4:5 social-media style card. We size the card so the entire
+  // pre-chat view (header + eyebrow + card + mentor row + opener bubble
+  // + composer) fits on screen without forcing a scroll. The card width
+  // is the smaller of "edge-to-edge minus padding" and "what fits in
+  // the available vertical space at a 4:5 aspect", then the height is
+  // derived from that width so the aspect stays exactly 4:5.
+  //
+  // These constants are the single source of truth for both the card
+  // sizing math and the onboarding ring `cardRect.top` math below — keep
+  // them in sync.
+  const HEADER_TOP_PAD = 10;
+  const HEADER_BOTTOM_PAD = 10;
+  const HEADER_CONTENT_H = 50; // mentor pill + 30/34 title + small buffer
+  const HEADER_BLOCK_H = HEADER_TOP_PAD + HEADER_CONTENT_H + HEADER_BOTTOM_PAD; // 70
+  const SCROLL_PAD_TOP = 14; // ScrollView contentContainerStyle.paddingTop
+  const EYEBROW_MARGIN_TOP = -4;
+  const EYEBROW_H = 22;
+  const EYEBROW_MARGIN_BOTTOM = 12;
+  const EYEBROW_BLOCK_H = SCROLL_PAD_TOP + EYEBROW_MARGIN_TOP + EYEBROW_H + EYEBROW_MARGIN_BOTTOM; // 44
+  const MENTOR_ROW_H = 50; // small Grafly identity row above opener
+  const OPENER_BUBBLE_H = 96; // estimated 3-line opener message bubble
+  const COMPOSER_BLOCK_H = 86; // composer pill itself + its top padding
+  const VERTICAL_GAPS = 42; // accumulated paddings/gaps between blocks (card marginBottom 10, scroll paddingBottom 12, opener-row gap 10, misc buffer 10)
+  const reservedH =
+    paddingTop +
+    HEADER_BLOCK_H +
+    EYEBROW_BLOCK_H +
+    MENTOR_ROW_H +
+    OPENER_BUBBLE_H +
+    composerLift +
+    COMPOSER_BLOCK_H +
+    VERTICAL_GAPS;
+  const cardWidthByEdge = SCREEN_W - 28;
+  const cardWidthByHeight = Math.max(0, SCREEN_H - reservedH) * (4 / 5);
+  // Soft minimum so on very tall screens the card still has visual presence,
+  // but no clamp on small screens (would force overflow → scroll, defeating
+  // the no-scroll goal). On a small phone where height-fit < edge-fit, the
+  // card may shrink to whatever the available vertical space allows.
+  const heroCardWidth = Math.max(
+    140,
+    Math.min(cardWidthByEdge, cardWidthByHeight),
+  );
+  const heroCardHeight = Math.round(heroCardWidth * (5 / 4));
+  // Single source of truth for where the card actually sits on screen.
+  // Used by the onboarding ring so its highlight stays glued to the card
+  // even when the constants above change.
+  const heroCardTop = paddingTop + HEADER_BLOCK_H + EYEBROW_BLOCK_H;
+  const heroCardLeft = Math.round((SCREEN_W - heroCardWidth) / 2);
   const sessionsLeft = Math.max(0, maxSessions - sessionsDone);
 
   function loadNewDesign() {
@@ -700,18 +760,20 @@ export default function CritiqueScreen() {
             </View>
           )}
 
-          {/* Full hero card (chat not started) */}
+          {/* Compact 4:5 social-media card (chat not started). Sized so
+              the entire pre-chat view fits without scrolling — the
+              title sits on a gradient overlay on the image itself
+              instead of in a separate body block, and the longer
+              description has been moved into the expand modal. */}
           {design && !chatStarted && !loadingDesign && (
             <>
-              {/* Eyebrow row matching tree.tsx pattern */}
+              {/* Eyebrow row */}
               <Animated.View
                 entering={FadeInDown.duration(440).easing(SMOOTH).delay(60)}
-                style={{ flexDirection: "row", alignItems: "center", gap: 10, marginBottom: 14, marginTop: -4 }}
+                style={{ flexDirection: "row", alignItems: "center", gap: 10, marginBottom: 12, marginTop: -4 }}
               >
                 <View style={{
                   paddingHorizontal: 10, paddingVertical: 5, borderRadius: 100,
-                  // Brand blue tint instead of yellow — yellow text fails
-                  // contrast against the near-white card in light mode.
                   backgroundColor: colors.primary + "1F",
                 }}>
                   <Text style={{
@@ -726,34 +788,41 @@ export default function CritiqueScreen() {
                   fontSize: 11, fontFamily: "Nunito_800ExtraBold",
                   color: colors.mutedForeground, letterSpacing: 1.2,
                 }}>
-                  DAILY DROP
+                  4 : 5  •  SOCIAL
                 </Text>
               </Animated.View>
 
-              {/* Image-on-top card */}
+              {/* 4:5 card, centered. Image fills the entire card, with
+                  the title overlaid on a soft bottom gradient so the
+                  card stays compact. */}
               <Animated.View
                 entering={FadeInDown.duration(560).easing(SMOOTH).delay(120)}
-                style={{
-                  backgroundColor: colors.card,
-                  borderRadius: 24,
-                  borderWidth: 1,
-                  borderColor: colors.border,
-                  overflow: "hidden",
-                  shadowColor: "#000",
-                  shadowOffset: { width: 0, height: 12 },
-                  shadowOpacity: 0.08,
-                  shadowRadius: 22,
-                  elevation: 6,
-                }}
+                style={{ alignItems: "center", marginBottom: 10 }}
               >
                 <Pressable onPress={() => setImageOpen(true)}>
-                  <View style={{ width: "100%", height: heroCardImageHeight, position: "relative" }}>
+                  <View
+                    style={{
+                      width: heroCardWidth,
+                      height: heroCardHeight,
+                      borderRadius: 24,
+                      overflow: "hidden",
+                      backgroundColor: colors.muted,
+                      borderWidth: 1,
+                      borderColor: colors.border,
+                      shadowColor: "#000",
+                      shadowOffset: { width: 0, height: 14 },
+                      shadowOpacity: 0.14,
+                      shadowRadius: 24,
+                      elevation: 8,
+                    }}
+                  >
                     <Image
                       source={design.source}
-                      style={{ width: "100%", height: "100%", backgroundColor: colors.muted }}
+                      style={{ width: "100%", height: "100%" }}
                       resizeMode="cover"
                     />
-                    {/* Refined expand pill */}
+
+                    {/* Expand pill (top-right) */}
                     <View style={{
                       position: "absolute", top: 12, right: 12,
                       paddingHorizontal: 11, paddingVertical: 7, borderRadius: 100,
@@ -768,47 +837,49 @@ export default function CritiqueScreen() {
                         EXPAND
                       </Text>
                     </View>
+
+                    {/* Bottom gradient + title overlay */}
+                    <LinearGradient
+                      colors={["rgba(7,11,28,0)", "rgba(7,11,28,0.85)"]}
+                      style={{
+                        position: "absolute",
+                        left: 0,
+                        right: 0,
+                        bottom: 0,
+                        height: 110,
+                        paddingHorizontal: 16,
+                        paddingTop: 28,
+                        paddingBottom: 14,
+                        justifyContent: "flex-end",
+                      }}
+                    >
+                      <Text style={{
+                        fontSize: 11, fontFamily: "Nunito_800ExtraBold",
+                        color: "rgba(255,255,255,0.7)", letterSpacing: 1.4,
+                        marginBottom: 4,
+                      }}>
+                        {design.difficulty.toUpperCase()}  •  IG POST
+                      </Text>
+                      <Text
+                        numberOfLines={2}
+                        style={{
+                          fontSize: 18, fontFamily: "Nunito_800ExtraBold",
+                          color: "#FFFFFF", letterSpacing: -0.4, lineHeight: 22,
+                        }}
+                      >
+                        {design.title}
+                      </Text>
+                    </LinearGradient>
                   </View>
                 </Pressable>
-                {/* Card body — slightly more breathing room and a larger
-                    title so the body holds its own next to the bigger
-                    hero image above. */}
-                <View style={{ paddingHorizontal: 22, paddingTop: 20, paddingBottom: 18 }}>
-                  <Text style={{
-                    fontSize: 22, fontFamily: "Nunito_800ExtraBold",
-                    color: colors.foreground, letterSpacing: -0.6, lineHeight: 26,
-                  }}>
-                    {design.title}
-                  </Text>
-                  <Text style={{
-                    fontSize: 14, fontFamily: "Nunito_600SemiBold",
-                    color: colors.mutedForeground, marginTop: 8, lineHeight: 20,
-                  }}>
-                    {design.description}
-                  </Text>
-                  {/* Hint footer */}
-                  <View style={{
-                    marginTop: 16, paddingTop: 14,
-                    borderTopWidth: 1, borderTopColor: colors.border,
-                    flexDirection: "row", alignItems: "center", gap: 8,
-                  }}>
-                    <Icon name="flash" size={14} color={colors.primary} />
-                    <Text style={{
-                      fontSize: 12, fontFamily: "Nunito_600SemiBold",
-                      color: colors.mutedForeground, flex: 1,
-                    }}>
-                      Chat with Grafly to earn +{XP_PER_SESSION} XP
-                    </Text>
-                  </View>
-                </View>
               </Animated.View>
 
-              {/* Mentor identity row above the opener */}
+              {/* Mentor identity row above the opener — compact */}
               <Animated.View
                 entering={FadeInDown.duration(480).easing(SMOOTH).delay(220)}
-                style={{ flexDirection: "row", alignItems: "center", gap: 10, marginTop: 22, marginBottom: 6 }}
+                style={{ flexDirection: "row", alignItems: "center", gap: 10, marginTop: 6, marginBottom: 4 }}
               >
-                <AiBot size={32} />
+                <AiBot size={28} />
                 <View>
                   <Text style={{
                     fontSize: 13, fontFamily: "Nunito_800ExtraBold",
@@ -1021,7 +1092,16 @@ export default function CritiqueScreen() {
 
       {/* First-time onboarding walkthrough */}
       {showOnboarding && (
-        <CritiqueOnboarding insets={insets} onClose={dismissOnboarding} />
+        <CritiqueOnboarding
+          insets={insets}
+          onClose={dismissOnboarding}
+          cardRect={{
+            left: heroCardLeft,
+            top: heroCardTop,
+            width: heroCardWidth,
+            height: heroCardHeight,
+          }}
+        />
       )}
 
       {/* Full-image modal */}

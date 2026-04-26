@@ -30,6 +30,30 @@ uri = "file://artifacts/grafly/assets/designs/music_player.png"
 type = "image"
 title = "music player"
 
+[[generated]]
+id = "b_rV2yWFdNGxzvhvbQTUV"
+uri = "file://artifacts/grafly/assets/designs/social_sneaker.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "h-hR3VeJL1OZd7yP5rVDV"
+uri = "file://artifacts/grafly/assets/designs/social_coffee.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "kBavcUKHYMl8vmYSakxum"
+uri = "file://artifacts/grafly/assets/designs/social_quote.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "XnQs3Wj7tt6MmVa_vCYPL"
+uri = "file://artifacts/grafly/assets/designs/social_travel.png"
+type = "image"
+title = "generated_image"
+
 [[outputs]]
 id = "cVKPm29rJUcyGWY9WyhUW"
 uri = "file://grafly-clean.tar.gz"

@@ -8,38 +8,43 @@ export interface LocalDesign {
   source: ImageSourcePropType;
 }
 
+// Curated set of 4:5 social-media post designs (Instagram-style feed
+// posts). Each one represents a distinct genre — product, lifestyle,
+// editorial quote, and travel — so a single critique session can stress
+// different design fundamentals (hierarchy, type/photo balance,
+// negative space, color, narrative).
 export const LOCAL_DESIGNS: LocalDesign[] = [
   {
-    id: "banking_home",
-    title: "Mobile Banking Home",
+    id: "social_sneaker",
+    title: "Sneaker Drop Announcement",
     description:
-      "A dark theme mobile banking dashboard with a balance card at the top, a list of recent transactions with merchant icons, and a five item bottom tab bar. Purple and blue accents.",
-    difficulty: "beginner",
-    source: require("../assets/designs/banking_home.png"),
-  },
-  {
-    id: "food_detail",
-    title: "Food Delivery Restaurant Page",
-    description:
-      "A light theme restaurant detail screen with a large hero food photo, restaurant name and rating, menu category tabs, a list of menu items with prices and thumbnails, and a floating cart button. Warm orange accents.",
+      "A 4:5 Instagram product post for a running sneaker launch. Bold black sans-serif headline 'AIR FLOW 24' on the left, a coral 'NEW DROP' chip, a hero product photo of the shoe with a soft cast shadow on the right, and a price tag in the bottom corner. Lots of negative space, premium athletic brand feel.",
     difficulty: "intermediate",
-    source: require("../assets/designs/food_detail.png"),
+    source: require("../assets/designs/social_sneaker.png"),
   },
   {
-    id: "fitness_dash",
-    title: "Fitness Tracker Dashboard",
+    id: "social_coffee",
+    title: "Coffee Brand Lifestyle Post",
     description:
-      "A dark theme fitness dashboard with neon green accents, a circular progress ring for daily steps, a weekly activity bar chart, heart rate and calorie stat cards, and a workout history list.",
-    difficulty: "intermediate",
-    source: require("../assets/designs/fitness_dash.png"),
-  },
-  {
-    id: "music_player",
-    title: "Music Player Now Playing",
-    description:
-      "A dark purple gradient now playing screen with a large square album art, song title and artist, a scrubber timeline, playback controls, and a lyrics preview at the bottom.",
+      "A 4:5 Instagram lifestyle post for a specialty coffee brand. Top-down photo of a latte with rosetta art on a marble table, layered with a large cream serif headline 'BREW DAILY', a handwritten subtitle 'crafted in small batches', and a small wordmark 'KIN COFFEE EST. 2018' anchored at the bottom. Warm, cozy, premium.",
     difficulty: "beginner",
-    source: require("../assets/designs/music_player.png"),
+    source: require("../assets/designs/social_coffee.png"),
+  },
+  {
+    id: "social_quote",
+    title: "Editorial Quote Post",
+    description:
+      "A 4:5 Instagram quote post on a deep ink-blue gradient. Bold cream serif type reading 'STAY CURIOUS.' centered as the focal headline, a thin gold divider beneath, and a tracked uppercase attribution 'JANE GOODALL' below. Minimal logo mark in the bottom right. Pure typography, no photo.",
+    difficulty: "beginner",
+    source: require("../assets/designs/social_quote.png"),
+  },
+  {
+    id: "social_travel",
+    title: "Travel Guide Cover Post",
+    description:
+      "A 4:5 Instagram travel post for a Lisbon weekend guide. A vibrant photo of pastel Lisbon buildings with the iconic yellow tram framed inside an arched window, surrounded by a terracotta block. Bold curved sans-serif headline 'LISBON' wraps the top, a 'WEEKEND GUIDE' label sits below, and a sun-yellow '12 SPOTS' badge anchors the side.",
+    difficulty: "advanced",
+    source: require("../assets/designs/social_travel.png"),
   },
 ];
 
