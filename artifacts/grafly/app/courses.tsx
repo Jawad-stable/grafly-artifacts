@@ -104,7 +104,7 @@ export default function CoursesScreen() {
                 }}
               >
                 <View style={{ flex: 1, flexDirection: "row" }}>
-                  <CourseCardMotion onCard={onCard} accent={colors.accent} />
+                  <CourseCardMotion courseId={course.id} onCard={onCard} accent={colors.accent} />
 
                   <View style={{ flex: 1, paddingHorizontal: 18, paddingTop: 16, paddingBottom: 12 }}>
                     <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
