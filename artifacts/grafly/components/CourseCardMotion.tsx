@@ -216,77 +216,113 @@ function DotGrid({
 // ---------------------------------------------------------------------------
 
 function BalanceScale({ onCard, accent }: { onCard: string; accent: string }) {
-  const tilt = useFloat(4200, 0);
+  const tilt = useFloat(3000, 0);
   const tiltStyle = useAnimatedStyle(() => ({
-    transform: [{ rotate: `${interpolate(tilt.value, [0, 1], [-9, 9])}deg` }],
+    transform: [{ rotate: `${interpolate(tilt.value, [0, 1], [-22, 22])}deg` }],
   }));
   return (
-    <View style={{ position: "absolute", right: 80, top: 70, width: 0, height: 0 }}>
-      {/* Bar with weights as children — they tilt together */}
+    <View style={{ position: "absolute", right: 80, top: 60, width: 0, height: 0 }}>
+      {/* Triangle pivot — points UP, stays still while the bar tilts */}
+      <View
+        style={{
+          position: "absolute",
+          left: -11, top: -1,
+          width: 0, height: 0,
+          borderLeftWidth: 11,
+          borderRightWidth: 11,
+          borderBottomWidth: 16,
+          borderLeftColor: "transparent",
+          borderRightColor: "transparent",
+          borderBottomColor: `${onCard}BB`,
+          borderStyle: "solid",
+          transform: [{ rotate: "180deg" }],
+        }}
+      />
+      {/* Base bar under triangle */}
+      <View
+        style={{
+          position: "absolute",
+          left: -18, top: 18,
+          width: 36, height: 2, borderRadius: 1,
+          backgroundColor: `${onCard}77`,
+        }}
+      />
+
+      {/* Tilting bar with hangers + weights as children */}
       <Animated.View
         style={[
           {
             position: "absolute",
-            left: -60, top: -1,
-            width: 120, height: 2,
+            left: -72, top: -3,
+            width: 144, height: 4,
             borderRadius: 2,
-            backgroundColor: `${onCard}AA`,
+            backgroundColor: `${onCard}EE`,
           },
           tiltStyle,
         ]}
       >
-        {/* Filled circle weight on the left end */}
+        {/* Left hanger line */}
+        <View style={{ position: "absolute", left: 4, top: 4, width: 1.5, height: 16, backgroundColor: `${onCard}99` }} />
+        {/* Right hanger line */}
+        <View style={{ position: "absolute", right: 4, top: 4, width: 1.5, height: 16, backgroundColor: `${onCard}99` }} />
+        {/* Circle weight on left end */}
         <View
           style={{
             position: "absolute",
-            left: -8, top: -7,
-            width: 16, height: 16, borderRadius: 8,
+            left: -8, top: 18,
+            width: 22, height: 22, borderRadius: 11,
             backgroundColor: accent,
           }}
         />
-        {/* Square weight on the right end */}
+        {/* Square weight on right end */}
         <View
           style={{
             position: "absolute",
-            right: -7, top: -6,
-            width: 14, height: 14, borderRadius: 2,
-            backgroundColor: `${onCard}DD`,
+            right: -8, top: 18,
+            width: 22, height: 22, borderRadius: 4,
+            backgroundColor: `${onCard}EE`,
           }}
         />
       </Animated.View>
-      {/* Pivot ring (stationary) */}
-      <View
-        style={{
-          position: "absolute",
-          left: -7, top: 4,
-          width: 14, height: 14, borderRadius: 7,
-          borderWidth: 2,
-          borderColor: `${onCard}AA`,
-          backgroundColor: "transparent",
-        }}
-      />
-      {/* Pivot tick down */}
-      <View
-        style={{
-          position: "absolute",
-          left: -1, top: 18,
-          width: 2, height: 8,
-          borderRadius: 1,
-          backgroundColor: `${onCard}88`,
-        }}
-      />
     </View>
   );
 }
 
 function ContrastPair({ onCard }: { onCard: string }) {
-  const t = useFloat(2200, 0);
-  const a = useAnimatedStyle(() => ({ opacity: interpolate(t.value, [0, 1], [1, 0.25]) }));
-  const b = useAnimatedStyle(() => ({ opacity: interpolate(t.value, [0, 1], [0.25, 1]) }));
+  const t = useFloat(1700, 0);
+  const a = useAnimatedStyle(() => ({
+    opacity: interpolate(t.value, [0, 1], [1, 0.08]),
+    transform: [{ scale: interpolate(t.value, [0, 1], [1.05, 0.82]) }],
+  }));
+  const b = useAnimatedStyle(() => ({
+    opacity: interpolate(t.value, [0, 1], [0.08, 1]),
+    transform: [{ scale: interpolate(t.value, [0, 1], [0.82, 1.05]) }],
+  }));
   return (
-    <View style={{ position: "absolute", right: 16, top: 22, gap: 4 }}>
-      <Animated.View style={[a, { width: 28, height: 6, borderRadius: 3, backgroundColor: `${onCard}DD` }]} />
-      <Animated.View style={[b, { width: 28, height: 6, borderRadius: 3, backgroundColor: `${onCard}33` }]} />
+    <View style={{ position: "absolute", right: 12, top: 18, gap: 5 }}>
+      <Animated.View style={[a, { width: 38, height: 10, borderRadius: 4, backgroundColor: `${onCard}EE` }]} />
+      <Animated.View style={[b, { width: 38, height: 10, borderRadius: 4, backgroundColor: `${onCard}33` }]} />
+    </View>
+  );
+}
+
+function SymmetryDots({ onCard, accent }: { onCard: string; accent: string }) {
+  // Two mirrored dots that drift in/out from a central axis, demonstrating symmetry.
+  const t = useFloat(2400, 0);
+  const left = useAnimatedStyle(() => ({
+    transform: [{ translateX: interpolate(t.value, [0, 1], [0, -16]) }],
+    opacity: interpolate(t.value, [0, 1], [0.4, 1]),
+  }));
+  const right = useAnimatedStyle(() => ({
+    transform: [{ translateX: interpolate(t.value, [0, 1], [0, 16]) }],
+    opacity: interpolate(t.value, [0, 1], [0.4, 1]),
+  }));
+  return (
+    <View style={{ position: "absolute", right: 80, top: 122, width: 0, height: 0 }}>
+      {/* Mirror axis */}
+      <View style={{ position: "absolute", left: -0.5, top: -8, width: 1, height: 16, backgroundColor: `${onCard}55` }} />
+      <Animated.View style={[left, { position: "absolute", left: -3, top: -3, width: 6, height: 6, borderRadius: 3, backgroundColor: accent }]} />
+      <Animated.View style={[right, { position: "absolute", left: -3, top: -3, width: 6, height: 6, borderRadius: 3, backgroundColor: accent }]} />
     </View>
   );
 }
@@ -294,11 +330,12 @@ function ContrastPair({ onCard }: { onCard: string }) {
 function DesignPrinciplesMotion({ onCard, accent }: { onCard: string; accent: string }) {
   return (
     <MotionLayer>
-      <FloatRing right={14} top={8} size={130} color={onCard} alpha="1F" loop={5200} delay={0} amp={6} drift={4} />
-      <FloatRing right={170} top={62} size={20} color={onCard} alpha="55" loop={2800} delay={400} amp={10} />
+      <FloatRing right={14} top={8} size={130} color={onCard} alpha="22" loop={5200} delay={0} amp={6} drift={4} />
+      <FloatRing right={170} top={42} size={26} color={onCard} alpha="66" loop={2400} delay={400} amp={14} />
       <BalanceScale onCard={onCard} accent={accent} />
       <ContrastPair onCard={onCard} />
-      <FloatSquare right={158} top={108} size={10} color={onCard} alpha="55" loop={3400} delay={700} amp={6} rotateMs={11000} diamond />
+      <SymmetryDots onCard={onCard} accent={accent} />
+      <FloatSquare right={166} top={102} size={12} color={onCard} alpha="77" loop={2600} delay={700} amp={10} rotateMs={9000} diamond />
     </MotionLayer>
   );
 }
