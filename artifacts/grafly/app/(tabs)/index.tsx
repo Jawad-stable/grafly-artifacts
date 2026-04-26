@@ -30,6 +30,7 @@ import { useGame, getXPProgress } from "@/context/GameContext";
 import { COURSES, getAllLessons } from "@/constants/lessons";
 import { LOGO } from "@/constants/assets";
 import { GraflyMascot } from "@/components/GraflyMascot";
+import { HomeBackdrop } from "@/components/HomeBackdrop";
 import { voiceService } from "@/services/voiceService";
 import { AText } from "@/components/AText";
 import { PressScale } from "@/components/PressScale";
@@ -539,6 +540,13 @@ export default function HomeScreen() {
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.background }}>
+      {/* Ultra-subtle ambient backdrop — barely-visible micro motion */}
+      <HomeBackdrop
+        foreground={colors.foreground}
+        primary={colors.primary}
+        accent={colors.accent}
+      />
+
       <LevelUpOverlay />
       <XPPopup />
 
