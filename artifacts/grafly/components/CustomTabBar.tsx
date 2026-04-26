@@ -89,17 +89,21 @@ export function CustomTabBar() {
     }
   }
 
-  const bottomPad = Math.max(insets.bottom, Platform.OS === "web" ? 16 : 8);
+  // Lift the floating pill above the device's safe-area chin instead of
+  // padding the bottom of the pill itself. That keeps the icons truly
+  // vertically centered inside the bar.
+  const safeLift = Math.max(insets.bottom, 0) + 12;
 
   return (
-    <View pointerEvents="box-none" style={styles.outer}>
+    <View pointerEvents="box-none" style={[styles.outer, { bottom: safeLift }]}>
       <View
         style={[
           styles.container,
           {
             width: BOTTOM_BAR_WIDTH,
             borderRadius: 32,
-            paddingBottom: bottomPad,
+            paddingTop: 12,
+            paddingBottom: 12,
             shadowColor: "#000",
             shadowOffset: { width: 0, height: 8 },
             shadowOpacity: 0.35,
@@ -144,7 +148,6 @@ const styles = StyleSheet.create({
     position: "absolute",
     left: 0,
     right: 0,
-    bottom: 16,
     alignItems: "center",
   },
   container: {
@@ -152,14 +155,13 @@ const styles = StyleSheet.create({
   },
   row: {
     flexDirection: "row",
-    paddingTop: 10,
+    alignItems: "center",
     paddingHorizontal: 8,
   },
   tabButton: {
     flex: 1,
     alignItems: "center",
     justifyContent: "center",
-    paddingVertical: 6,
   },
   tabInner: {
     width: 52,
