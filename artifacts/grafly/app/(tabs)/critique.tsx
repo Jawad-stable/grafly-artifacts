@@ -41,7 +41,6 @@ import { pickRandomLocalDesign, type LocalDesign } from "@/data/localDesigns";
 import { PressScale } from "@/components/PressScale";
 import { BOTTOM_BAR_WIDTH } from "@/constants/layout";
 import { AI_BOT } from "@/constants/assets";
-import { GraflyMascot } from "@/components/GraflyMascot";
 
 const SMOOTH = Easing.out(Easing.cubic);
 
@@ -967,7 +966,7 @@ export default function CritiqueScreen() {
                 onLayout={onMentorRowLayout}
                 style={{ flexDirection: "row", alignItems: "center", gap: 10, marginTop: MENTOR_ROW_MARGIN_TOP, marginBottom: MENTOR_ROW_MARGIN_BOTTOM }}
               >
-                <GraflyMascot state="idle" size={36} />
+                <AiBot size={28} />
                 <View>
                   <Text style={{
                     fontSize: 13, fontFamily: "Nunito_800ExtraBold",
