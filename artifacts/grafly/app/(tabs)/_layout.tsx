@@ -19,7 +19,7 @@ import { Icon, type IconName } from "@/components/Icon";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useColors } from "@/hooks/useColors";
 import { useGame } from "@/context/GameContext";
-import { BOTTOM_BAR_WIDTH } from "@/constants/layout";
+import { getBottomBarWidth } from "@/constants/layout";
 
 const SMOOTH = Easing.out(Easing.cubic);
 
@@ -160,16 +160,18 @@ export default function TabLayout() {
   // viewport changes (important on web inside a resizable iframe).
   const { width: SCREEN_W } = useWindowDimensions();
 
-  // Floating pill. The width is the SAME shared constant the critique
-  // composer uses (BOTTOM_BAR_WIDTH from constants/layout.ts), so the nav
-  // and the input pill are always exactly the same width.
+  // Floating pill. The width is computed from the LIVE viewport
+  // (getBottomBarWidth) — the same function the critique composer
+  // uses — so the nav and the input pill are always exactly the
+  // same width AND both re-center when the viewport resizes.
   const tabBarHeight = 70;
   const tabBottom = Math.max(insets.bottom + 8, 22);
   const pillRadius = 35;
+  const barWidth = getBottomBarWidth(SCREEN_W);
   // Explicit pixel offset for true horizontal centering on the actual
   // current viewport. Clamped to >= 0 so the bar never sits off-screen
-  // on viewports narrower than BOTTOM_BAR_WIDTH.
-  const tabBarLeft = Math.max((SCREEN_W - BOTTOM_BAR_WIDTH) / 2, 0);
+  // on viewports narrower than barWidth.
+  const tabBarLeft = Math.max((SCREEN_W - barWidth) / 2, 0);
 
   return (
     <Tabs
@@ -186,9 +188,10 @@ export default function TabLayout() {
           // trick: pin to 50%, then pull back by half the width. This
           // works reliably across iOS, Android and web — `alignSelf`
           // and `marginHorizontal: "auto"` are not honored on absolute
-          // children in React Native. BOTTOM_BAR_WIDTH is shared with
-          // the composer pill so the two stay flush.
-          width: BOTTOM_BAR_WIDTH,
+          // children in React Native. barWidth is computed live from
+          // the same helper the composer pill uses so the two stay
+          // flush across viewport sizes.
+          width: barWidth,
           left: tabBarLeft,
           flexDirection: "row",
           borderRadius: pillRadius,

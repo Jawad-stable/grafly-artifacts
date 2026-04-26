@@ -11,6 +11,7 @@ import {
   Modal,
   Pressable,
   Dimensions,
+  useWindowDimensions,
   type LayoutChangeEvent,
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -39,7 +40,7 @@ import {
 } from "@/services/aiCritique";
 import { pickRandomLocalDesign, type LocalDesign } from "@/data/localDesigns";
 import { PressScale } from "@/components/PressScale";
-import { BOTTOM_BAR_WIDTH } from "@/constants/layout";
+import { getBottomBarWidth } from "@/constants/layout";
 import { AI_BOT } from "@/constants/assets";
 import { BrandSquiggle } from "@/components/BrandSquiggle";
 
@@ -476,6 +477,12 @@ export default function CritiqueScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
   const { state, addXP, addCoins } = useGame();
+  // Live viewport width — drives the composer pill width so it
+  // always matches the floating tab bar (which also recomputes from
+  // the live viewport). Static `Dimensions.get` snapshots are stale
+  // on Expo web inside a resizable canvas iframe.
+  const { width: liveScreenW } = useWindowDimensions();
+  const composerWidth = getBottomBarWidth(liveScreenW);
 
   const [design, setDesign] = useState<LocalDesign | null>(null);
   const [loadingDesign, setLoadingDesign] = useState(true);
@@ -1239,10 +1246,11 @@ export default function CritiqueScreen() {
           >
             <View
               style={{
-                // Single shared wrapper width: BOTTOM_BAR_WIDTH from
-                // constants/layout.ts. The bottom tab bar uses the same
-                // constant, so the input pill and the nav line up exactly.
-                width: BOTTOM_BAR_WIDTH,
+                // Live shared wrapper width: getBottomBarWidth(liveW).
+                // The bottom tab bar uses the same helper, so the
+                // input pill and the nav stay exactly the same width
+                // and both re-center as the viewport resizes.
+                width: composerWidth,
                 backgroundColor: colors.card,
                 borderRadius: 28,
                 borderWidth: 1,
