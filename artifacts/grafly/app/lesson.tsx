@@ -13,6 +13,7 @@ import Animated, {
   withSequence,
   withTiming,
   FadeIn,
+  SlideInDown,
 } from "react-native-reanimated";
 import { Icon } from "@/components/Icon";
 import { router, useLocalSearchParams } from "expo-router";
@@ -819,9 +820,10 @@ export default function LessonScreen() {
         </View>
       </View>
 
-      <Animated.View style={[shakeStyle, { flex: 1 }]}>
+      <Animated.View style={[shakeStyle, { flex: 1, minHeight: 0 }]}>
         <ScrollView
-          contentContainerStyle={{ paddingHorizontal: 24, paddingBottom: 60, paddingTop: 8 }}
+          style={{ flex: 1 }}
+          contentContainerStyle={{ paddingHorizontal: 24, paddingBottom: 24, paddingTop: 8 }}
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
         >
@@ -857,56 +859,85 @@ export default function LessonScreen() {
             selectedIndex={selectedIndex}
             selectedBool={selectedBool}
           />
-
-          {/* Feedback */}
-          {answered && currentQ.explanation && (
-            <Animated.View
-              entering={FadeIn}
-              style={{
-                marginTop: 20, borderRadius: colors.radius, padding: 18,
-                backgroundColor: (isCorrect ? colors.success : colors.destructive) + "E6",
-              }}
-            >
-              <View style={{ flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 6 }}>
-                <Icon
-                  name={isCorrect ? "checkmark-circle" : "close-circle"}
-                  size={18}
-                  color={colors.destructiveForeground}
-                />
-                <Text style={{ fontSize: 14, fontFamily: "Nunito_800ExtraBold", color: colors.destructiveForeground }}>
-                  {isCorrect ? "Correct!" : "Not quite"}
-                </Text>
-              </View>
-              <Text style={{ fontSize: 14, fontFamily: "Nunito_600SemiBold", color: colors.destructiveForeground, lineHeight: 20 }}>
-                {currentQ.explanation}
-              </Text>
-            </Animated.View>
-          )}
-
-          {/* Next button — user controls when to advance */}
-          {answered && (isCorrect || state.hearts > 0) && (
-            <Animated.View entering={FadeIn} style={{ marginTop: 20 }}>
-              <PressScale
-                onPress={handleNext}
-                style={{
-                  backgroundColor: isCorrect ? colors.success : colors.primary,
-                  borderRadius: 100,
-                  paddingVertical: 18,
-                  flexDirection: "row",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  gap: 10,
-                }}
-              >
-                <Text style={{ fontSize: 16, fontFamily: "Nunito_800ExtraBold", color: colors.primaryForeground, letterSpacing: 0.4 }}>
-                  {questionIdx + 1 >= totalQuestions ? "Finish" : "Next"}
-                </Text>
-                <Icon name="arrow-forward" size={18} color={colors.primaryForeground} />
-              </PressScale>
-            </Animated.View>
-          )}
         </ScrollView>
       </Animated.View>
+
+      {/* Sticky bottom feedback + CTA panel — Duolingo-style */}
+      {answered && (isCorrect || state.hearts > 0) && (
+        <Animated.View
+          entering={SlideInDown.duration(260)}
+          style={{
+            backgroundColor: (isCorrect ? colors.success : colors.destructive) + "F2",
+            paddingHorizontal: 24,
+            paddingTop: 18,
+            paddingBottom: 18 + Math.max(insets.bottom - 4, 0),
+            borderTopLeftRadius: 28,
+            borderTopRightRadius: 28,
+            shadowColor: "#000",
+            shadowOffset: { width: 0, height: -4 },
+            shadowOpacity: 0.12,
+            shadowRadius: 16,
+            elevation: 12,
+          }}
+        >
+          {/* Result label */}
+          <View style={{ flexDirection: "row", alignItems: "center", gap: 8, marginBottom: currentQ.explanation ? 8 : 14 }}>
+            <Icon
+              name={isCorrect ? "checkmark-circle" : "close-circle"}
+              size={20}
+              color={colors.destructiveForeground}
+            />
+            <Text style={{ fontSize: 16, fontFamily: "Nunito_800ExtraBold", color: colors.destructiveForeground }}>
+              {isCorrect ? "Correct!" : "Not quite"}
+            </Text>
+          </View>
+
+          {/* Explanation (optional) */}
+          {currentQ.explanation && (
+            <Text
+              style={{
+                fontSize: 14,
+                fontFamily: "Nunito_600SemiBold",
+                color: colors.destructiveForeground,
+                lineHeight: 20,
+                marginBottom: 14,
+              }}
+            >
+              {currentQ.explanation}
+            </Text>
+          )}
+
+          {/* Continue / Finish */}
+          <PressScale
+            onPress={handleNext}
+            style={{
+              backgroundColor: colors.background,
+              borderRadius: 100,
+              paddingVertical: 16,
+              flexDirection: "row",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: 10,
+            }}
+          >
+            <Text
+              style={{
+                fontSize: 16,
+                fontFamily: "Nunito_800ExtraBold",
+                color: isCorrect ? colors.success : colors.destructive,
+                letterSpacing: 0.4,
+              }}
+            >
+              {questionIdx + 1 >= totalQuestions ? "Finish" : "Continue"}
+            </Text>
+            <Icon
+              name="arrow-forward"
+              size={18}
+              color={isCorrect ? colors.success : colors.destructive}
+            />
+          </PressScale>
+        </Animated.View>
+      )}
     </View>
   );
 }
