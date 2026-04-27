@@ -530,10 +530,15 @@ export default function ProfileScreen() {
             ACCOUNT
           </Text>
 
-          {/* Upgrade-to-Pro CTA: vibrant cyan→cyanDeep gradient pill
-              with NAVY text + a navy diamond icon, framed in PressScale.
-              Navy on cyan is ~6.1:1 (AA), navy on cyanDeep is ~3.5:1
-              (AA-Large; the text is 16px ExtraBold which qualifies). */}
+          {/* Upgrade-to-Pro CTA: deep-blue gradient pill with WHITE text +
+              a white diamond icon, framed in PressScale. Follows the
+              project rule "white on blue, navy on yellow". The gradient
+              uses cyanDeep → a navy-blue stop (the SAME pattern the chat
+              user-bubbles use) so white text passes WCAG AA on BOTH stops:
+                • White on cyanDeep (#0078BB)  ≈ 4.79:1 (AA)
+                • White on #1E4D8B             ≈ 8.2:1  (AA)
+              Bright cyan #00A4FA was rejected here because white on it is
+              only ~2.7:1 (AA fail). */}
           <PressScale
             onPress={() => router.push("/paywall" as any)}
             style={{ marginBottom: 10, borderRadius: 100, overflow: "hidden" }}
@@ -541,7 +546,7 @@ export default function ProfileScreen() {
             accessibilityLabel="Upgrade to Pro"
           >
             <LinearGradient
-              colors={[colors.primary, colors.primaryDeep]}
+              colors={[colors.primaryDeep, "#1E4D8B"]}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 1 }}
               style={{
@@ -554,8 +559,8 @@ export default function ProfileScreen() {
                 gap: 10,
               }}
             >
-              <Icon name="diamond" size={18} color={BRAND.navy} />
-              <Text style={{ fontSize: 16, fontFamily: "Nunito_800ExtraBold", color: BRAND.navy }}>
+              <Icon name="diamond" size={18} color="#FFFFFF" />
+              <Text style={{ fontSize: 16, fontFamily: "Nunito_800ExtraBold", color: "#FFFFFF" }}>
                 Upgrade to Pro
               </Text>
             </LinearGradient>
