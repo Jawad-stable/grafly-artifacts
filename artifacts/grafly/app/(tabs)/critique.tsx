@@ -1380,16 +1380,10 @@ export default function CritiqueScreen() {
           >
             <Icon name="close" size={22} color="#fff" />
           </TouchableOpacity>
-          {design && (
-            <View style={{ position: "absolute", bottom: insets.bottom + 28, left: 24, right: 24 }}>
-              <Text style={{ fontSize: 18, fontFamily: "Nunito_800ExtraBold", color: "#fff", textAlign: "center", letterSpacing: -0.4 }}>
-                {design.title}
-              </Text>
-              <Text style={{ fontSize: 13, fontFamily: "Nunito_600SemiBold", color: "rgba(255,255,255,0.7)", textAlign: "center", marginTop: 6, lineHeight: 19 }}>
-                {design.description}
-              </Text>
-            </View>
-          )}
+          {/* Caption block (title + description) removed per user request —
+              the expanded view is now image-only so the design can speak
+              for itself. The title + description are still available on
+              the design card itself in the carousel. */}
         </Pressable>
       </Modal>
     </View>
