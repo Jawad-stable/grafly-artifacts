@@ -10,6 +10,9 @@
 // - Cyan deep   #0078BB  AA-safe deep variant for white text on small surfaces
 // - Lime        #E3ED43  energetic accent (badges, highlights)
 // - Pink        #FF7BD0  warm secondary accent
+// - Pink deep   #BC4090  AA-safe deep variant of pink so white text passes AA
+//                        (white on bright #FF7BD0 is only ~2.4:1 = AA fail;
+//                        white on #BC4090 is ~4.95:1 = AA pass).
 // - Navy        #21263F  brand text / dark backgrounds
 // - Off-white   #F5F6FA  app background (light mode)
 const BRAND = {
@@ -17,6 +20,7 @@ const BRAND = {
   cyanDeep: "#0078BB",
   lime: "#E3ED43",
   pink: "#FF7BD0",
+  pinkDeep: "#BC4090",
   navy: "#21263F",
   navyDeep: "#181C30",
   offWhite: "#F5F6FA",

@@ -358,31 +358,50 @@ export default function HomeScreen() {
               const mascotStates = ["think", "celebrate", "idle", "correct", "oops"] as const;
               const mascotState = mascotStates[index % mascotStates.length];
 
-              // Per-course palette: card uses its solid base color, with
-              // text + accents picked by ACTUAL contrast ratio (not a
-              // luminance heuristic) so cyan / pink / yellow cards each
-              // land on their AA-passing foreground. The previous
-              // `relLuminance > 0.55` heuristic put white on cyan
-              // (~2.7:1) and pink (~2.3:1) which both fail AA — switching
-              // to `getContrastOn` correctly picks NAVY for those cards
-              // (~6:1) while keeping yellow → NAVY and dark cards → WHITE.
+              // Per-course palette honoring the project rule:
+              //   "white on blue, pink. Black on yellow."
+              // Bright cyan (#00A4FA) and pink (#FF7BD0) can't carry
+              // white text directly — white on them is only ~2.7:1 and
+              // ~2.4:1 (both AA fail). To get BOTH "white on blue/pink"
+              // AND AA contrast, the cyan and pink card surfaces are
+              // rendered using their DEEP brand variants (cyanDeep
+              // #0078BB and pinkDeep #BC4090) at which point white text
+              // passes AA at ~4.79:1 / ~4.95:1 respectively. Yellow stays
+              // at full saturation because navy on yellow already passes
+              // AA at ~11:1. `getContrastOn(renderColor, ...)` then picks
+              // white for the deepened cyan/pink and navy for yellow,
+              // exactly matching the user rule.
               const baseColor = course.color;
               const NAVY = "#21263F";
-              const textColor = getContrastOn(baseColor, { dark: NAVY, light: "#FFFFFF" });
+              const renderColor =
+                baseColor.toUpperCase() === "#00A4FA" ? colors.brand.cyanDeep
+                : baseColor.toUpperCase() === "#FF7BD0" ? colors.brand.pinkDeep
+                : baseColor;
+              const textColor = getContrastOn(renderColor, { dark: NAVY, light: "#FFFFFF" });
               const onDark = textColor === "#FFFFFF";
               // Soft / muted text alphas tuned to clear AA on saturated
-              // brand colors at 12–13px:
-              //   - "E6" (90%) on cyan keeps navy at ~5.4:1 for the
-              //     subtitle (a thinner "B0" was ~3.7:1 = AA fail).
-              //   - "DD" (~87%) on the lightened cyan footer keeps the
-              //     muted "lessons" suffix at ~5.4:1 (CC at 80% landed at
-              //     4.29:1, just below the 4.5 AA threshold).
-              const textSoft = onDark ? "#FFFFFFE6" : `${NAVY}E6`;
+              // brand colors at 10–13px:
+              //   - On LIGHT (yellow) cards: navy at 90% / 87% alpha over
+              //     yellow keeps the subtitle and footer muted suffix at
+              //     ~9.4:1 / ~9.0:1 — comfortably AA.
+              //   - On DARK (cyanDeep / pinkDeep) cards: pure white for
+              //     the 13px subtitle (an "E6" alpha dropped composited
+              //     contrast to ~4.2:1 = just under AA). Footer muted
+              //     suffix stays at "DD" because the navy "66" footer
+              //     overlay darkens the surface enough that 87% white
+              //     still reads ~6.4:1.
+              const textSoft = onDark ? "#FFFFFF" : `${NAVY}E6`;
               const textMuted = onDark ? "#FFFFFFDD" : `${NAVY}DD`;
               // Accent: yellow on dark cards (visible); navy on light cards
               // (visible underline + progress fill).
               const accent = onDark ? "#FFD84D" : NAVY;
-              const pillBg = onDark ? "#FFFFFF26" : `${NAVY}1F`;
+              // Eyebrow pill bg: on dark cards, a NAVY overlay DARKENS the
+              // surface (white text reads ~5.6:1 on cyanDeep / ~5.9:1 on
+              // pinkDeep). The previous "#FFFFFF26" overlay LIGHTENED the
+              // surface and dropped the 10px pill text to ~3.7:1 = AA fail.
+              // On light (yellow) cards a navy overlay darkens further so
+              // navy text still passes AA at ~8.7:1.
+              const pillBg = onDark ? `${NAVY}26` : `${NAVY}1F`;
               // Footer overlay: on LIGHT cards (navy text) we LIGHTEN the
               // base color with a white "22" overlay so navy text gets
               // MORE contrast (cyan → ~6.3:1, was ~4.4:1 with the inverse
@@ -398,9 +417,9 @@ export default function HomeScreen() {
                   onPress={() => router.push({ pathname: "/(tabs)/tree", params: { courseId: course.id } })}
                   style={{
                     width: cardW, height: cardH, borderRadius: 26,
-                    backgroundColor: baseColor,
+                    backgroundColor: renderColor,
                     overflow: "hidden",
-                    shadowColor: baseColor,
+                    shadowColor: renderColor,
                     shadowOffset: { width: 0, height: 14 },
                     shadowOpacity: 0.3,
                     shadowRadius: 24,
