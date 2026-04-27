@@ -25,6 +25,27 @@ import { onBrand } from "@/constants/contrast";
 
 const BRAND = colorsConst.brand;
 
+// Pre-mix a foreground color over a solid background at a given alpha
+// and return the resulting OPAQUE hex. Used everywhere the profile
+// previously rendered alpha-tinted surfaces (e.g. cyan-on-bg cards) —
+// switching to pre-mixed solids means the cards no longer blend with
+// whatever decorative watermark or scrolled content sits behind them,
+// so each tile reads as a clean, intentional brand color.
+function mix(fg: string, bg: string, alpha: number): string {
+  const a = Math.max(0, Math.min(1, alpha));
+  const fr = parseInt(fg.slice(1, 3), 16);
+  const fgG = parseInt(fg.slice(3, 5), 16);
+  const fb = parseInt(fg.slice(5, 7), 16);
+  const br = parseInt(bg.slice(1, 3), 16);
+  const bgG = parseInt(bg.slice(3, 5), 16);
+  const bb = parseInt(bg.slice(5, 7), 16);
+  const r = Math.round(a * fr + (1 - a) * br);
+  const g = Math.round(a * fgG + (1 - a) * bgG);
+  const b = Math.round(a * fb + (1 - a) * bb);
+  const toHex = (v: number) => v.toString(16).padStart(2, "0").toUpperCase();
+  return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
+}
+
 const ACHIEVEMENTS = [
   { id: "first-lesson", title: "First Step", icon: "book", color: "#00A4FA", condition: (s: any) => s.completedLessons.length >= 1 },
   { id: "week-streak", title: "On Fire", icon: "flame", color: "#FF7B00", condition: (s: any) => s.streakMax >= 7 },
@@ -78,13 +99,37 @@ export default function ProfileScreen() {
   // Each stat gets its own tinted card background instead of all the
   // tiles sharing the same neutral card surface — this makes the grid
   // read as a vibrant gallery instead of a list.
-  // `tile` is the tint behind the whole card, `color` is the icon color.
+  // `tile` is the bg behind the whole card, `border` rims it, `iconDot`
+  // is the chip behind the icon. All three are PRE-MIXED solid hex
+  // values (no alpha channel) so the surfaces don't blend with the
+  // brand watermark sitting behind the scroll view.
+  const bg = colors.background;
   const STATS = [
-    { label: "Total XP",   value: state.xp,                          icon: "flash",             color: colors.accent, tile: colors.accent + "30",  squiggle: "loop" as const },
-    { label: "Streak",     value: state.streak,                      icon: "flame",             color: "#FF7B00",     tile: "#FF7B0022",            squiggle: "tube" as const },
-    { label: "Max Streak", value: state.streakMax,                   icon: "trending-up",       color: colors.success, tile: colors.success + "1F", squiggle: "wave" as const },
-    { label: "Lessons",    value: state.completedLessons.length,     icon: "checkmark-circle",  color: colors.primary, tile: colors.primary + "1F", squiggle: "loop" as const },
+    { label: "Total XP",   value: state.xp,                       icon: "flash",            color: colors.accent,  tile: mix(colors.accent,  bg, 0.188), border: mix(colors.accent,  bg, 0.30), iconDot: mix(colors.accent,  bg, 0.35), squiggle: "loop" as const },
+    { label: "Streak",     value: state.streak,                   icon: "flame",            color: "#FF7B00",      tile: mix("#FF7B00",      bg, 0.13),  border: mix("#FF7B00",      bg, 0.30), iconDot: mix("#FF7B00",      bg, 0.30), squiggle: "tube" as const },
+    { label: "Max Streak", value: state.streakMax,                icon: "trending-up",      color: colors.success, tile: mix(colors.success, bg, 0.12),  border: mix(colors.success, bg, 0.30), iconDot: mix(colors.success, bg, 0.30), squiggle: "wave" as const },
+    { label: "Lessons",    value: state.completedLessons.length,  icon: "checkmark-circle", color: colors.primary, tile: mix(colors.primary, bg, 0.12),  border: mix(colors.primary, bg, 0.30), iconDot: mix(colors.primary, bg, 0.30), squiggle: "loop" as const },
   ];
+
+  // Pre-mixed solids that replace what used to be alpha-suffixed hex
+  // (`color + "16"`, `color + "26"`, etc.) on the profile screen.
+  // Each entry resolves to a fully opaque hex that LOOKS like the old
+  // tint but doesn't actually blend with the watermark behind it.
+  const SOLID = {
+    // Identity card (cyan family)
+    identityBg:     mix(colors.primary, bg, 0.09),
+    identityBorder: mix(colors.primary, bg, 0.20),
+    avatarBg:       mix(colors.primary, bg, 0.18),
+    // Progress card (lime family)
+    progressBg:     mix(colors.accent,  bg, 0.18),
+    progressBorder: mix(colors.accent,  bg, 0.36),
+    xpTrack:        mix(BRAND.navy,     bg, 0.12),
+    // Settings rows
+    settingIconBg:  mix(colors.primary, bg, 0.13),
+    dangerIconBg:   mix(colors.destructive, bg, 0.13),
+    // Switch trackColor when active (true)
+    switchOnTrack:  mix(colors.primary, bg, 0.40),
+  };
 
   const unlockedCount = ACHIEVEMENTS.filter((a) => a.condition(state)).length;
   const xpPct = Math.min(100, Math.round((xpProg.current / xpProg.required) * 100));
@@ -125,7 +170,7 @@ export default function ProfileScreen() {
         <Animated.View
           entering={FadeIn}
           style={{
-            backgroundColor: colors.primary + "16",
+            backgroundColor: SOLID.identityBg,
             borderRadius: colors.radius,
             padding: 18,
             flexDirection: "row",
@@ -133,7 +178,7 @@ export default function ProfileScreen() {
             gap: 16,
             marginBottom: 20,
             borderWidth: 1.5,
-            borderColor: colors.primary + "33",
+            borderColor: SOLID.identityBorder,
             overflow: "hidden",
           }}
         >
@@ -146,7 +191,7 @@ export default function ProfileScreen() {
               width: 88,
               height: 88,
               borderRadius: 44,
-              backgroundColor: colors.primary + "26",
+              backgroundColor: SOLID.avatarBg,
               alignItems: "center",
               justifyContent: "center",
               overflow: "hidden",
@@ -231,11 +276,11 @@ export default function ProfileScreen() {
           </View>
           <View
             style={{
-              backgroundColor: colors.accent + "26",
+              backgroundColor: SOLID.progressBg,
               borderRadius: colors.radius,
               padding: 18,
               borderWidth: 1.5,
-              borderColor: colors.accent + "55",
+              borderColor: SOLID.progressBorder,
               overflow: "hidden",
             }}
           >
@@ -247,12 +292,12 @@ export default function ProfileScreen() {
               <Text style={{ fontSize: 22, fontFamily: "Nunito_800ExtraBold", color: colors.foreground, letterSpacing: -0.4 }}>
                 Level {xpProg.level}
               </Text>
-              <Text style={{ fontSize: 13, fontFamily: "Nunito_600SemiBold", color: colors.foreground + "B0" }}>
+              <Text style={{ fontSize: 13, fontFamily: "Nunito_600SemiBold", color: colors.foreground }}>
                 {xpProg.current} / {xpProg.required} XP
               </Text>
             </View>
             {/* Gradient progress bar — cyan to lime, energetic */}
-            <View style={{ height: 10, backgroundColor: BRAND.navy + "1A", borderRadius: 5, overflow: "hidden" }}>
+            <View style={{ height: 10, backgroundColor: SOLID.xpTrack, borderRadius: 5, overflow: "hidden" }}>
               <LinearGradient
                 colors={[colors.primary, colors.accent]}
                 start={{ x: 0, y: 0 }}
@@ -260,7 +305,7 @@ export default function ProfileScreen() {
                 style={{ height: "100%", width: `${xpPct}%`, borderRadius: 5 }}
               />
             </View>
-            <Text style={{ fontSize: 12, fontFamily: "Nunito_600SemiBold", color: colors.foreground + "AA", marginTop: 10 }}>
+            <Text style={{ fontSize: 12, fontFamily: "Nunito_600SemiBold", color: colors.foreground, marginTop: 10 }}>
               {xpProg.required - xpProg.current} XP to Level {xpProg.level + 1}
             </Text>
           </View>
@@ -285,7 +330,7 @@ export default function ProfileScreen() {
                   padding: 16,
                   alignItems: "flex-start",
                   borderWidth: 1.5,
-                  borderColor: stat.color + "44",
+                  borderColor: stat.border,
                   overflow: "hidden",
                 }}
               >
@@ -295,7 +340,7 @@ export default function ProfileScreen() {
                 <View
                   style={{
                     width: 32, height: 32, borderRadius: 16,
-                    backgroundColor: stat.color + "33",
+                    backgroundColor: stat.iconDot,
                     alignItems: "center", justifyContent: "center",
                     marginBottom: 10,
                   }}
@@ -305,7 +350,7 @@ export default function ProfileScreen() {
                 <Text style={{ fontSize: 26, fontFamily: "Nunito_800ExtraBold", color: colors.foreground, letterSpacing: -0.6 }}>
                   {stat.value}
                 </Text>
-                <Text style={{ fontSize: 11, fontFamily: "Nunito_800ExtraBold", color: colors.foreground + "AA", letterSpacing: 1.2, marginTop: 2 }}>
+                <Text style={{ fontSize: 11, fontFamily: "Nunito_800ExtraBold", color: colors.foreground, letterSpacing: 1.2, marginTop: 2 }}>
                   {stat.label.toUpperCase()}
                 </Text>
               </View>
@@ -322,7 +367,7 @@ export default function ProfileScreen() {
                   padding: 16,
                   alignItems: "flex-start",
                   borderWidth: 1.5,
-                  borderColor: stat.color + "44",
+                  borderColor: stat.border,
                   overflow: "hidden",
                 }}
               >
@@ -332,7 +377,7 @@ export default function ProfileScreen() {
                 <View
                   style={{
                     width: 32, height: 32, borderRadius: 16,
-                    backgroundColor: stat.color + "33",
+                    backgroundColor: stat.iconDot,
                     alignItems: "center", justifyContent: "center",
                     marginBottom: 10,
                   }}
@@ -342,7 +387,7 @@ export default function ProfileScreen() {
                 <Text style={{ fontSize: 26, fontFamily: "Nunito_800ExtraBold", color: colors.foreground, letterSpacing: -0.6 }}>
                   {stat.value}
                 </Text>
-                <Text style={{ fontSize: 11, fontFamily: "Nunito_800ExtraBold", color: colors.foreground + "AA", letterSpacing: 1.2, marginTop: 2 }}>
+                <Text style={{ fontSize: 11, fontFamily: "Nunito_800ExtraBold", color: colors.foreground, letterSpacing: 1.2, marginTop: 2 }}>
                   {stat.label.toUpperCase()}
                 </Text>
               </View>
@@ -378,10 +423,10 @@ export default function ProfileScreen() {
                   key={a.id}
                   style={{
                     width: 104,
-                    // Unlocked tiles are now FILLED with a soft tint of
-                    // their badge color — much more colorful than the
-                    // previous all-white card with a colored ring.
-                    backgroundColor: unlocked ? a.color + "1F" : colors.card,
+                    // Unlocked tiles are FILLED with a SOLID light tint of
+                    // their badge color (pre-mixed against the bg so it
+                    // doesn't blend with the watermark behind the carousel).
+                    backgroundColor: unlocked ? mix(a.color, bg, 0.15) : colors.card,
                     borderRadius: 18,
                     padding: 14,
                     alignItems: "center",
@@ -453,7 +498,7 @@ export default function ProfileScreen() {
                     width: 36,
                     height: 36,
                     borderRadius: 18,
-                    backgroundColor: colors.primary + "20",
+                    backgroundColor: SOLID.settingIconBg,
                     alignItems: "center",
                     justifyContent: "center",
                   }}
@@ -472,7 +517,7 @@ export default function ProfileScreen() {
               <Switch
                 value={state.voiceEnabled}
                 onValueChange={toggleVoice}
-                trackColor={{ false: colors.muted, true: colors.primary + "60" }}
+                trackColor={{ false: colors.muted, true: SOLID.switchOnTrack }}
                 thumbColor={state.voiceEnabled ? colors.primary : colors.mutedForeground}
               />
             </View>
@@ -536,7 +581,7 @@ export default function ProfileScreen() {
                     width: 36,
                     height: 36,
                     borderRadius: 18,
-                    backgroundColor: colors.destructive + "20",
+                    backgroundColor: SOLID.dangerIconBg,
                     alignItems: "center",
                     justifyContent: "center",
                   }}
@@ -576,7 +621,7 @@ export default function ProfileScreen() {
                     width: 36,
                     height: 36,
                     borderRadius: 18,
-                    backgroundColor: colors.primary + "20",
+                    backgroundColor: SOLID.settingIconBg,
                     alignItems: "center",
                     justifyContent: "center",
                   }}
