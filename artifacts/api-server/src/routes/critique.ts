@@ -192,13 +192,13 @@ router.post("/critique/chat", async (req, res) => {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          // Switched from `google/gemma-3-27b-it` after NVIDIA marked
-          // that function id DEGRADED ("DEGRADED function cannot be
-          // invoked", 400 Bad Request). Llama 3.3 70B Instruct is a
-          // stable, widely-deployed instruct model on the NIM endpoint
-          // with strong conversational quality — well-suited to the
-          // warm/encouraging design-mentor persona.
-          model: "meta/llama-3.3-70b-instruct",
+          // DeepSeek V4 Pro on NVIDIA NIM (released April 23, 2026).
+          // 1.6T MoE (49B activated), excellent reasoning + agentic
+          // performance, very strong fit for the design-mentor persona.
+          // Earlier history: started on `google/gemma-3-27b-it` (NVIDIA
+          // marked DEGRADED → switched to `meta/llama-3.3-70b-instruct`
+          // → upgraded to v4-pro now that it is live).
+          model: "deepseek-ai/deepseek-v4-pro",
           messages: [
             { role: "system", content: system },
             ...trimmed,
