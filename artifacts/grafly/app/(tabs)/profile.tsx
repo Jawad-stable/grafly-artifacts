@@ -16,6 +16,14 @@ import { useGame, getXPProgress } from "@/context/GameContext";
 import { useAuth } from "@/context/AuthContext";
 import { GraflyMascot } from "@/components/GraflyMascot";
 import { AText, ATextInput } from "@/components/AText";
+import { HomeBackdrop } from "@/components/HomeBackdrop";
+import { BrandSquiggle } from "@/components/BrandSquiggle";
+import { PressScale } from "@/components/PressScale";
+import { LinearGradient } from "expo-linear-gradient";
+import colorsConst from "@/constants/colors";
+import { onBrand } from "@/constants/contrast";
+
+const BRAND = colorsConst.brand;
 
 const ACHIEVEMENTS = [
   { id: "first-lesson", title: "First Step", icon: "book", color: "#00A4FA", condition: (s: any) => s.completedLessons.length >= 1 },
@@ -67,11 +75,15 @@ export default function ProfileScreen() {
     setEditingName(false);
   }
 
+  // Each stat gets its own tinted card background instead of all the
+  // tiles sharing the same neutral card surface — this makes the grid
+  // read as a vibrant gallery instead of a list.
+  // `tile` is the tint behind the whole card, `color` is the icon color.
   const STATS = [
-    { label: "Total XP", value: state.xp, icon: "flash", color: colors.accent },
-    { label: "Streak", value: state.streak, icon: "flame", color: "#FF7B00" },
-    { label: "Max Streak", value: state.streakMax, icon: "trending-up", color: colors.success },
-    { label: "Lessons", value: state.completedLessons.length, icon: "checkmark-circle", color: colors.primary },
+    { label: "Total XP",   value: state.xp,                          icon: "flash",             color: colors.accent, tile: colors.accent + "30",  squiggle: "loop" as const },
+    { label: "Streak",     value: state.streak,                      icon: "flame",             color: "#FF7B00",     tile: "#FF7B0022",            squiggle: "tube" as const },
+    { label: "Max Streak", value: state.streakMax,                   icon: "trending-up",       color: colors.success, tile: colors.success + "1F", squiggle: "wave" as const },
+    { label: "Lessons",    value: state.completedLessons.length,     icon: "checkmark-circle",  color: colors.primary, tile: colors.primary + "1F", squiggle: "loop" as const },
   ];
 
   const unlockedCount = ACHIEVEMENTS.filter((a) => a.condition(state)).length;
@@ -81,39 +93,60 @@ export default function ProfileScreen() {
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.background }}>
+      {/* Ambient brand watermark — same backdrop the home/tree/shop
+          tabs use, so the profile feels like part of the same room
+          instead of a flat settings screen. */}
+      <HomeBackdrop
+        foreground={colors.foreground}
+        primary={colors.primary}
+        accent={colors.accent}
+      />
       <ScrollView
         contentContainerStyle={{ paddingTop: paddingTop + 12, paddingHorizontal: 24, paddingBottom }}
         showsVerticalScrollIndicator={false}
       >
-        {/* Editorial title */}
+        {/* Editorial title with a small brand-cyan dot — same anchor
+            pattern the Shop screen uses on its section headings. */}
         <View style={{ marginBottom: 24 }}>
-          <Text style={{ fontSize: 13, fontFamily: "Nunito_800ExtraBold", color: colors.mutedForeground, letterSpacing: 1.5, marginBottom: 4 }}>
-            YOUR STUDIO
-          </Text>
+          <View style={{ flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 4 }}>
+            <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: colors.primary }} />
+            <Text style={{ fontSize: 13, fontFamily: "Nunito_800ExtraBold", color: colors.mutedForeground, letterSpacing: 1.5 }}>
+              YOUR STUDIO
+            </Text>
+          </View>
           <Text style={{ fontSize: 38, fontFamily: "Nunito_800ExtraBold", color: colors.foreground, letterSpacing: -1, lineHeight: 42 }}>
             Profile
           </Text>
         </View>
 
-        {/* Identity card — left aligned editorial */}
+        {/* Identity card — soft cyan-tinted hero with a brand-squiggle
+            flourish in the corner. Avatar circle is filled with a
+            slightly deeper cyan tint so the mascot pops out of the card. */}
         <Animated.View
           entering={FadeIn}
           style={{
-            backgroundColor: colors.card,
+            backgroundColor: colors.primary + "16",
             borderRadius: colors.radius,
             padding: 18,
             flexDirection: "row",
             alignItems: "center",
             gap: 16,
             marginBottom: 20,
+            borderWidth: 1.5,
+            borderColor: colors.primary + "33",
+            overflow: "hidden",
           }}
         >
+          {/* Brand squiggle flourish in the top-right corner */}
+          <View pointerEvents="none" style={{ position: "absolute", top: -10, right: -16 }}>
+            <BrandSquiggle variant="loop" width={140} height={88} color={colors.primary} opacity={0.16} drift delay={400} />
+          </View>
           <View
             style={{
               width: 88,
               height: 88,
               borderRadius: 44,
-              backgroundColor: colors.muted,
+              backgroundColor: colors.primary + "26",
               alignItems: "center",
               justifyContent: "center",
               overflow: "hidden",
@@ -198,30 +231,36 @@ export default function ProfileScreen() {
           </View>
           <View
             style={{
-              backgroundColor: colors.card,
+              backgroundColor: colors.accent + "26",
               borderRadius: colors.radius,
               padding: 18,
+              borderWidth: 1.5,
+              borderColor: colors.accent + "55",
+              overflow: "hidden",
             }}
           >
+            {/* Lime-tinted brand squiggle in the corner */}
+            <View pointerEvents="none" style={{ position: "absolute", bottom: -22, right: -10 }}>
+              <BrandSquiggle variant="tube" width={92} height={130} color={BRAND.navy} opacity={0.08} drift delay={1200} />
+            </View>
             <View style={{ flexDirection: "row", alignItems: "baseline", justifyContent: "space-between", marginBottom: 12 }}>
               <Text style={{ fontSize: 22, fontFamily: "Nunito_800ExtraBold", color: colors.foreground, letterSpacing: -0.4 }}>
                 Level {xpProg.level}
               </Text>
-              <Text style={{ fontSize: 13, fontFamily: "Nunito_600SemiBold", color: colors.mutedForeground }}>
+              <Text style={{ fontSize: 13, fontFamily: "Nunito_600SemiBold", color: colors.foreground + "B0" }}>
                 {xpProg.current} / {xpProg.required} XP
               </Text>
             </View>
-            <View style={{ height: 8, backgroundColor: colors.muted, borderRadius: 4, overflow: "hidden" }}>
-              <View
-                style={{
-                  height: "100%",
-                  width: `${xpPct}%`,
-                  backgroundColor: colors.accent,
-                  borderRadius: 4,
-                }}
+            {/* Gradient progress bar — cyan to lime, energetic */}
+            <View style={{ height: 10, backgroundColor: BRAND.navy + "1A", borderRadius: 5, overflow: "hidden" }}>
+              <LinearGradient
+                colors={[colors.primary, colors.accent]}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 0 }}
+                style={{ height: "100%", width: `${xpPct}%`, borderRadius: 5 }}
               />
             </View>
-            <Text style={{ fontSize: 12, fontFamily: "Nunito_600SemiBold", color: colors.mutedForeground, marginTop: 10 }}>
+            <Text style={{ fontSize: 12, fontFamily: "Nunito_600SemiBold", color: colors.foreground + "AA", marginTop: 10 }}>
               {xpProg.required - xpProg.current} XP to Level {xpProg.level + 1}
             </Text>
           </View>
@@ -232,45 +271,78 @@ export default function ProfileScreen() {
           <Text style={{ fontSize: 13, fontFamily: "Nunito_800ExtraBold", color: colors.mutedForeground, letterSpacing: 1.5, marginBottom: 10 }}>
             BY THE NUMBERS
           </Text>
+          {/* 2x2 stat grid where each tile carries its own brand-color
+              tint + a small drifting squiggle. Big numbers stay in
+              navy foreground for AA contrast on the soft tints. */}
           <View style={{ flexDirection: "row", gap: 10, marginBottom: 10 }}>
-            {STATS.slice(0, 2).map((stat) => (
+            {STATS.slice(0, 2).map((stat, idx) => (
               <View
                 key={stat.label}
                 style={{
                   flex: 1,
-                  backgroundColor: colors.card,
+                  backgroundColor: stat.tile,
                   borderRadius: colors.radius,
                   padding: 16,
                   alignItems: "flex-start",
+                  borderWidth: 1.5,
+                  borderColor: stat.color + "44",
+                  overflow: "hidden",
                 }}
               >
-                <Icon name={stat.icon as any} size={20} color={stat.color} style={{ marginBottom: 8 }} />
+                <View pointerEvents="none" style={{ position: "absolute", bottom: -14, right: -12 }}>
+                  <BrandSquiggle variant={stat.squiggle} width={84} height={64} color={stat.color} opacity={0.18} drift delay={idx * 600} />
+                </View>
+                <View
+                  style={{
+                    width: 32, height: 32, borderRadius: 16,
+                    backgroundColor: stat.color + "33",
+                    alignItems: "center", justifyContent: "center",
+                    marginBottom: 10,
+                  }}
+                >
+                  <Icon name={stat.icon as any} size={18} color={stat.color} />
+                </View>
                 <Text style={{ fontSize: 26, fontFamily: "Nunito_800ExtraBold", color: colors.foreground, letterSpacing: -0.6 }}>
                   {stat.value}
                 </Text>
-                <Text style={{ fontSize: 11, fontFamily: "Nunito_800ExtraBold", color: colors.mutedForeground, letterSpacing: 1.2, marginTop: 2 }}>
+                <Text style={{ fontSize: 11, fontFamily: "Nunito_800ExtraBold", color: colors.foreground + "AA", letterSpacing: 1.2, marginTop: 2 }}>
                   {stat.label.toUpperCase()}
                 </Text>
               </View>
             ))}
           </View>
           <View style={{ flexDirection: "row", gap: 10 }}>
-            {STATS.slice(2, 4).map((stat) => (
+            {STATS.slice(2, 4).map((stat, idx) => (
               <View
                 key={stat.label}
                 style={{
                   flex: 1,
-                  backgroundColor: colors.card,
+                  backgroundColor: stat.tile,
                   borderRadius: colors.radius,
                   padding: 16,
                   alignItems: "flex-start",
+                  borderWidth: 1.5,
+                  borderColor: stat.color + "44",
+                  overflow: "hidden",
                 }}
               >
-                <Icon name={stat.icon as any} size={20} color={stat.color} style={{ marginBottom: 8 }} />
+                <View pointerEvents="none" style={{ position: "absolute", bottom: -14, right: -12 }}>
+                  <BrandSquiggle variant={stat.squiggle} width={84} height={64} color={stat.color} opacity={0.18} drift delay={1200 + idx * 600} />
+                </View>
+                <View
+                  style={{
+                    width: 32, height: 32, borderRadius: 16,
+                    backgroundColor: stat.color + "33",
+                    alignItems: "center", justifyContent: "center",
+                    marginBottom: 10,
+                  }}
+                >
+                  <Icon name={stat.icon as any} size={18} color={stat.color} />
+                </View>
                 <Text style={{ fontSize: 26, fontFamily: "Nunito_800ExtraBold", color: colors.foreground, letterSpacing: -0.6 }}>
                   {stat.value}
                 </Text>
-                <Text style={{ fontSize: 11, fontFamily: "Nunito_800ExtraBold", color: colors.mutedForeground, letterSpacing: 1.2, marginTop: 2 }}>
+                <Text style={{ fontSize: 11, fontFamily: "Nunito_800ExtraBold", color: colors.foreground + "AA", letterSpacing: 1.2, marginTop: 2 }}>
                   {stat.label.toUpperCase()}
                 </Text>
               </View>
@@ -306,27 +378,36 @@ export default function ProfileScreen() {
                   key={a.id}
                   style={{
                     width: 104,
-                    backgroundColor: colors.card,
+                    // Unlocked tiles are now FILLED with a soft tint of
+                    // their badge color — much more colorful than the
+                    // previous all-white card with a colored ring.
+                    backgroundColor: unlocked ? a.color + "1F" : colors.card,
                     borderRadius: 18,
                     padding: 14,
                     alignItems: "center",
                     gap: 8,
                     borderWidth: 2,
                     borderColor: unlocked ? a.color : colors.border,
-                    opacity: unlocked ? 1 : 0.55,
+                    opacity: unlocked ? 1 : 0.6,
+                    overflow: "hidden",
                   }}
                 >
+                  {unlocked && (
+                    <View pointerEvents="none" style={{ position: "absolute", top: -10, right: -14 }}>
+                      <BrandSquiggle variant="loop" width={70} height={44} color={a.color} opacity={0.22} drift delay={(ACHIEVEMENTS.indexOf(a) % 4) * 500} />
+                    </View>
+                  )}
                   <View
                     style={{
                       width: 48,
                       height: 48,
                       borderRadius: 24,
-                      backgroundColor: unlocked ? a.color + "25" : colors.muted,
+                      backgroundColor: unlocked ? a.color : colors.muted,
                       alignItems: "center",
                       justifyContent: "center",
                     }}
                   >
-                    <Icon name={a.icon as any} size={24} color={unlocked ? a.color : colors.mutedForeground} />
+                    <Icon name={a.icon as any} size={24} color={unlocked ? onBrand(a.color) : colors.mutedForeground} />
                   </View>
                   <Text
                     style={{
@@ -404,26 +485,36 @@ export default function ProfileScreen() {
             ACCOUNT
           </Text>
 
-          <TouchableOpacity
-            style={{
-              backgroundColor: colors.foreground,
-              borderRadius: 100,
-              paddingVertical: 18,
-              paddingHorizontal: 22,
-              flexDirection: "row",
-              alignItems: "center",
-              justifyContent: "center",
-              gap: 10,
-              marginBottom: 10,
-            }}
+          {/* Upgrade-to-Pro CTA: vibrant cyan→cyanDeep gradient pill
+              with NAVY text + a navy diamond icon, framed in PressScale.
+              Navy on cyan is ~6.1:1 (AA), navy on cyanDeep is ~3.5:1
+              (AA-Large; the text is 16px ExtraBold which qualifies). */}
+          <PressScale
             onPress={() => router.push("/paywall" as any)}
-            activeOpacity={0.88}
+            style={{ marginBottom: 10, borderRadius: 100, overflow: "hidden" }}
+            accessibilityRole="button"
+            accessibilityLabel="Upgrade to Pro"
           >
-            <Icon name="diamond" size={18} color={colors.accent} />
-            <Text style={{ fontSize: 16, fontFamily: "Nunito_800ExtraBold", color: colors.background }}>
-              Upgrade to Pro
-            </Text>
-          </TouchableOpacity>
+            <LinearGradient
+              colors={[colors.primary, colors.primaryDeep]}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={{
+                borderRadius: 100,
+                paddingVertical: 18,
+                paddingHorizontal: 22,
+                flexDirection: "row",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: 10,
+              }}
+            >
+              <Icon name="diamond" size={18} color={BRAND.navy} />
+              <Text style={{ fontSize: 16, fontFamily: "Nunito_800ExtraBold", color: BRAND.navy }}>
+                Upgrade to Pro
+              </Text>
+            </LinearGradient>
+          </PressScale>
 
           {user ? (
             <TouchableOpacity
