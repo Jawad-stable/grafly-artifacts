@@ -206,6 +206,14 @@ router.post("/critique/chat", async (req, res) => {
           temperature: 0.7,
           max_tokens: 350,
           top_p: 0.9,
+          // DeepSeek V4 Pro has three reasoning modes:
+          //   - Non-think (fast, no chain-of-thought)
+          //   - Think High (logical analysis)
+          //   - Think Max (full reasoning)
+          // Mentor replies are warm, conversational, latency-sensitive — we
+          // want fast prose, not visible reasoning_content. Non-think mode
+          // is enabled via NVIDIA's documented chat_template_kwargs hook.
+          chat_template_kwargs: { thinking: false },
         }),
       }
     );
