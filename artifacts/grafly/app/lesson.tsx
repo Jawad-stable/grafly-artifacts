@@ -894,9 +894,14 @@ export default function LessonScreen() {
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
         >
-          {/* Mascot + question type label */}
+          {/* Mascot + question type label.
+              Mascot bumped from 64 → 96 so it reads as the visual
+              anchor of each question (per user: "make the mascot a bit
+              bigger, make it noticeable"). The row keeps gap:12 and
+              alignItems:center so the label block stays vertically
+              centered against the larger mascot. */}
           <View style={{ flexDirection: "row", alignItems: "center", gap: 12, marginBottom: 16 }}>
-            <GraflyMascot state={mascotState} size={64} />
+            <GraflyMascot state={mascotState} size={96} />
             <View style={{ flex: 1 }}>
               <View style={{ backgroundColor: colors.card, borderRadius: 100, paddingHorizontal: 12, paddingVertical: 5, alignSelf: "flex-start", marginBottom: 6 }}>
                 <Text style={{ fontSize: 10, fontFamily: "Nunito_800ExtraBold", color: colors.mutedForeground, letterSpacing: 1 }}>
