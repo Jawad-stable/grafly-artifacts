@@ -11,7 +11,6 @@ Grafly is a gamified design education mobile app built with Expo (React Native) 
 - Streak should be shown on the home screen only.
 - The mascot should only be displayed via the `GraflyMascot` component.
 - The default theme is light (`themeMode: "light"` in GameContext).
-- Onboarding starts with a **language picker step** (`step === "language"`) before the welcome screen. It writes to `state.language` (`"en" | "ar"`, default `"en"`) via `setLanguage` on `GameContext`. The choice is persisted alongside the rest of the game state. The picker is wired but the actual UI translation + RTL flip for Arabic is a separate i18n pass — until that lands, picking Arabic only stores the preference.
 - I prefer an editorial design aesthetic, reminiscent of magazines and collages.
 - All primary CTAs across the app should use `PressScale.tsx` for consistent press feedback.
 - I want iterative development; ask before making major changes.
