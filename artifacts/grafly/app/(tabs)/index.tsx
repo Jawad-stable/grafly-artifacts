@@ -3,7 +3,6 @@ import {
   View,
   Text,
   ScrollView,
-  StyleSheet,
   TouchableOpacity,
   Platform,
   Image,
@@ -15,12 +14,9 @@ import Animated, {
   useSharedValue,
   useAnimatedStyle,
   withTiming,
-  withRepeat,
-  withDelay,
   Easing,
   withSequence,
   FadeIn,
-  interpolate,
 } from "react-native-reanimated";
 import { Icon } from "@/components/Icon";
 import { router } from "expo-router";
@@ -31,32 +27,12 @@ import { COURSES, getAllLessons } from "@/constants/lessons";
 import { LOGO } from "@/constants/assets";
 import { GraflyMascot } from "@/components/GraflyMascot";
 import { HomeBackdrop } from "@/components/HomeBackdrop";
-import { BrandSquiggle } from "@/components/BrandSquiggle";
 import { CourseCardMotion } from "@/components/CourseCardMotion";
 import { voiceService } from "@/services/voiceService";
 import { AText } from "@/components/AText";
 import { PressScale } from "@/components/PressScale";
 import { LinearGradient } from "expo-linear-gradient";
-import { BlurView } from "expo-blur";
-import { relLuminance } from "@/constants/contrast";
-
-// Mix a hex color toward white (amount > 0) or black (amount < 0).
-// Used to derive a 3-stop gradient from each course's base color so
-// every card keeps its own hue while sharing the same depth treatment.
-function tintHex(hex: string, amount: number): string {
-  const c = hex.replace("#", "").slice(0, 6);
-  if (c.length < 6) return hex;
-  const r = parseInt(c.slice(0, 2), 16);
-  const g = parseInt(c.slice(2, 4), 16);
-  const b = parseInt(c.slice(4, 6), 16);
-  const mix = (v: number) =>
-    amount >= 0
-      ? Math.round(v + (255 - v) * amount)
-      : Math.round(v * (1 + amount));
-  const toHex = (v: number) =>
-    Math.max(0, Math.min(255, v)).toString(16).padStart(2, "0");
-  return `#${toHex(mix(r))}${toHex(mix(g))}${toHex(mix(b))}`;
-}
+import { getContrastOn } from "@/constants/contrast";
 
 function getGreeting(name: string): string {
   const hour = new Date().getHours();
@@ -164,82 +140,6 @@ function LevelUpOverlay() {
         </TouchableOpacity>
       </Animated.View>
     </Animated.View>
-  );
-}
-
-// Soft, looping drift for the three decorative blob shapes inside each
-// course card. Three independent shared values run on different periods
-// so the motion never lines up — the cards feel quietly alive without
-// any single beat. Per-card index seeds the starting offset so two
-// cards next to each other never breathe in lockstep.
-//
-// Switched from solid colored circles to BrandSquiggle motifs from the
-// 2026 identity sheet so the cards read as recognizably Grafly without
-// the "soap-bubble" look that the old blobs had. Each squiggle uses the
-// component's built-in `drift` for a slow breath, and a per-card `delay`
-// derived from `index` keeps neighbors desynced just like before.
-function DriftingBlobs({
-  lightTint,
-  deepTint,
-  index,
-}: {
-  lightTint: string;
-  deepTint: string;
-  index: number;
-}) {
-  // Stagger by card position so two cards never move in lockstep.
-  const phase = (index % 4) * 600;
-
-  return (
-    <>
-      {/* Top-right swirl — replaces the 240×240 light blob. The loop
-          variant echoes the looped paint-stroke from the brand sheet
-          and reads as the dominant decorative gesture on the card. */}
-      <View pointerEvents="none" style={{ position: "absolute", top: -28, right: -36 }}>
-        <BrandSquiggle
-          variant="loop"
-          width={240}
-          height={150}
-          color={lightTint}
-          strokeWidth={7}
-          opacity={0.55}
-          drift
-          delay={phase}
-        />
-      </View>
-
-      {/* Mid-right vertical curl — replaces the 140×140 light blob. The
-          tube variant gives a quieter secondary stroke that doesn't
-          fight the top loop for attention. */}
-      <View pointerEvents="none" style={{ position: "absolute", top: 70, right: -18 }}>
-        <BrandSquiggle
-          variant="tube"
-          width={90}
-          height={150}
-          color={lightTint}
-          strokeWidth={5}
-          opacity={0.32}
-          drift
-          delay={phase + 300}
-        />
-      </View>
-
-      {/* Bottom-left swirl — replaces the 180×180 deep blob. Uses the
-          deeper tint for a touch of depth contrast against the lighter
-          top swirl, just like the old blob composition did. */}
-      <View pointerEvents="none" style={{ position: "absolute", bottom: -34, left: -28 }}>
-        <BrandSquiggle
-          variant="loop"
-          width={210}
-          height={130}
-          color={deepTint}
-          strokeWidth={7}
-          opacity={0.5}
-          drift
-          delay={phase + 800}
-        />
-      </View>
-    </>
   );
 }
 
@@ -458,42 +358,38 @@ export default function HomeScreen() {
               const mascotStates = ["think", "celebrate", "idle", "correct", "oops"] as const;
               const mascotState = mascotStates[index % mascotStates.length];
 
-              // Per-course palette derived from the course's own base color
-              // so every card stays distinct (blue, yellow, pink, etc.) while
-              // sharing the same Grafly visual language.
+              // Per-course palette: card uses its solid base color, with
+              // text + accents picked by ACTUAL contrast ratio (not a
+              // luminance heuristic) so cyan / pink / yellow cards each
+              // land on their AA-passing foreground. The previous
+              // `relLuminance > 0.55` heuristic put white on cyan
+              // (~2.7:1) and pink (~2.3:1) which both fail AA — switching
+              // to `getContrastOn` correctly picks NAVY for those cards
+              // (~6:1) while keeping yellow → NAVY and dark cards → WHITE.
               const baseColor = course.color;
-              const lightTint = tintHex(baseColor, 0.32);
-              const darkTint = tintHex(baseColor, -0.28);
-              const deepTint = tintHex(baseColor, -0.45);
-
-              // Strict rule: every card uses either NAVY (#21263F) or WHITE
-              // for text + accents based on the card's luminance, so contrast
-              // always lands on the safe side. Yellow cards → navy text.
-              // Blue / pink / dark cards → white text.
               const NAVY = "#21263F";
-              const isLightCard = relLuminance(baseColor) > 0.55;
-              const textColor = isLightCard ? NAVY : "#FFFFFF";
-              const textSoft = isLightCard ? `${NAVY}B0` : "#FFFFFFB8";
-              const textMuted = isLightCard ? `${NAVY}80` : "#FFFFFFB0";
-              // Accent: keep yellow on dark cards; on yellow cards, use navy
-              // so the underline + handles + progress fill remain readable.
-              const accent = isLightCard ? NAVY : "#FFD84D";
-              const pillBg = isLightCard ? `${NAVY}1F` : "#FFFFFF26";
-
-              // Grid line color is a deliberate complementary hue per card:
-              //   yellow card → blue grid lines
-              //   pink card   → white grid lines
-              //   blue card   → yellow grid lines
-              // Detected from the base color's RGB channels so any new course
-              // color picks a sensible complementary line.
-              const r = parseInt(baseColor.slice(1, 3), 16);
-              const b = parseInt(baseColor.slice(5, 7), 16);
-              const lineHue = isLightCard
-                ? "#00A4FA"   // light/yellow → blue
-                : r > b
-                  ? "#FFFFFF" // pink/warm    → white
-                  : "#FFD84D"; // blue/cool    → yellow
-              const lineColor = `${lineHue}26`; // ~15% opacity, clearly visible
+              const textColor = getContrastOn(baseColor, { dark: NAVY, light: "#FFFFFF" });
+              const onDark = textColor === "#FFFFFF";
+              // Soft / muted text alphas tuned to clear AA on saturated
+              // brand colors at 12–13px:
+              //   - "E6" (90%) on cyan keeps navy at ~5.4:1 for the
+              //     subtitle (a thinner "B0" was ~3.7:1 = AA fail).
+              //   - "DD" (~87%) on the lightened cyan footer keeps the
+              //     muted "lessons" suffix at ~5.4:1 (CC at 80% landed at
+              //     4.29:1, just below the 4.5 AA threshold).
+              const textSoft = onDark ? "#FFFFFFE6" : `${NAVY}E6`;
+              const textMuted = onDark ? "#FFFFFFDD" : `${NAVY}DD`;
+              // Accent: yellow on dark cards (visible); navy on light cards
+              // (visible underline + progress fill).
+              const accent = onDark ? "#FFD84D" : NAVY;
+              const pillBg = onDark ? "#FFFFFF26" : `${NAVY}1F`;
+              // Footer overlay: on LIGHT cards (navy text) we LIGHTEN the
+              // base color with a white "22" overlay so navy text gets
+              // MORE contrast (cyan → ~6.3:1, was ~4.4:1 with the inverse
+              // navy darkening). On dark cards (white text) we DARKEN with
+              // a navy "66" overlay (cyan → ~5.1:1, pink → ~4.7:1). Both
+              // directions push the bg AWAY from textColor.
+              const footerBg = onDark ? `${NAVY}66` : "#FFFFFF22";
 
               const courseLabel = `COURSE ${String(index + 1).padStart(2, "0")}`;
 
@@ -511,87 +407,24 @@ export default function HomeScreen() {
                     elevation: 7,
                   }}
                 >
-                  {/* Layer 1: per-course 3-stop gradient (light → base → dark) */}
-                  <LinearGradient
-                    pointerEvents="none"
-                    colors={[lightTint, baseColor, darkTint]}
-                    locations={[0, 0.55, 1]}
-                    start={{ x: 0, y: 0 }}
-                    end={{ x: 0.6, y: 1 }}
-                    style={StyleSheet.absoluteFill}
-                  />
-
-                  {/* Layer 2: soft curved blob shapes — large rounded forms
-                      reading as cinematic depth, mirroring the reference.
-                      DriftingBlobs gives them a slow, looped, organic
-                      motion so the cards feel alive without distracting. */}
-                  <DriftingBlobs lightTint={lightTint} deepTint={deepTint} index={index} />
-
-                  {/* Layer 3: faint Figma-style grid overlay (kept very subtle) */}
-                  <View pointerEvents="none" style={StyleSheet.absoluteFill}>
-                    {[40, 80, 120, 160, 200, 240, 280].map((y) => (
-                      <View
-                        key={`h${y}`}
-                        style={{
-                          position: "absolute", left: 0, right: 0, top: y,
-                          height: StyleSheet.hairlineWidth,
-                          backgroundColor: lineColor,
-                        }}
-                      />
-                    ))}
-                    {[40, 80, 120, 160, 200, 240, 280].map((x) => (
-                      <View
-                        key={`v${x}`}
-                        style={{
-                          position: "absolute", top: 0, bottom: 0, left: x,
-                          width: StyleSheet.hairlineWidth,
-                          backgroundColor: lineColor,
-                        }}
-                      />
-                    ))}
-                  </View>
-
-                  {/* Layer 4: 9-dot pattern, top-right corner — small static
-                      tool-palette flourish. Sits above where the mascot ends. */}
-                  <View
-                    pointerEvents="none"
-                    style={{
-                      position: "absolute",
-                      top: 26, right: 24,
-                      width: 26,
-                      flexDirection: "row", flexWrap: "wrap",
-                      gap: 6,
-                    }}
-                  >
-                    {Array.from({ length: 9 }).map((_, i) => (
-                      <View
-                        key={i}
-                        style={{
-                          width: 4, height: 4, borderRadius: 2,
-                          backgroundColor: textMuted,
-                        }}
-                      />
-                    ))}
-                  </View>
-
-                  {/* Layer 5a: per-topic ANIMATED motion mockup — same
-                      component the /courses page uses, so both surfaces
-                      speak the same motion language. CourseCardMotion is
-                      a dispatcher that picks a per-topic scene (typography
-                      letterforms, UI mock buttons + sliding toggle, brand
-                      monogram + orbiting swatches, golden-ratio nested
-                      squares, etc). Rendered BEFORE the mascot block so
-                      the mascot stays in the foreground (matches the
-                      stacking order on the /courses route). */}
+                  {/* The ONE decorative layer kept on the home cards: the
+                      animated per-topic mockup the /courses (See all) page
+                      also uses, so both surfaces speak the same motion
+                      language (typography letterforms float, UI mock toggle
+                      slides, branding monogram + orbiting swatches, golden
+                      ratio nested squares, etc). Rendered before the
+                      mascot so the mascot stays in the foreground. The
+                      previous gradient + drifting squiggles + grid overlay
+                      + 9-dot pattern + halo + accent blob + glassmorphism
+                      footer were removed to match the minimal /courses
+                      card layout. */}
                   <CourseCardMotion
                     courseId={course.id}
                     onCard={textColor}
                     accent={accent}
                   />
 
-                  {/* Layer 5b: mascot with soft glow halo behind. The
-                      mascot is the visual anchor of the right half and
-                      must paint above every motion atom from layer 5a. */}
+                  {/* Mascot — bottom-right anchor, no halo (matches /courses) */}
                   <View
                     pointerEvents="none"
                     style={{
@@ -601,39 +434,10 @@ export default function HomeScreen() {
                       alignItems: "center", justifyContent: "center",
                     }}
                   >
-                    {/* Soft glow halo */}
-                    <View
-                      style={{
-                        position: "absolute",
-                        width: 132, height: 132, borderRadius: 66,
-                        backgroundColor: lightTint,
-                        opacity: 0.4,
-                      }}
-                    />
-                    {/* The mascot itself */}
                     <GraflyMascot state={mascotState} size={120} />
                   </View>
 
-                  {/* Soft accent blob beside the mascot — kept across all
-                      courses as a unifying flourish */}
-                  <View
-                    pointerEvents="none"
-                    style={{
-                      position: "absolute",
-                      right: 118, bottom: 112,
-                      width: 26, height: 20, borderRadius: 13,
-                      backgroundColor: accent,
-                      opacity: 0.9,
-                      transform: [{ rotate: "-12deg" }],
-                      shadowColor: accent,
-                      shadowOffset: { width: 0, height: 0 },
-                      shadowOpacity: 0.6,
-                      shadowRadius: 6,
-                      elevation: 3,
-                    }}
-                  />
-
-                  {/* Layer 6: top text block — pill eyebrow, big 2-line title,
+                  {/* Top text block — pill eyebrow, big 2-line title,
                       accent underline, refined subtitle */}
                   <View style={{ paddingHorizontal: 24, paddingTop: 24 }}>
                     {/* Eyebrow as a pill */}
@@ -662,7 +466,7 @@ export default function HomeScreen() {
                       </Text>
                     </View>
 
-                    {/* Big two-line title with subtle text shadow */}
+                    {/* Big two-line title */}
                     <Text
                       numberOfLines={2}
                       style={{
@@ -672,9 +476,6 @@ export default function HomeScreen() {
                         fontFamily: "Nunito_800ExtraBold",
                         color: textColor,
                         letterSpacing: -0.9,
-                        textShadowColor: "#00000026",
-                        textShadowOffset: { width: 0, height: 1 },
-                        textShadowRadius: 4,
                         maxWidth: "62%",
                       }}
                     >
@@ -689,11 +490,6 @@ export default function HomeScreen() {
                         marginTop: 10,
                         borderRadius: 2,
                         backgroundColor: accent,
-                        shadowColor: accent,
-                        shadowOffset: { width: 0, height: 0 },
-                        shadowOpacity: 0.7,
-                        shadowRadius: 4,
-                        elevation: 2,
                       }}
                     />
 
@@ -716,31 +512,18 @@ export default function HomeScreen() {
                   {/* Spacer pushes footer to the bottom */}
                   <View style={{ flex: 1 }} />
 
-                  {/* Layer 7: glassmorphism footer with thin progress bar */}
+                  {/* Footer — flat tinted strip matching /courses */}
                   <View>
-                    {/* Glass strip */}
                     <View
                       style={{
-                        position: "relative",
                         paddingHorizontal: 22,
                         paddingVertical: 14,
                         flexDirection: "row",
                         alignItems: "center",
                         justifyContent: "space-between",
-                        overflow: "hidden",
+                        backgroundColor: footerBg,
                       }}
                     >
-                      <BlurView
-                        intensity={Platform.OS === "ios" ? 30 : 50}
-                        tint={isLightCard ? "light" : "dark"}
-                        style={StyleSheet.absoluteFill}
-                      />
-                      <View
-                        style={[
-                          StyleSheet.absoluteFill,
-                          { backgroundColor: deepTint + "66" },
-                        ]}
-                      />
                       <Text
                         style={{
                           fontSize: 12,
@@ -777,10 +560,6 @@ export default function HomeScreen() {
                           width: `${Math.max(progress, 0)}%`,
                           height: "100%",
                           backgroundColor: accent,
-                          shadowColor: accent,
-                          shadowOffset: { width: 0, height: 0 },
-                          shadowOpacity: 0.9,
-                          shadowRadius: 4,
                         }}
                       />
                     </View>
