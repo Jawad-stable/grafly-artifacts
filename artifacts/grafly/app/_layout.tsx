@@ -97,6 +97,13 @@ export default function RootLayout() {
     ...Feather.font,
   });
 
+  // Ref pointing at the wrapping View that gets captured by the
+  // dev-only screenshot button. `collapsable={false}` is mandatory —
+  // without it RN may flatten the View away on Android and the
+  // capture target disappears. MUST be declared before the early return
+  // below so hook count stays consistent across renders.
+  const captureRef = useRef<View>(null);
+
   useEffect(() => {
     if (fontsLoaded || fontError) {
       SplashScreen.hideAsync();
@@ -104,12 +111,6 @@ export default function RootLayout() {
   }, [fontsLoaded, fontError]);
 
   if (!fontsLoaded && !fontError) return null;
-
-  // Ref pointing at the wrapping View that gets captured by the
-  // dev-only screenshot button. `collapsable={false}` is mandatory —
-  // without it RN may flatten the View away on Android and the
-  // capture target disappears.
-  const captureRef = useRef<View>(null);
 
   return (
     <SafeAreaProvider>
