@@ -32,6 +32,7 @@ import { LOGO } from "@/constants/assets";
 import { GraflyMascot } from "@/components/GraflyMascot";
 import { HomeBackdrop } from "@/components/HomeBackdrop";
 import { BrandSquiggle } from "@/components/BrandSquiggle";
+import { CourseCardMotion } from "@/components/CourseCardMotion";
 import { voiceService } from "@/services/voiceService";
 import { AText } from "@/components/AText";
 import { PressScale } from "@/components/PressScale";
@@ -55,244 +56,6 @@ function tintHex(hex: string, amount: number): string {
   const toHex = (v: number) =>
     Math.max(0, Math.min(255, v)).toString(16).padStart(2, "0");
   return `#${toHex(mix(r))}${toHex(mix(g))}${toHex(mix(b))}`;
-}
-
-// Per-course decorative motifs that hint at what each course teaches.
-// Positioned around the mascot zone (right side) so they read as floating
-// stickers without crowding the title block on the left.
-function TopicSprinkles({
-  courseId,
-  textColor,
-  textMuted,
-  accent,
-}: {
-  courseId: string;
-  textColor: string;
-  textMuted: string;
-  accent: string;
-}) {
-  if (courseId === "design-principles") {
-    // Composition shapes: triangle outline, circle, square — the
-    // foundational primitives of layout / hierarchy / balance.
-    return (
-      <>
-        {/* Triangle (made from rotated square) */}
-        <View
-          pointerEvents="none"
-          style={{
-            position: "absolute",
-            right: 132, bottom: 138,
-            width: 18, height: 18,
-            borderLeftWidth: 1.5, borderTopWidth: 1.5,
-            borderColor: textColor + "AA",
-            transform: [{ rotate: "45deg" }],
-          }}
-        />
-        {/* Outline circle */}
-        <View
-          pointerEvents="none"
-          style={{
-            position: "absolute",
-            right: 156, bottom: 110,
-            width: 16, height: 16, borderRadius: 8,
-            borderWidth: 1.5,
-            borderColor: textColor + "AA",
-          }}
-        />
-        {/* Filled square */}
-        <View
-          pointerEvents="none"
-          style={{
-            position: "absolute",
-            right: 130, bottom: 92,
-            width: 12, height: 12, borderRadius: 2,
-            backgroundColor: textColor + "55",
-          }}
-        />
-        {/* Tiny scale glyph near mascot's head */}
-        <View
-          pointerEvents="none"
-          style={{ position: "absolute", right: 30, top: 88, opacity: 0.55 }}
-        >
-          <Icon name="scale-outline" size={16} color={textMuted} />
-        </View>
-      </>
-    );
-  }
-
-  if (courseId === "typography") {
-    // Letterform sample: big "A" + small "a" + a baseline ruler tick.
-    return (
-      <>
-        {/* Big A */}
-        <Text
-          pointerEvents="none"
-          style={{
-            position: "absolute",
-            right: 128, bottom: 116,
-            fontSize: 38,
-            lineHeight: 38,
-            fontFamily: "Nunito_800ExtraBold",
-            color: textColor,
-            letterSpacing: -1.4,
-          }}
-        >
-          A
-        </Text>
-        {/* Small a */}
-        <Text
-          pointerEvents="none"
-          style={{
-            position: "absolute",
-            right: 110, bottom: 116,
-            fontSize: 22,
-            lineHeight: 22,
-            fontFamily: "Nunito_600SemiBold",
-            color: textColor + "B0",
-          }}
-        >
-          a
-        </Text>
-        {/* Baseline rule under the letters */}
-        <View
-          pointerEvents="none"
-          style={{
-            position: "absolute",
-            right: 102, bottom: 110,
-            width: 50, height: 1.5,
-            backgroundColor: textColor + "55",
-          }}
-        />
-        {/* Tiny baseline tick */}
-        <View
-          pointerEvents="none"
-          style={{
-            position: "absolute",
-            right: 102, bottom: 104,
-            width: 1.5, height: 5,
-            backgroundColor: textColor + "55",
-          }}
-        />
-        {/* Small text icon near mascot's head */}
-        <View
-          pointerEvents="none"
-          style={{ position: "absolute", right: 30, top: 88, opacity: 0.55 }}
-        >
-          <Icon name="text-outline" size={16} color={textMuted} />
-        </View>
-      </>
-    );
-  }
-
-  if (courseId === "ui-design") {
-    // Mini phone frame with status dot, content lines, and a bottom dock.
-    return (
-      <>
-        <View
-          pointerEvents="none"
-          style={{
-            position: "absolute",
-            right: 130, bottom: 108,
-            width: 28, height: 44, borderRadius: 7,
-            backgroundColor: textColor + "1F",
-            borderWidth: 1.2,
-            borderColor: textColor + "55",
-            paddingHorizontal: 4, paddingTop: 6, paddingBottom: 4,
-            justifyContent: "space-between",
-          }}
-        >
-          {/* Notch / status pill */}
-          <View
-            style={{
-              alignSelf: "center",
-              width: 8, height: 2, borderRadius: 1,
-              backgroundColor: textColor + "66",
-            }}
-          />
-          {/* Two content lines */}
-          <View>
-            <View style={{ width: 16, height: 2, borderRadius: 1, backgroundColor: textColor + "77" }} />
-            <View style={{ width: 11, height: 2, borderRadius: 1, backgroundColor: textColor + "55", marginTop: 2 }} />
-          </View>
-          {/* Tab dock */}
-          <View
-            style={{
-              flexDirection: "row",
-              justifyContent: "space-between",
-              alignItems: "center",
-            }}
-          >
-            <View style={{ width: 3, height: 3, borderRadius: 1.5, backgroundColor: textColor + "88" }} />
-            <View style={{ width: 3, height: 3, borderRadius: 1.5, backgroundColor: textColor + "55" }} />
-            <View style={{ width: 3, height: 3, borderRadius: 1.5, backgroundColor: textColor + "55" }} />
-          </View>
-        </View>
-        {/* Tiny phone glyph near mascot's head */}
-        <View
-          pointerEvents="none"
-          style={{ position: "absolute", right: 30, top: 88, opacity: 0.55 }}
-        >
-          <Icon name="phone-portrait-outline" size={16} color={textMuted} />
-        </View>
-      </>
-    );
-  }
-
-  if (courseId === "branding") {
-    // Monogram tile + a small star spark for an identity feel.
-    return (
-      <>
-        {/* Monogram badge */}
-        <View
-          pointerEvents="none"
-          style={{
-            position: "absolute",
-            right: 128, bottom: 122,
-            width: 30, height: 30, borderRadius: 8,
-            backgroundColor: textColor + "1F",
-            borderWidth: 1.2,
-            borderColor: textColor + "55",
-            alignItems: "center", justifyContent: "center",
-          }}
-        >
-          <Text
-            style={{
-              fontSize: 16,
-              fontFamily: "Nunito_800ExtraBold",
-              color: textColor,
-              letterSpacing: -0.6,
-            }}
-          >
-            G
-          </Text>
-        </View>
-        {/* Floating diamond accent */}
-        <View
-          pointerEvents="none"
-          style={{ position: "absolute", right: 156, bottom: 100, opacity: 0.85 }}
-        >
-          <Icon name="diamond-outline" size={14} color={textColor} />
-        </View>
-        {/* Tiny star spark near mascot's head */}
-        <View
-          pointerEvents="none"
-          style={{ position: "absolute", right: 30, top: 88, opacity: 0.7 }}
-        >
-          <Icon name="star" size={14} color={accent} />
-        </View>
-      </>
-    );
-  }
-
-  // Fallback: simple dotted spark for unknown courses
-  return (
-    <View
-      pointerEvents="none"
-      style={{ position: "absolute", right: 30, top: 88, opacity: 0.55 }}
-    >
-      <Icon name="ellipse" size={10} color={textMuted} />
-    </View>
-  );
 }
 
 function getGreeting(name: string): string {
@@ -811,10 +574,24 @@ export default function HomeScreen() {
                     ))}
                   </View>
 
-                  {/* Layer 5: mascot with Figma-style selection ring,
-                      yellow square corner handles, white midpoint circles,
-                      and a soft glow halo behind. Larger zone (152) so the
-                      selection box is the visual anchor of the right half. */}
+                  {/* Layer 5a: per-topic ANIMATED motion mockup — same
+                      component the /courses page uses, so both surfaces
+                      speak the same motion language. CourseCardMotion is
+                      a dispatcher that picks a per-topic scene (typography
+                      letterforms, UI mock buttons + sliding toggle, brand
+                      monogram + orbiting swatches, golden-ratio nested
+                      squares, etc). Rendered BEFORE the mascot block so
+                      the mascot stays in the foreground (matches the
+                      stacking order on the /courses route). */}
+                  <CourseCardMotion
+                    courseId={course.id}
+                    onCard={textColor}
+                    accent={accent}
+                  />
+
+                  {/* Layer 5b: mascot with soft glow halo behind. The
+                      mascot is the visual anchor of the right half and
+                      must paint above every motion atom from layer 5a. */}
                   <View
                     pointerEvents="none"
                     style={{
@@ -836,19 +613,6 @@ export default function HomeScreen() {
                     {/* The mascot itself */}
                     <GraflyMascot state={mascotState} size={120} />
                   </View>
-
-                  {/* Layer 5b: per-topic sprinkles around the mascot.
-                      Each course gets motifs that hint at what it teaches:
-                        Design Principles → composition shapes
-                        Typography        → letterform "Aa" + baseline
-                        UI Design         → mini phone wireframe
-                        Branding          → monogram + star mark */}
-                  <TopicSprinkles
-                    courseId={course.id}
-                    textColor={textColor}
-                    textMuted={textMuted}
-                    accent={accent}
-                  />
 
                   {/* Soft accent blob beside the mascot — kept across all
                       courses as a unifying flourish */}

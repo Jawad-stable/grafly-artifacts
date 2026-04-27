@@ -29,9 +29,14 @@ function useFloat(duration: number, delay: number = 0) {
   return v;
 }
 
-function useRotate(duration: number, delay: number = 0, dir: 1 | -1 = 1) {
+function useRotate(duration: number | undefined, delay: number = 0, dir: 1 | -1 = 1) {
   const v = useSharedValue(0);
   useEffect(() => {
+    // Atoms call useRotate() unconditionally so hook order stays stable
+    // even when no rotation is requested. Skip the actual repeat schedule
+    // when duration is falsy — otherwise we'd burn the UI thread on a
+    // 1ms infinite loop whose output nobody reads.
+    if (!duration) return;
     v.value = withDelay(
       delay,
       withRepeat(
@@ -40,7 +45,7 @@ function useRotate(duration: number, delay: number = 0, dir: 1 | -1 = 1) {
         false,
       ),
     );
-  }, []);
+  }, [duration]);
   return v;
 }
 
