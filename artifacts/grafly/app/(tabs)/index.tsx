@@ -360,24 +360,30 @@ export default function HomeScreen() {
 
               // Per-course palette honoring the project rule:
               //   "white on blue, pink. Black on yellow."
-              // Bright cyan (#00A4FA) and pink (#FF7BD0) can't carry
-              // white text directly — white on them is only ~2.7:1 and
-              // ~2.4:1 (both AA fail). To get BOTH "white on blue/pink"
-              // AND AA contrast, the cyan and pink card surfaces are
-              // rendered using their DEEP brand variants (cyanDeep
-              // #0078BB and pinkDeep #BC4090) at which point white text
-              // passes AA at ~4.79:1 / ~4.95:1 respectively. Yellow stays
-              // at full saturation because navy on yellow already passes
-              // AA at ~11:1. `getContrastOn(renderColor, ...)` then picks
-              // white for the deepened cyan/pink and navy for yellow,
-              // exactly matching the user rule.
+              // Cards now use a DIAGONAL GRADIENT from a deep stop (top-
+              // left, where the title + subtitle sit) to the ORIGINAL
+              // bright brand color (bottom-right, where the mascot sits)
+              // — so the original cyan #00A4FA and pink #FF7BD0 stay
+              // visible as the dominant card energy while text in the
+              // upper-left reads on the AA-safe deep stop. The gradient
+              // uses `locations: [0.55, 1]` so the entire upper-left 55%
+              // of the card is solid deep, then transitions to the
+              // bright original color in the lower-right corner. Yellow
+              // gets a subtle warm-yellow tonal pair (lime → amber);
+              // navy text passes AA on both stops at ~10–12:1.
               const baseColor = course.color;
               const NAVY = "#21263F";
-              const renderColor =
-                baseColor.toUpperCase() === "#00A4FA" ? colors.brand.cyanDeep
-                : baseColor.toUpperCase() === "#FF7BD0" ? colors.brand.pinkDeep
-                : baseColor;
-              const textColor = getContrastOn(renderColor, { dark: NAVY, light: "#FFFFFF" });
+              const isBrightCyan = baseColor.toUpperCase() === "#00A4FA";
+              const isBrightPink = baseColor.toUpperCase() === "#FF7BD0";
+              // deepStop: where the text sits (must AA-pass with textColor).
+              // brightStop: the visible original brand color in the corner.
+              const deepStop = isBrightCyan ? colors.brand.cyanDeep
+                             : isBrightPink ? colors.brand.pinkDeep
+                             : baseColor;
+              const brightStop = isBrightCyan ? colors.brand.cyan
+                               : isBrightPink ? colors.brand.pink
+                               : "#FFD84D";
+              const textColor = getContrastOn(deepStop, { dark: NAVY, light: "#FFFFFF" });
               const onDark = textColor === "#FFFFFF";
               // Soft / muted text alphas tuned to clear AA on saturated
               // brand colors at 10–13px:
@@ -417,15 +423,27 @@ export default function HomeScreen() {
                   onPress={() => router.push({ pathname: "/(tabs)/tree", params: { courseId: course.id } })}
                   style={{
                     width: cardW, height: cardH, borderRadius: 26,
-                    backgroundColor: renderColor,
                     overflow: "hidden",
-                    shadowColor: renderColor,
+                    shadowColor: brightStop,
                     shadowOffset: { width: 0, height: 14 },
                     shadowOpacity: 0.3,
                     shadowRadius: 24,
                     elevation: 7,
                   }}
                 >
+                  {/* Diagonal gradient: deep top-left (where text sits)
+                      → original bright brand color bottom-right (where
+                      the mascot sits). `locations` keeps the upper-left
+                      55% solid on the deep stop so AA holds, then fades
+                      into the original cyan / pink / amber for visual
+                      energy. */}
+                  <LinearGradient
+                    colors={[deepStop, brightStop]}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 1 }}
+                    locations={[0.55, 1]}
+                    style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0 }}
+                  />
                   {/* The ONE decorative layer kept on the home cards: the
                       animated per-topic mockup the /courses (See all) page
                       also uses, so both surfaces speak the same motion
