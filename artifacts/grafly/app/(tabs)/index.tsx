@@ -31,6 +31,7 @@ import { COURSES, getAllLessons } from "@/constants/lessons";
 import { LOGO } from "@/constants/assets";
 import { GraflyMascot } from "@/components/GraflyMascot";
 import { HomeBackdrop } from "@/components/HomeBackdrop";
+import { BrandSquiggle } from "@/components/BrandSquiggle";
 import { voiceService } from "@/services/voiceService";
 import { AText } from "@/components/AText";
 import { PressScale } from "@/components/PressScale";
@@ -409,10 +410,11 @@ function LevelUpOverlay() {
 // any single beat. Per-card index seeds the starting offset so two
 // cards next to each other never breathe in lockstep.
 //
-// Constraints: only withTiming + Easing.out(Easing.cubic). withRepeat
-// in yoyo mode (third arg `true`) gives a smooth back-and-forth using
-// only that single easing curve.
-const SOFT = Easing.out(Easing.cubic);
+// Switched from solid colored circles to BrandSquiggle motifs from the
+// 2026 identity sheet so the cards read as recognizably Grafly without
+// the "soap-bubble" look that the old blobs had. Each squiggle uses the
+// component's built-in `drift` for a slow breath, and a per-card `delay`
+// derived from `index` keeps neighbors desynced just like before.
 function DriftingBlobs({
   lightTint,
   deepTint,
@@ -422,86 +424,58 @@ function DriftingBlobs({
   deepTint: string;
   index: number;
 }) {
-  const t1 = useSharedValue(0);
-  const t2 = useSharedValue(0);
-  const t3 = useSharedValue(0);
-
-  useEffect(() => {
-    // Different periods + per-card delays so motions stay desynced.
-    const phase = (index % 4) * 600;
-    t1.value = withDelay(phase, withRepeat(withTiming(1, { duration: 7200, easing: SOFT }), -1, true));
-    t2.value = withDelay(phase + 300, withRepeat(withTiming(1, { duration: 9000, easing: SOFT }), -1, true));
-    t3.value = withDelay(phase + 800, withRepeat(withTiming(1, { duration: 11200, easing: SOFT }), -1, true));
-  }, [index, t1, t2, t3]);
-
-  // Top-right large blob: soft drift down-left, slight scale up.
-  const blob1 = useAnimatedStyle(() => ({
-    transform: [
-      { translateX: interpolate(t1.value, [0, 1], [0, -10]) },
-      { translateY: interpolate(t1.value, [0, 1], [0, 8]) },
-      { scale: interpolate(t1.value, [0, 1], [1, 1.06]) },
-    ],
-    opacity: interpolate(t1.value, [0, 1], [0.42, 0.5]),
-  }));
-
-  // Mid-right small blob: drift down-right, slight scale down then up.
-  const blob2 = useAnimatedStyle(() => ({
-    transform: [
-      { translateX: interpolate(t2.value, [0, 1], [0, 8]) },
-      { translateY: interpolate(t2.value, [0, 1], [0, -10]) },
-      { scale: interpolate(t2.value, [0, 1], [1, 0.94]) },
-    ],
-    opacity: interpolate(t2.value, [0, 1], [0.22, 0.32]),
-  }));
-
-  // Bottom-left large blob: drift up-right, slight scale up.
-  const blob3 = useAnimatedStyle(() => ({
-    transform: [
-      { translateX: interpolate(t3.value, [0, 1], [0, 12]) },
-      { translateY: interpolate(t3.value, [0, 1], [0, -8]) },
-      { scale: interpolate(t3.value, [0, 1], [1, 1.05]) },
-    ],
-    opacity: interpolate(t3.value, [0, 1], [0.48, 0.55]),
-  }));
+  // Stagger by card position so two cards never move in lockstep.
+  const phase = (index % 4) * 600;
 
   return (
     <>
-      <Animated.View
-        pointerEvents="none"
-        style={[
-          {
-            position: "absolute",
-            top: -90, right: -70,
-            width: 240, height: 240, borderRadius: 120,
-            backgroundColor: lightTint,
-          },
-          blob1,
-        ]}
-      />
-      <Animated.View
-        pointerEvents="none"
-        style={[
-          {
-            position: "absolute",
-            top: 30, right: -40,
-            width: 140, height: 140, borderRadius: 70,
-            backgroundColor: lightTint,
-          },
-          blob2,
-        ]}
-      />
-      <Animated.View
-        pointerEvents="none"
-        style={[
-          {
-            position: "absolute",
-            bottom: -70, left: -50,
-            width: 180, height: 180, borderRadius: 90,
-            backgroundColor: deepTint,
-          },
-          blob3,
-        ]}
-      />
+      {/* Top-right swirl — replaces the 240×240 light blob. The loop
+          variant echoes the looped paint-stroke from the brand sheet
+          and reads as the dominant decorative gesture on the card. */}
+      <View pointerEvents="none" style={{ position: "absolute", top: -28, right: -36 }}>
+        <BrandSquiggle
+          variant="loop"
+          width={240}
+          height={150}
+          color={lightTint}
+          strokeWidth={7}
+          opacity={0.55}
+          drift
+          delay={phase}
+        />
+      </View>
+
+      {/* Mid-right vertical curl — replaces the 140×140 light blob. The
+          tube variant gives a quieter secondary stroke that doesn't
+          fight the top loop for attention. */}
+      <View pointerEvents="none" style={{ position: "absolute", top: 70, right: -18 }}>
+        <BrandSquiggle
+          variant="tube"
+          width={90}
+          height={150}
+          color={lightTint}
+          strokeWidth={5}
+          opacity={0.32}
+          drift
+          delay={phase + 300}
+        />
+      </View>
+
+      {/* Bottom-left swirl — replaces the 180×180 deep blob. Uses the
+          deeper tint for a touch of depth contrast against the lighter
+          top swirl, just like the old blob composition did. */}
+      <View pointerEvents="none" style={{ position: "absolute", bottom: -34, left: -28 }}>
+        <BrandSquiggle
+          variant="loop"
+          width={210}
+          height={130}
+          color={deepTint}
+          strokeWidth={7}
+          opacity={0.5}
+          drift
+          delay={phase + 800}
+        />
+      </View>
     </>
   );
 }

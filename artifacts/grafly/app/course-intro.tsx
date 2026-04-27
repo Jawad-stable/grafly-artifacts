@@ -12,6 +12,7 @@ import { useGame } from "@/context/GameContext";
 import { COURSES } from "@/constants/lessons";
 import { GraflyMascot } from "@/components/GraflyMascot";
 import { PressScale } from "@/components/PressScale";
+import { BrandSquiggle } from "@/components/BrandSquiggle";
 import { onBrand } from "@/constants/contrast";
 
 interface CourseHighlight {
@@ -117,17 +118,20 @@ export default function CourseIntroScreen() {
             overflow: "hidden",
           }}
         >
-          <View
-            style={{
-              position: "absolute",
-              right: -40,
-              top: -40,
-              width: 160,
-              height: 160,
-              borderRadius: 80,
-              backgroundColor: "#FFFFFF22",
-            }}
-          />
+          {/* Decorative brand swirl — replaces the old white circle blob.
+              Uses the on-course foreground color at low opacity so it
+              reads as a soft watermark against any course tint. */}
+          <View pointerEvents="none" style={{ position: "absolute", right: -28, top: -22 }}>
+            <BrandSquiggle
+              variant="loop"
+              width={200}
+              height={130}
+              color={onCourse}
+              strokeWidth={7}
+              opacity={0.18}
+              drift
+            />
+          </View>
           <View style={{ flexDirection: "row", alignItems: "center", gap: 14, marginBottom: 16 }}>
             <View
               style={{
