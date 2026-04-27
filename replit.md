@@ -59,7 +59,7 @@ The project is a pnpm workspace monorepo using TypeScript, comprising the Grafly
 - **Frontend Framework**: Expo (React Native), expo-router v6
 - **Backend Framework**: Express 5
 - **Database**: Supabase (for `game_state` sync and `critique_designs`)
-- **AI/ML**: NVIDIA NIM (for AI Critique, specifically `google/gemma-3-27b-it`)
+- **AI/ML**: NVIDIA NIM (for AI Critique, currently `meta/llama-3.3-70b-instruct`). Was previously `google/gemma-3-27b-it` but NVIDIA marked that function id DEGRADED ("DEGRADED function cannot be invoked", 400 Bad Request) on 2026-04-27, breaking all mentor replies. If the mentor ever falls silent again, first check `artifacts/api-server` logs for `NVIDIA API error` — a `DEGRADED` message means NVIDIA killed the model and it must be swapped for another active one (Llama 3.x Instruct family is reliable). Required env var: `NVIDIA_API_KEY`.
 - **Text-to-Speech**: ElevenLabs (voice ID `MFZUKuGQUsGJPQjTS4wC`)
 - **OAuth**: Google OAuth (via `supabase.auth.signInWithOAuth`, `expo-web-browser`, `expo-linking`)
 - **Fonts**: Teshrin (custom TTFs)

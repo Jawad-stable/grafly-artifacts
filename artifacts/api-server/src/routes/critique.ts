@@ -153,10 +153,13 @@ router.post("/critique/chat", async (req, res) => {
     .replace("{{TITLE}}", designTitle)
     .replace("{{CONTEXT}}", designDescription ?? "");
 
-  // Gemma requires messages to start with `user` and strictly alternate
+  // The conversation must start with `user` and strictly alternate
   // user/assistant/user/... The frontend may include an opening assistant
   // message (the design prompt) — drop any leading assistant turns and
   // collapse consecutive same-role messages so the API never 400s.
+  // (This was originally needed for Gemma; we keep the constraint in
+  // place because it's also a common requirement for instruct models on
+  // the NIM API and never hurts.)
   let cleaned: ChatMessage[] = [];
   for (const m of messages) {
     if (cleaned.length === 0 && m.role !== "user") continue;
@@ -189,7 +192,13 @@ router.post("/critique/chat", async (req, res) => {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          model: "google/gemma-3-27b-it",
+          // Switched from `google/gemma-3-27b-it` after NVIDIA marked
+          // that function id DEGRADED ("DEGRADED function cannot be
+          // invoked", 400 Bad Request). Llama 3.3 70B Instruct is a
+          // stable, widely-deployed instruct model on the NIM endpoint
+          // with strong conversational quality — well-suited to the
+          // warm/encouraging design-mentor persona.
+          model: "meta/llama-3.3-70b-instruct",
           messages: [
             { role: "system", content: system },
             ...trimmed,
