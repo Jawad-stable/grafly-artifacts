@@ -37,6 +37,11 @@ export interface GameState {
   xpBoosterActive: boolean;
   xpBoosterExpiry: string;
   themeMode: "light" | "dark";
+  // User's preferred UI language. Captured during onboarding and
+  // persisted alongside the rest of the game state. The actual
+  // translation/RTL flip is wired up in a separate i18n pass — for now
+  // this just stores the choice so the future Arabic build can read it.
+  language: "en" | "ar";
   handle: string;
   profilePic: string;
   // True once the user has tapped the X on the home screen Pro upgrade
@@ -100,6 +105,7 @@ type Action =
   | { type: "DISMISS_XP_POPUP" }
   | { type: "DISMISS_LEVEL_UP" }
   | { type: "SET_THEME"; mode: "light" | "dark" }
+  | { type: "SET_LANGUAGE"; language: "en" | "ar" }
   | { type: "RESTORE"; state: GameState };
 
 const STORAGE_KEY = "@grafly_v1_state";
@@ -130,6 +136,7 @@ const initialState: GameState = {
   xpBoosterActive: false,
   xpBoosterExpiry: "",
   themeMode: "light",
+  language: "en",
   handle: "",
   profilePic: "",
   proBannerDismissed: false,
@@ -243,6 +250,8 @@ function reducer(state: GameState, action: Action): GameState {
       return { ...state, showLevelUp: false };
     case "SET_THEME":
       return { ...state, themeMode: action.mode };
+    case "SET_LANGUAGE":
+      return { ...state, language: action.language };
     case "RESTORE":
       return { ...initialState, ...action.state };
     default:
@@ -271,6 +280,7 @@ interface GameContextType {
   purchaseBooster: () => boolean;
   refillHearts: () => boolean;
   setTheme: (mode: "light" | "dark") => void;
+  setLanguage: (language: "en" | "ar") => void;
 }
 
 const GameContext = createContext<GameContextType | null>(null);
@@ -386,6 +396,9 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
 
   const setTheme = (mode: "light" | "dark") => dispatch({ type: "SET_THEME", mode });
 
+  const setLanguage = (language: "en" | "ar") =>
+    dispatch({ type: "SET_LANGUAGE", language });
+
   const refillHearts = (): boolean => {
     if (state.coins < 100) return false;
     dispatch({ type: "USE_COINS", amount: 100 });
@@ -410,6 +423,7 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
         purchaseBooster,
         refillHearts,
         setTheme,
+        setLanguage,
         updateProfile,
       }}
     >

@@ -38,6 +38,7 @@ const fadeInDown = (duration = 280) =>
   FadeInDown.duration(duration).easing(EASE);
 
 type Step =
+  | "language"
   | "welcome"
   | "name"
   | "goal"
@@ -133,10 +134,10 @@ const LEVEL_DESC: Record<PlacementLevel, string> = {
 export default function OnboardingScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
-  const { state, completeOnboarding, setTheme } = useGame();
+  const { state, completeOnboarding, setTheme, setLanguage } = useGame();
   const { signIn, signUp, signInWithGoogle, resetPassword } = useAuth();
 
-  const [step, setStep] = useState<Step>("welcome");
+  const [step, setStep] = useState<Step>("language");
   const [username, setUsername] = useState("");
   const [goal, setGoal] = useState<GoalId | null>(null);
   const [selfLevel, setSelfLevel] = useState<SelfLevelId | null>(null);
@@ -298,6 +299,144 @@ export default function OnboardingScreen() {
   // ============================================================
   // 1. WELCOME
   // ============================================================
+  if (step === "language") {
+    // Language picker — first thing the user sees. Tapping a card
+    // saves the choice to GameContext and advances to the editorial
+    // welcome. Translation/RTL flip is wired in a separate i18n pass;
+    // for now this just captures the preference so the future Arabic
+    // build (and a Settings toggle) can read it.
+    const LANG_OPTIONS = [
+      {
+        id: "en" as const,
+        label: "English",
+        sub: "Continue in English",
+        rtl: false,
+      },
+      {
+        id: "ar" as const,
+        label: "العربية",
+        sub: "متابعة بالعربية",
+        rtl: true,
+      },
+    ];
+
+    return (
+      <View style={{ flex: 1, backgroundColor: colors.background }}>
+        <View style={{ flex: 1, paddingTop: padTop, paddingBottom: padBottom }}>
+          {/* Theme toggle pill (mirrors welcome) */}
+          <Animated.View
+            entering={fadeIn(100)}
+            style={{ flexDirection: "row", justifyContent: "flex-end", paddingHorizontal: 24, paddingTop: 8 }}
+          >
+            <View style={{
+              flexDirection: "row", backgroundColor: colors.card, borderRadius: 100,
+              padding: 4, borderWidth: 1, borderColor: colors.border,
+            }}>
+              {(["light", "dark"] as const).map((mode) => {
+                const active = state.themeMode === mode;
+                return (
+                  <PressScale
+                    key={mode}
+                    onPress={() => setTheme(mode)}
+                    style={{
+                      flexDirection: "row", alignItems: "center", gap: 6,
+                      paddingHorizontal: 14, paddingVertical: 7, borderRadius: 100,
+                      backgroundColor: active ? colors.foreground : "transparent",
+                    }}
+                  >
+                    <Icon
+                      name={mode === "light" ? "sunny" : "moon"}
+                      size={14}
+                      color={active ? colors.background : colors.mutedForeground}
+                    />
+                    <Text style={{
+                      fontSize: 12, fontFamily: "Nunito_800ExtraBold",
+                      color: active ? colors.background : colors.mutedForeground,
+                    }}>
+                      {mode === "light" ? "Light" : "Dark"}
+                    </Text>
+                  </PressScale>
+                );
+              })}
+            </View>
+          </Animated.View>
+
+          {/* Editorial header */}
+          <View style={{ paddingHorizontal: 28, marginTop: 16 }}>
+            <Animated.View entering={fadeIn(200)} style={{ flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 8 }}>
+              <Image source={LOGO.icon_colored} style={{ width: 26, height: 26 }} resizeMode="contain" />
+              <Text style={{ fontSize: 13, fontFamily: "Nunito_800ExtraBold", color: colors.mutedForeground, letterSpacing: 1.5 }}>
+                GRAFLY
+              </Text>
+            </Animated.View>
+            <Animated.Text entering={fadeIn(300)} style={{
+              fontSize: 44, fontFamily: "Nunito_800ExtraBold",
+              color: colors.foreground, lineHeight: 48, letterSpacing: -1.2,
+            }}>
+              Choose your{"\n"}language.
+            </Animated.Text>
+            <Animated.Text entering={fadeIn(380)} style={{
+              fontSize: 16, fontFamily: "Nunito_600SemiBold",
+              color: colors.mutedForeground, lineHeight: 24, marginTop: 12,
+            }}>
+              You can change this later in Settings.
+            </Animated.Text>
+          </View>
+
+          {/* Language option cards */}
+          <View style={{ flex: 1, justifyContent: "center", paddingHorizontal: 28, gap: 14 }}>
+            {LANG_OPTIONS.map((opt, i) => {
+              const selected = state.language === opt.id;
+              return (
+                <Animated.View key={opt.id} entering={fadeIn(450 + i * 90)}>
+                  <PressScale
+                    onPress={() => {
+                      setLanguage(opt.id);
+                      setStep("welcome");
+                    }}
+                    style={{
+                      flexDirection: "row", alignItems: "center", gap: 16,
+                      backgroundColor: colors.card,
+                      borderColor: selected ? colors.foreground : colors.border,
+                      borderWidth: selected ? 2 : 1,
+                      borderRadius: 28, paddingVertical: 22, paddingHorizontal: 22,
+                    }}
+                  >
+                    <View style={{
+                      width: 52, height: 52, borderRadius: 26,
+                      alignItems: "center", justifyContent: "center",
+                      backgroundColor: colors.background,
+                      borderWidth: 1, borderColor: colors.border,
+                    }}>
+                      <Icon name="globe-outline" size={26} color={colors.foreground} />
+                    </View>
+                    <View style={{ flex: 1 }}>
+                      <Text style={{
+                        fontSize: 22, fontFamily: "Nunito_800ExtraBold",
+                        color: colors.foreground,
+                        textAlign: opt.rtl ? "right" : "left",
+                      }}>
+                        {opt.label}
+                      </Text>
+                      <Text style={{
+                        fontSize: 13, fontFamily: "Nunito_600SemiBold",
+                        color: colors.mutedForeground, marginTop: 2,
+                        textAlign: opt.rtl ? "right" : "left",
+                      }}>
+                        {opt.sub}
+                      </Text>
+                    </View>
+                    <Icon name="arrow-forward" size={20} color={colors.mutedForeground} />
+                  </PressScale>
+                </Animated.View>
+              );
+            })}
+          </View>
+        </View>
+      </View>
+    );
+  }
+
   if (step === "welcome") {
     return (
       <View style={{ flex: 1, backgroundColor: colors.background }}>
