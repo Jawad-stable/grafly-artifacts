@@ -47,6 +47,17 @@ type Step =
   | "results"
   | "signup";
 
+const STEP_ORDER: Step[] = [
+  "welcome",
+  "name",
+  "goal",
+  "level",
+  "time",
+  "placement",
+  "results",
+  "signup",
+];
+
 type AuthMode = "signin" | "signup" | "reset";
 
 type GoalId = "basics" | "improve" | "portfolio" | "career";
@@ -137,6 +148,21 @@ export default function OnboardingScreen() {
   const { signIn, signUp, signInWithGoogle, resetPassword } = useAuth();
 
   const [step, setStep] = useState<Step>("welcome");
+
+  function nextStep() {
+    setStep((current) => {
+      const idx = STEP_ORDER.indexOf(current);
+      return STEP_ORDER[Math.min(idx + 1, STEP_ORDER.length - 1)];
+    });
+  }
+
+  function prevStep() {
+    setStep((current) => {
+      const idx = STEP_ORDER.indexOf(current);
+      return STEP_ORDER[Math.max(idx - 1, 0)];
+    });
+  }
+
   const [username, setUsername] = useState("");
   const [goal, setGoal] = useState<GoalId | null>(null);
   const [selfLevel, setSelfLevel] = useState<SelfLevelId | null>(null);
@@ -199,7 +225,7 @@ export default function OnboardingScreen() {
     if (nextQ >= PLACEMENT_QUESTIONS.length) {
       const level = getPlacementLevel(score, PLACEMENT_QUESTIONS.length);
       setPlacementResult(level);
-      setStep("results");
+      nextStep();
       setMascotState("celebrate");
     } else {
       setCurrentQ(nextQ);
@@ -210,7 +236,7 @@ export default function OnboardingScreen() {
 
   function handleSkipPlacement() {
     setPlacementResult("novice");
-    setStep("results");
+    nextStep();
     setMascotState("celebrate");
   }
 
@@ -404,7 +430,7 @@ export default function OnboardingScreen() {
                   paddingVertical: 20, alignItems: "center", width: "100%",
                   flexDirection: "row", justifyContent: "center", gap: 10,
                 }}
-                onPress={() => setStep("name")}
+                onPress={() => nextStep()}
               >
                 <Text style={{ fontSize: 18, fontFamily: "Nunito_800ExtraBold", color: colors.background }}>
                   Start
@@ -423,9 +449,7 @@ export default function OnboardingScreen() {
   if (personalizeSteps.includes(step)) {
     const idx = personalizeSteps.indexOf(step);
     const totalP = personalizeSteps.length;
-    const onBack = idx === 0
-      ? () => setStep("welcome")
-      : () => setStep(personalizeSteps[idx - 1]);
+    const onBack = () => prevStep();
 
     let canContinue = false;
     let onContinue = () => {};
@@ -435,7 +459,7 @@ export default function OnboardingScreen() {
 
     if (step === "name") {
       canContinue = username.trim().length > 0;
-      onContinue = () => setStep("goal");
+      onContinue = () => nextStep();
       eyebrow = `STEP ${idx + 1} OF ${totalP}`;
       headline = "What should we call you?";
       content = (
@@ -457,7 +481,7 @@ export default function OnboardingScreen() {
             autoCorrect={false}
             maxLength={24}
             returnKeyType="done"
-            onSubmitEditing={() => { if (username.trim().length > 0) setStep("goal"); }}
+            onSubmitEditing={() => { if (username.trim().length > 0) nextStep(); }}
             style={{
               backgroundColor: colors.card,
               borderRadius: 22,
@@ -485,7 +509,7 @@ export default function OnboardingScreen() {
       );
     } else if (step === "goal") {
       canContinue = goal !== null;
-      onContinue = () => setStep("level");
+      onContinue = () => nextStep();
       eyebrow = `STEP ${idx + 1} OF ${totalP}`;
       headline = "What do you want to achieve?";
       content = (
@@ -540,7 +564,7 @@ export default function OnboardingScreen() {
       );
     } else if (step === "level") {
       canContinue = selfLevel !== null;
-      onContinue = () => setStep("time");
+      onContinue = () => nextStep();
       eyebrow = `STEP ${idx + 1} OF ${totalP}`;
       headline = "What is your level?";
       content = (
@@ -597,7 +621,7 @@ export default function OnboardingScreen() {
       );
     } else if (step === "time") {
       canContinue = dailyTime !== null;
-      onContinue = () => { setMascotState("think"); setStep("placement"); };
+      onContinue = () => { setMascotState("think"); nextStep(); };
       eyebrow = `STEP ${idx + 1} OF ${totalP}`;
       headline = "How much time daily?";
       content = (
@@ -762,7 +786,7 @@ export default function OnboardingScreen() {
             marginBottom: 12,
           }}>
             <PressScale
-              onPress={() => { if (currentQ === 0) setStep("time"); }}
+              onPress={() => { if (currentQ === 0) prevStep(); }}
               disabled={currentQ !== 0}
               style={{
                 width: 40, height: 40, borderRadius: 100,
@@ -1064,7 +1088,7 @@ export default function OnboardingScreen() {
               paddingVertical: 20, alignItems: "center", width: "100%",
               flexDirection: "row", justifyContent: "center", gap: 10,
             }}
-            onPress={() => setStep("signup")}
+            onPress={() => nextStep()}
           >
             <Text style={{ fontSize: 18, fontFamily: "Nunito_800ExtraBold", color: colors.background }}>
               Continue
