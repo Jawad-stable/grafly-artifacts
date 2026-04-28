@@ -89,7 +89,7 @@ function TabIcon({
   const activeColor = colors.primary;
   // Tab pill is intentionally dark in both themes, so inactive icons are
   // always rendered in translucent white for legibility regardless of theme.
-  const inactiveColor = isLight ? "#FFFFFFAA" : "#FFFFFF99";
+  const inactiveColor = isLight ? colors.mutedForeground : "#FFFFFF99";
 
   const scale = useSharedValue(focused ? 1.12 : 1);
   const glow = useSharedValue(focused ? 1 : 0);
