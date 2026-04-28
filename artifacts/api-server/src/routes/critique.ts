@@ -6,9 +6,11 @@ const router = Router();
 
 const SYSTEM_PROMPT = `You are Grafly — a warm, encouraging design mentor sitting next to a student inside a mobile design education app. Think of yourself as the kind, patient teacher everyone wishes they had: genuinely curious about their thinking, generous with praise, and bubbling with excitement to share little design secrets. You sound like a friendly creative buddy, not a textbook.
 
-You are looking at a real design together (the student sees the same image). The current design is:
+You are looking at a real design together — the student's screen shows the design image, and you are receiving that exact same image as part of this conversation, so you can actually see it. The current design is:
 TITLE: {{TITLE}}
 CONTEXT: {{CONTEXT}}
+
+Use what you actually see in the image. Reference concrete visual details — colors, spacing, type sizes, the position of elements, what's competing for attention, where alignment is off, what feels heavy or light, etc. Avoid generic textbook advice that doesn't connect to anything visible on the screen. If the student asks "what about this part?" and the image makes it obvious, ground your answer in that specific element.
 
 How you talk (voice):
 - Open warmly almost every time — a quick "Hey!" / "Oh nice!" / "Love this!" / "Mmm interesting one!" before diving in. Mirror the student's words back so they feel heard ("I love that you noticed the spacing…", "Yes — that contrast call is exactly what designers look for.").
@@ -132,9 +134,10 @@ interface ChatMessage {
 }
 
 router.post("/critique/chat", async (req, res) => {
-  const { designTitle, designDescription, messages } = req.body as {
+  const { designTitle, designDescription, designImageUrl, messages } = req.body as {
     designTitle?: string;
     designDescription?: string;
+    designImageUrl?: string;
     messages?: ChatMessage[];
   };
 
@@ -182,6 +185,41 @@ router.post("/critique/chat", async (req, res) => {
     trimmed.shift();
   }
 
+  // Build the outgoing messages. If we have a design image AND the last turn
+  // is a user turn, attach the image to ONLY that final user message as a
+  // multimodal content block. We deliberately don't attach the image to every
+  // historical user turn — Maverick charges ~1000 tokens per image, and the
+  // model only needs the picture in scope for the CURRENT question. The
+  // text-only history of earlier turns is plenty of context for continuity.
+  const outgoing: Array<
+    | { role: "system" | "assistant"; content: string }
+    | {
+        role: "user";
+        content:
+          | string
+          | Array<
+              | { type: "text"; text: string }
+              | { type: "image_url"; image_url: { url: string } }
+            >;
+      }
+  > = [{ role: "system", content: system }];
+
+  for (let i = 0; i < trimmed.length; i++) {
+    const m = trimmed[i];
+    const isLast = i === trimmed.length - 1;
+    if (isLast && m.role === "user" && designImageUrl) {
+      outgoing.push({
+        role: "user",
+        content: [
+          { type: "text", text: m.content },
+          { type: "image_url", image_url: { url: designImageUrl } },
+        ],
+      });
+    } else {
+      outgoing.push({ role: m.role, content: m.content });
+    }
+  }
+
   try {
     const response = await fetch(
       "https://integrate.api.nvidia.com/v1/chat/completions",
@@ -192,28 +230,20 @@ router.post("/critique/chat", async (req, res) => {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          // DeepSeek V4 Pro on NVIDIA NIM (released April 23, 2026).
-          // 1.6T MoE (49B activated), excellent reasoning + agentic
-          // performance, very strong fit for the design-mentor persona.
-          // Earlier history: started on `google/gemma-3-27b-it` (NVIDIA
-          // marked DEGRADED → switched to `meta/llama-3.3-70b-instruct`
-          // → upgraded to v4-pro now that it is live).
-          model: "deepseek-ai/deepseek-v4-pro",
-          messages: [
-            { role: "system", content: system },
-            ...trimmed,
-          ],
+          // Llama 4 Maverick 17B/128E on NVIDIA NIM. Multimodal Llama 4 MoE
+          // (17B activated of ~400B), natively trained on text + images, so
+          // it can actually SEE the design we're critiquing — which is the
+          // whole point of the Grafly mentor. Inherits the warm Llama
+          // Instruct chat tone, fast inference thanks to MoE routing.
+          // Model history on this project: started on `google/gemma-3-27b-it`
+          // (NVIDIA marked DEGRADED) → `meta/llama-3.3-70b-instruct` →
+          // `deepseek-ai/deepseek-v4-pro` (text-only, slower) → upgraded to
+          // Maverick to give the mentor real vision.
+          model: "meta/llama-4-maverick-17b-128e-instruct",
+          messages: outgoing,
           temperature: 0.7,
           max_tokens: 350,
           top_p: 0.9,
-          // DeepSeek V4 Pro has three reasoning modes:
-          //   - Non-think (fast, no chain-of-thought)
-          //   - Think High (logical analysis)
-          //   - Think Max (full reasoning)
-          // Mentor replies are warm, conversational, latency-sensitive — we
-          // want fast prose, not visible reasoning_content. Non-think mode
-          // is enabled via NVIDIA's documented chat_template_kwargs hook.
-          chat_template_kwargs: { thinking: false },
         }),
       }
     );

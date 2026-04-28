@@ -690,6 +690,7 @@ export default function CritiqueScreen() {
       const reply = await sendCritiqueMessage({
         designTitle: design.title,
         designDescription: design.description,
+        designImageUrl: design.image_url,
         messages: next,
       });
       const updated: ChatMessage[] = [...next, { role: "assistant", content: reply }];

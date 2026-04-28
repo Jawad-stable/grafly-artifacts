@@ -27,6 +27,7 @@ export async function fetchRandomDesign(): Promise<DesignBrief> {
 export async function sendCritiqueMessage(args: {
   designTitle: string;
   designDescription: string;
+  designImageUrl?: string;
   messages: ChatMessage[];
 }): Promise<string> {
   ensureDomain();
