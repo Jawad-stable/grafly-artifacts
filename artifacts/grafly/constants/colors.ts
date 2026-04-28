@@ -80,7 +80,7 @@ const colors = {
     destructiveForeground: "#FFFFFF",
     border: "#DDE1EE",
     input: "#FFFFFF",
-    success: "#138354",
+    success: "#12B870",
     warning: "#A36E00",
   },
   brand: BRAND,
