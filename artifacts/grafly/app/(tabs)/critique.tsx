@@ -103,21 +103,26 @@ const ONBOARDING_KEY = "grafly:critique_onboarding_seen_v1";
 
 const { width: SCREEN_W, height: SCREEN_H } = Dimensions.get("window");
 
-// Warm, conversational openers in Grafly's voice — short greeting + a
-// single curious question on its own line. Light emoji garnish (1 per
-// opener, never decorative). Matches the friendlier mentor prompt on
-// the server so the conversation feels consistent from turn 1.
+// Conversation openers for the critique tab. Each one leads with a real
+// design prompt — an observation to make, a question to sit with, an
+// instruction to look. NO canned greetings ("Hey!", "Oh nice!", "Love
+// this!", "Mmm…") — those felt fake and templated. Warmth comes from
+// the curiosity in the question itself, not from a sticker at the front.
+// Variety in shape matters: some lead with a question, some with an
+// invitation to notice, some with a quick framing.
 const OPENER_TEMPLATES: Array<(title: string) => string> = [
-  (t) => `Hey! 👀 Take a slow breath and look at "${t}".\n\nWhat's the very first thing your eye lands on, and why do you think the designer pulled it forward?`,
-  (t) => `Oh nice, this one's fun ✨\n\nSpend a few seconds with "${t}". What feeling does it give you, and which visual element is doing most of the work?`,
-  (t) => `Mmm, love this one 💛\n\nIf you had to describe "${t}" in three words, what would they be? Pick one and tell me why.`,
-  (t) => `Okay, eyes on "${t}" with me 🙂\n\nWhat's the clearest hierarchy move the designer made? Where does your eye go second?`,
-  (t) => `Hey hey! Let's dig in 🎨\n\nWhat problem do you think "${t}" is trying to solve for the user — and how does the layout support that?`,
-  (t) => `Alright, mentor mode on 🔥\n\nLooking at "${t}", what's one thing that genuinely works, and one thing you'd push further?`,
-  (t) => `Imagine you just opened "${t}" for the first time 👀\n\nWhat action is the screen quietly inviting you to take? How do you know?`,
-  (t) => `Ohh good one ✨\n\nIn "${t}", how are color and typography teaming up to set the mood? Which one is leading the dance?`,
-  (t) => `Quick design hunt 📐\n\nWhich principle — contrast, balance, rhythm, or hierarchy — is loudest in "${t}"? Show me where you see it.`,
-  (t) => `If "${t}" had to lose one element to feel cleaner ✍️\n\nwhich would you cut, and what would the screen feel like without it?`,
+  (t) => `Take ten seconds with "${t}" before you read anything else.\n\nWhere does your eye land first, and what do you think pulled it there?`,
+  (t) => `Here's "${t}".\n\nWhat feeling does it give you in the first second — before you start analyzing it?`,
+  (t) => `Three words for "${t}". The first ones that come to mind, not the polished ones.\n\nWhich of the three is the design earning hardest right now?`,
+  (t) => `Look at "${t}" and trace your eye's path: first stop, second stop, third stop.\n\nWhat's the designer using to lead you between them?`,
+  (t) => `What problem is "${t}" actually solving for whoever opens it?\n\nThe layout will tell you, if you watch how it's prioritising things.`,
+  (t) => `One thing in "${t}" that's working confidently. One thing that still feels like it's figuring itself out.\n\nWhich is which, in your read?`,
+  (t) => `If "${t}" had to lose one element to feel cleaner, which would you cut?\n\nAnd what would the screen quietly gain without it?`,
+  (t) => `In "${t}", color and typography are splitting the work somehow.\n\nWhich one is doing the heavier lifting — and is that the right call?`,
+  (t) => `Of contrast, hierarchy, rhythm, and balance — which one is loudest in "${t}" right now?\n\nPoint me to where you see it.`,
+  (t) => `"${t}" is quietly asking the viewer to do something.\n\nWhat action, and what's making the invitation feel obvious (or not)?`,
+  (t) => `Cover the bottom half of "${t}" with your hand for a moment. Then the top half.\n\nWhich half could stand on its own, and which one needs the other?`,
+  (t) => `If "${t}" landed in your feed at thumbnail size, what would still survive?\n\nThat's usually the real design — the rest is supporting cast.`,
 ];
 
 function pickOpener(title: string): string {
