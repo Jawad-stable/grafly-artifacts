@@ -16,6 +16,7 @@ LogBox.ignoreLogs([
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { AuthProvider, useAuth } from "@/context/AuthContext";
 import { GameProvider, useGame } from "@/context/GameContext";
+import { ProfileProvider, useProfile } from "@/context/ProfileContext";
 import { TESHRIN_FONTS } from "@/constants/fonts";
 
 SplashScreen.preventAutoHideAsync();
@@ -25,6 +26,7 @@ const queryClient = new QueryClient();
 function AuthGate({ children }: { children: React.ReactNode }) {
   const { loading } = useAuth();
   const { state, hydrated } = useGame();
+  const { hydrated: profileHydrated } = useProfile();
   const segments = useSegments();
 
   const inAuthGroup = segments[0] === "auth";
@@ -32,7 +34,7 @@ function AuthGate({ children }: { children: React.ReactNode }) {
   const inAuthCallback = segments[0] === "auth-callback";
 
   // Wait until persisted state has loaded before deciding where to send the user.
-  if (loading || !hydrated) return null;
+  if (loading || !hydrated || !profileHydrated) return null;
 
   // Onboarding first — no account required to start playing.
   // The recovery callback (set new password from email link) must be reachable
@@ -112,7 +114,9 @@ export default function RootLayout() {
             <KeyboardProvider>
               <AuthProvider>
                 <GameProvider>
-                  <RootLayoutNav />
+                  <ProfileProvider>
+                    <RootLayoutNav />
+                  </ProfileProvider>
                 </GameProvider>
               </AuthProvider>
             </KeyboardProvider>

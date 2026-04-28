@@ -2,7 +2,6 @@ import React, { createContext, useContext, useReducer, useEffect, useRef, useSta
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { supabase } from "@/services/supabase";
 import { useAuth } from "@/context/AuthContext";
-import { setVoiceEnabled } from "@/services/voiceService";
 
 export type PlacementLevel =
   | "novice"
@@ -26,22 +25,14 @@ export interface GameState {
   weeklyXP: number;
   weekStart: string;
   coursesCompleted: number;
-  voiceEnabled: boolean;
   onboardingComplete: boolean;
   completedLessons: string[];
-  username: string;
   showXPPopup: boolean;
   xpPopupAmount: number;
   showLevelUp: boolean;
   newLevel: number;
   xpBoosterActive: boolean;
   xpBoosterExpiry: string;
-  themeMode: "light" | "dark";
-  handle: string;
-  profilePic: string;
-  // True once the user has tapped the X on the home screen Pro upgrade
-  // banner. Persisted, so the banner stays dismissed across reloads.
-  proBannerDismissed: boolean;
   critiqueCount: number;
   perfectLessons: string[];
 }
@@ -92,16 +83,12 @@ type Action =
   | { type: "INCREMENT_STREAK" }
   | { type: "SET_PLACEMENT_LEVEL"; level: PlacementLevel }
   | { type: "COMPLETE_LESSON"; lessonId: string }
-  | { type: "COMPLETE_ONBOARDING"; username: string; handle: string; profilePic: string }
-  | { type: "UPDATE_PROFILE"; username?: string; handle?: string; profilePic?: string }
-  | { type: "TOGGLE_VOICE" }
+  | { type: "COMPLETE_ONBOARDING" }
   | { type: "PURCHASE_SHIELD" }
   | { type: "ACTIVATE_BOOSTER" }
   | { type: "SET_PRO"; isPro: boolean }
-  | { type: "DISMISS_PRO_BANNER" }
   | { type: "DISMISS_XP_POPUP" }
   | { type: "DISMISS_LEVEL_UP" }
-  | { type: "SET_THEME"; mode: "light" | "dark" }
   | { type: "INCREMENT_CRITIQUE_COUNT" }
   | { type: "ADD_PERFECT_LESSON"; lessonId: string }
   | { type: "RESTORE"; state: GameState };
@@ -123,20 +110,14 @@ const initialState: GameState = {
   weeklyXP: 0,
   weekStart: getWeekStart(),
   coursesCompleted: 0,
-  voiceEnabled: true,
   onboardingComplete: false,
   completedLessons: [],
-  username: "Designer",
   showXPPopup: false,
   xpPopupAmount: 0,
   showLevelUp: false,
   newLevel: 1,
   xpBoosterActive: false,
   xpBoosterExpiry: "",
-  themeMode: "light",
-  handle: "",
-  profilePic: "",
-  proBannerDismissed: false,
   critiqueCount: 0,
   perfectLessons: [],
 };
@@ -215,19 +196,7 @@ function reducer(state: GameState, action: Action): GameState {
       return {
         ...state,
         onboardingComplete: true,
-        username: action.username,
-        handle: action.handle,
-        profilePic: action.profilePic,
       };
-    case "UPDATE_PROFILE":
-      return {
-        ...state,
-        username: action.username ?? state.username,
-        handle: action.handle ?? state.handle,
-        profilePic: action.profilePic ?? state.profilePic,
-      };
-    case "TOGGLE_VOICE":
-      return { ...state, voiceEnabled: !state.voiceEnabled };
     case "PURCHASE_SHIELD":
       return {
         ...state,
@@ -246,14 +215,10 @@ function reducer(state: GameState, action: Action): GameState {
     }
     case "SET_PRO":
       return { ...state, isPro: action.isPro };
-    case "DISMISS_PRO_BANNER":
-      return { ...state, proBannerDismissed: true };
     case "DISMISS_XP_POPUP":
       return { ...state, showXPPopup: false, xpPopupAmount: 0 };
     case "DISMISS_LEVEL_UP":
       return { ...state, showLevelUp: false };
-    case "SET_THEME":
-      return { ...state, themeMode: action.mode };
     case "INCREMENT_CRITIQUE_COUNT":
       return { ...state, critiqueCount: state.critiqueCount + 1 };
     case "ADD_PERFECT_LESSON":
@@ -278,18 +243,10 @@ interface GameContextType {
   useCoins: (amount: number) => boolean;
   loseHeart: () => void;
   completeLesson: (lessonId: string, xp: number, coins: number) => void;
-  completeOnboarding: (
-    username: string,
-    placementLevel: PlacementLevel,
-    handle?: string,
-    profilePic?: string,
-  ) => void;
-  updateProfile: (data: { username?: string; handle?: string; profilePic?: string }) => void;
-  toggleVoice: () => void;
+  completeOnboarding: (placementLevel: PlacementLevel) => void;
   purchaseShield: () => boolean;
   purchaseBooster: () => boolean;
   refillHearts: () => boolean;
-  setTheme: (mode: "light" | "dark") => void;
 }
 
 const GameContext = createContext<GameContextType | null>(null);
@@ -333,11 +290,6 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
     loadState();
   }, [user?.id]);
 
-  // Mirror voiceEnabled into the AsyncStorage key voiceService reads.
-  useEffect(() => {
-    setVoiceEnabled(state.voiceEnabled);
-  }, [state.voiceEnabled]);
-
   // Sync state changes to AsyncStorage + Supabase (debounced 1.5s)
   useEffect(() => {
     if (!initializedRef.current) return;
@@ -376,20 +328,10 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
     if (isFirstOfDay) addCoins(10);
   };
 
-  const completeOnboarding = (
-    username: string,
-    placementLevel: PlacementLevel,
-    handle: string = "",
-    profilePic: string = "",
-  ) => {
+  const completeOnboarding = (placementLevel: PlacementLevel) => {
     dispatch({ type: "SET_PLACEMENT_LEVEL", level: placementLevel });
-    dispatch({ type: "COMPLETE_ONBOARDING", username, handle, profilePic });
+    dispatch({ type: "COMPLETE_ONBOARDING" });
   };
-
-  const updateProfile = (data: { username?: string; handle?: string; profilePic?: string }) =>
-    dispatch({ type: "UPDATE_PROFILE", ...data });
-
-  const toggleVoice = () => dispatch({ type: "TOGGLE_VOICE" });
 
   const purchaseShield = (): boolean => {
     if (state.coins < 50 || state.streakShields >= 3) return false;
@@ -402,8 +344,6 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
     dispatch({ type: "ACTIVATE_BOOSTER" });
     return true;
   };
-
-  const setTheme = (mode: "light" | "dark") => dispatch({ type: "SET_THEME", mode });
 
   const refillHearts = (): boolean => {
     if (state.coins < 100) return false;
@@ -424,12 +364,9 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
         loseHeart,
         completeLesson,
         completeOnboarding,
-        toggleVoice,
         purchaseShield,
         purchaseBooster,
         refillHearts,
-        setTheme,
-        updateProfile,
       }}
     >
       {children}

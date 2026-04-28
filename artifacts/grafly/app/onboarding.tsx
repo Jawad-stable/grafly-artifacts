@@ -21,6 +21,7 @@ import { Icon, type IconName } from "@/components/Icon";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useColors } from "@/hooks/useColors";
 import { useGame } from "@/context/GameContext";
+import { useProfile } from "@/context/ProfileContext";
 import { useAuth } from "@/context/AuthContext";
 import type { PlacementLevel } from "@/context/GameContext";
 import { shuffleOptions } from "@/utils/adaptive";
@@ -144,7 +145,8 @@ const LEVEL_DESC: Record<PlacementLevel, string> = {
 export default function OnboardingScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
-  const { state, completeOnboarding, setTheme } = useGame();
+  const { completeOnboarding } = useGame();
+  const { state: profileState, setTheme, updateProfile } = useProfile();
   const { signIn, signUp, signInWithGoogle, resetPassword } = useAuth();
 
   const [step, setStep] = useState<Step>("welcome");
@@ -242,8 +244,13 @@ export default function OnboardingScreen() {
 
   const displayName = username.trim() || "Designer";
 
+  function finishOnboarding() {
+    updateProfile({ username: displayName, handle: "", profilePic: "" });
+    completeOnboarding(placementResult);
+  }
+
   function finishWithoutAccount() {
-    completeOnboarding(displayName, placementResult, "", "");
+    finishOnboarding();
   }
 
   async function finishWithGoogle() {
@@ -257,7 +264,7 @@ export default function OnboardingScreen() {
       return;
     }
     if (!completed) return;
-    completeOnboarding(displayName, placementResult, "", "");
+    finishOnboarding();
   }
 
   async function finishWithEmail() {
@@ -294,7 +301,7 @@ export default function OnboardingScreen() {
         setAuthError(error);
         return;
       }
-      completeOnboarding(displayName, placementResult, "", "");
+      finishOnboarding();
     } else {
       const { error, needsConfirmation } = await signUp(authEmail.trim(), authPassword);
       setAuthBusy(false);
@@ -308,7 +315,7 @@ export default function OnboardingScreen() {
         setAuthPassword("");
         return;
       }
-      completeOnboarding(displayName, placementResult, "", "");
+      finishOnboarding();
     }
   }
 
@@ -338,7 +345,7 @@ export default function OnboardingScreen() {
               padding: 4, borderWidth: 1, borderColor: colors.border,
             }}>
               {(["light", "dark"] as const).map((mode) => {
-                const active = state.themeMode === mode;
+                const active = profileState.themeMode === mode;
                 return (
                   <PressScale
                     key={mode}

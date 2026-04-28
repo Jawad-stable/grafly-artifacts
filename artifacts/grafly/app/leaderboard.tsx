@@ -15,6 +15,7 @@ import { router } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useColors } from "@/hooks/useColors";
 import { useGame } from "@/context/GameContext";
+import { useProfile } from "@/context/ProfileContext";
 import { PressScale } from "@/components/PressScale";
 
 const GLOBAL_USERS = [
@@ -236,6 +237,7 @@ export default function LeaderboardScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
   const { state } = useGame();
+  const { state: profileState } = useProfile();
   const [tab, setTab] = useState<"global" | "friends">("global");
 
   const paddingTop = insets.top + (Platform.OS === "web" ? 60 : 0);
@@ -244,7 +246,7 @@ export default function LeaderboardScreen() {
   const displayUsers = tab === "global" ? GLOBAL_USERS : FRIENDS_USERS;
   const userEntry = {
     id: "me",
-    name: state.username,
+    name: profileState.username,
     weeklyXP: state.weeklyXP,
     streak: state.streak,
     level: state.level,
@@ -390,19 +392,19 @@ export default function LeaderboardScreen() {
                   user={top3[1]}
                   rank="second"
                   size={78}
-                  highlight={top3[1]?.name === state.username}
+                  highlight={top3[1]?.name === profileState.username}
                 />
                 <PodiumColumn
                   user={top3[0]}
                   rank="first"
                   size={104}
-                  highlight={top3[0]?.name === state.username}
+                  highlight={top3[0]?.name === profileState.username}
                 />
                 <PodiumColumn
                   user={top3[2]}
                   rank="third"
                   size={78}
-                  highlight={top3[2]?.name === state.username}
+                  highlight={top3[2]?.name === profileState.username}
                 />
               </View>
             </Animated.View>
@@ -564,7 +566,7 @@ export default function LeaderboardScreen() {
                   color: colors.primary,
                 }}
               >
-                {state.username.slice(0, 2).toUpperCase()}
+                {profileState.username.slice(0, 2).toUpperCase()}
               </AText>
             </View>
             <View style={{ flex: 1 }}>
@@ -576,7 +578,7 @@ export default function LeaderboardScreen() {
                   color: colors.primary,
                 }}
               >
-                {state.username} (You)
+                {profileState.username} (You)
               </AText>
               <AText
                 style={{

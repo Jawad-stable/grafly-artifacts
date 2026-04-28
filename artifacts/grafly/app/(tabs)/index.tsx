@@ -23,6 +23,7 @@ import { router } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useColors } from "@/hooks/useColors";
 import { useGame, getXPProgress } from "@/context/GameContext";
+import { useProfile } from "@/context/ProfileContext";
 import { COURSES, getAllLessons } from "@/constants/lessons";
 import { LOGO } from "@/constants/assets";
 import { GraflyMascot } from "@/components/GraflyMascot";
@@ -146,7 +147,8 @@ function LevelUpOverlay() {
 export default function HomeScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
-  const { state, dispatch } = useGame();
+  const { state } = useGame();
+  const { state: profileState, dispatch: profileDispatch } = useProfile();
 
   // Onboarding redirects are handled declaratively by AuthGate in _layout.tsx
 
@@ -250,13 +252,13 @@ export default function HomeScreen() {
             fontSize: 44, fontFamily: "Nunito_800ExtraBold",
             color: colors.foreground, lineHeight: 48, letterSpacing: -1.2,
           }}>
-            {getGreeting(state.username).split(",")[0]},
+            {getGreeting(profileState.username).split(",")[0]},
           </AText>
           <AText style={{
             fontSize: 44, fontFamily: "Nunito_800ExtraBold",
             color: colors.primary, lineHeight: 48, letterSpacing: -1.2, marginBottom: 10,
           }}>
-            {state.username.split(" ")[0]}.
+            {profileState.username.split(" ")[0]}.
           </AText>
           <Text style={{ fontSize: 15, fontFamily: "Nunito_600SemiBold", color: colors.mutedForeground, lineHeight: 22 }}>
             {state.streak > 0
@@ -267,7 +269,7 @@ export default function HomeScreen() {
 
         {/* Pro upgrade banner — editorial card. Hidden once the user
             taps the small X (persisted via proBannerDismissed). */}
-        {!state.isPro && !state.proBannerDismissed && (
+        {!state.isPro && !profileState.proBannerDismissed && (
           <Animated.View entering={FadeIn.delay(140)} style={{ paddingHorizontal: 24, marginTop: 22 }}>
             <View style={{ position: "relative" }}>
               <PressScale
@@ -310,7 +312,7 @@ export default function HomeScreen() {
                   positioned, so its tap is captured first by the touch
                   responder and never bubbles to the upgrade press. */}
               <Pressable
-                onPress={() => dispatch({ type: "DISMISS_PRO_BANNER" })}
+                onPress={() => profileDispatch({ type: "DISMISS_PRO_BANNER" })}
                 hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
                 accessibilityRole="button"
                 accessibilityLabel="Dismiss Pro upgrade banner"

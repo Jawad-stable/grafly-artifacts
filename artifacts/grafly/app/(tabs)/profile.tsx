@@ -13,6 +13,7 @@ import { router } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useColors } from "@/hooks/useColors";
 import { useGame, getXPProgress } from "@/context/GameContext";
+import { useProfile } from "@/context/ProfileContext";
 import { useAuth } from "@/context/AuthContext";
 import { GraflyMascot } from "@/components/GraflyMascot";
 import { AText, ATextInput } from "@/components/AText";
@@ -76,10 +77,11 @@ function getDivision(weeklyXP: number): string {
 export default function ProfileScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
-  const { state, toggleVoice, updateProfile } = useGame();
+  const { state } = useGame();
+  const { state: profileState, toggleVoice, updateProfile } = useProfile();
   const { signOut, user } = useAuth();
   const [editingName, setEditingName] = useState(false);
-  const [nameInput, setNameInput] = useState(state.username);
+  const [nameInput, setNameInput] = useState(profileState.username);
 
   const paddingTop = insets.top + (Platform.OS === "web" ? 67 : 0);
   const paddingBottom = insets.bottom + 100;
@@ -229,7 +231,7 @@ export default function ProfileScreen() {
               </View>
             ) : (
               <TouchableOpacity
-                onPress={() => { setNameInput(state.username); setEditingName(true); }}
+                onPress={() => { setNameInput(profileState.username); setEditingName(true); }}
                 style={{ flexDirection: "row", alignItems: "center", gap: 6 }}
                 hitSlop={{ top: 18, bottom: 18, left: 18, right: 18 }}
                 accessibilityRole="button"
@@ -239,7 +241,7 @@ export default function ProfileScreen() {
                   style={{ fontSize: 22, fontFamily: "Nunito_800ExtraBold", color: colors.foreground, letterSpacing: -0.4 }}
                   numberOfLines={1}
                 >
-                  {state.username}
+                  {profileState.username}
                 </AText>
                 <Icon name="pencil" size={14} color={colors.mutedForeground} />
               </TouchableOpacity>
@@ -515,10 +517,10 @@ export default function ProfileScreen() {
                 </View>
               </View>
               <Switch
-                value={state.voiceEnabled}
+                value={profileState.voiceEnabled}
                 onValueChange={toggleVoice}
                 trackColor={{ false: colors.muted, true: SOLID.switchOnTrack }}
-                thumbColor={state.voiceEnabled ? colors.primary : colors.mutedForeground}
+                thumbColor={profileState.voiceEnabled ? colors.primary : colors.mutedForeground}
               />
             </View>
           </View>

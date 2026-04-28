@@ -18,7 +18,7 @@ import Animated, {
 import { Icon, type IconName } from "@/components/Icon";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useColors } from "@/hooks/useColors";
-import { useGame } from "@/context/GameContext";
+import { useProfile } from "@/context/ProfileContext";
 import { getBottomBarWidth } from "@/constants/layout";
 
 const SMOOTH = Easing.out(Easing.cubic);
@@ -83,8 +83,8 @@ function TabIcon({
   focused: boolean;
 }) {
   const colors = useColors();
-  const { state } = useGame();
-  const isLight = state.themeMode === "light";
+  const { state: profileState } = useProfile();
+  const isLight = profileState.themeMode === "light";
 
   const activeColor = colors.primary;
   // Tab pill is intentionally dark in both themes, so inactive icons are
@@ -151,8 +151,8 @@ function TabIcon({
 export default function TabLayout() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
-  const { state } = useGame();
-  const isLight = state.themeMode === "light";
+  const { state: profileState } = useProfile();
+  const isLight = profileState.themeMode === "light";
 
   // Live viewport width — recomputes when the device rotates or the
   // browser window resizes. Using useWindowDimensions instead of the
