@@ -481,7 +481,7 @@ function CritiqueOnboarding({
 export default function CritiqueScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
-  const { state, addXP, addCoins } = useGame();
+  const { state, addXP, addCoins, dispatch } = useGame();
   // Live viewport width — drives the composer pill width so it
   // always matches the floating tab bar (which also recomputes from
   // the live viewport). Static `Dimensions.get` snapshots are stale
@@ -687,10 +687,15 @@ export default function CritiqueScreen() {
     const text = input.trim();
     if (!text || sending || limitReached || !design) return;
 
+    const isFirstUserMessage =
+      messages.filter((m) => m.role === "user").length === 0;
     const next: ChatMessage[] = [...messages, { role: "user", content: text }];
     setMessages(next);
     setInput("");
     setSending(true);
+    if (isFirstUserMessage) {
+      dispatch({ type: "INCREMENT_CRITIQUE_COUNT" });
+    }
     try {
       const reply = await sendCritiqueMessage({
         designTitle: design.title,

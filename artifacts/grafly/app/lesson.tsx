@@ -487,7 +487,7 @@ export default function LessonScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
   const { nodeId } = useLocalSearchParams<{ nodeId: string }>();
-  const { state, loseHeart, completeLesson } = useGame();
+  const { state, loseHeart, completeLesson, dispatch } = useGame();
 
   const node = nodeId ? findNodeById(nodeId) : null;
   const course = node ? COURSES.find((c) => c.id === node.courseId) : null;
@@ -675,6 +675,9 @@ export default function LessonScreen() {
       setXpEarned((x) => x + lessonXP);
       setCoinsEarned((c) => c + lessonCoins);
       completeLesson(currentLesson.id, lessonXP, lessonCoins);
+      if (wasCorrect && heartsLost === 0) {
+        dispatch({ type: "ADD_PERFECT_LESSON", lessonId: currentLesson.id });
+      }
       const nextLesson = lessonIdx + 1;
       const moduleDone = nextLesson >= allLessons.length;
       if (moduleDone) setAllDone(true);

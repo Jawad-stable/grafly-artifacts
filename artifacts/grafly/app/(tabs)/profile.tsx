@@ -49,12 +49,12 @@ function mix(fg: string, bg: string, alpha: number): string {
 const ACHIEVEMENTS = [
   { id: "first-lesson", title: "First Step", icon: "book", color: "#00A4FA", condition: (s: any) => s.completedLessons.length >= 1 },
   { id: "week-streak", title: "On Fire", icon: "flame", color: "#FF7B00", condition: (s: any) => s.streakMax >= 7 },
-  { id: "critic", title: "Critic", icon: "chatbubble-ellipses", color: "#FF7BD0", condition: () => false },
+  { id: "critic", title: "Critic", icon: "chatbubble-ellipses", color: "#FF7BD0", condition: (s: any) => s.critiqueCount >= 1 },
   { id: "level-5", title: "Rising", icon: "trending-up", color: "#22DD88", condition: (s: any) => s.level >= 5 },
   { id: "level-10", title: "Pro", icon: "diamond", color: "#E3ED43", condition: (s: any) => s.level >= 10 },
   { id: "coin-500", title: "Rich", icon: "coin", color: "#FFB800", condition: (s: any) => s.coins >= 500 },
   { id: "lessons-10", title: "Dedicated", icon: "ribbon", color: "#00A4FA", condition: (s: any) => s.completedLessons.length >= 10 },
-  { id: "perfect", title: "Perfect", icon: "star", color: "#E3ED43", condition: () => false },
+  { id: "perfect", title: "Perfect", icon: "star", color: "#E3ED43", condition: (s: any) => s.perfectLessons.length >= 1 },
 ];
 
 const DIVISION_INFO: Record<string, { label: string; color: string; icon: string }> = {

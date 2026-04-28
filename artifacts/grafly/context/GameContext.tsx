@@ -42,6 +42,8 @@ export interface GameState {
   // True once the user has tapped the X on the home screen Pro upgrade
   // banner. Persisted, so the banner stays dismissed across reloads.
   proBannerDismissed: boolean;
+  critiqueCount: number;
+  perfectLessons: string[];
 }
 
 function getWeekStart(): string {
@@ -100,6 +102,8 @@ type Action =
   | { type: "DISMISS_XP_POPUP" }
   | { type: "DISMISS_LEVEL_UP" }
   | { type: "SET_THEME"; mode: "light" | "dark" }
+  | { type: "INCREMENT_CRITIQUE_COUNT" }
+  | { type: "ADD_PERFECT_LESSON"; lessonId: string }
   | { type: "RESTORE"; state: GameState };
 
 const STORAGE_KEY = "@grafly_v1_state";
@@ -133,6 +137,8 @@ const initialState: GameState = {
   handle: "",
   profilePic: "",
   proBannerDismissed: false,
+  critiqueCount: 0,
+  perfectLessons: [],
 };
 
 function stripUIState(state: GameState) {
@@ -243,6 +249,14 @@ function reducer(state: GameState, action: Action): GameState {
       return { ...state, showLevelUp: false };
     case "SET_THEME":
       return { ...state, themeMode: action.mode };
+    case "INCREMENT_CRITIQUE_COUNT":
+      return { ...state, critiqueCount: state.critiqueCount + 1 };
+    case "ADD_PERFECT_LESSON":
+      if (state.perfectLessons.includes(action.lessonId)) return state;
+      return {
+        ...state,
+        perfectLessons: [...state.perfectLessons, action.lessonId],
+      };
     case "RESTORE":
       return { ...initialState, ...action.state };
     default:
