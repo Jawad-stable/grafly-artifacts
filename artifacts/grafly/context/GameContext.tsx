@@ -146,6 +146,11 @@ function stripUIState(state: GameState) {
   return rest;
 }
 
+function migrateState(persisted: unknown): GameState {
+  if (typeof persisted !== "object" || persisted === null) return initialState;
+  return { ...initialState, ...(persisted as Partial<GameState>) };
+}
+
 function reducer(state: GameState, action: Action): GameState {
   switch (action.type) {
     case "ADD_XP": {
@@ -306,7 +311,7 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
           .eq("user_id", user.id)
           .single();
         if (!error && data?.state) {
-          dispatch({ type: "RESTORE", state: { ...initialState, ...data.state } });
+          dispatch({ type: "RESTORE", state: migrateState(data.state) });
           initializedRef.current = true;
           setHydrated(true);
           return;
@@ -316,8 +321,8 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
       const saved = await AsyncStorage.getItem(STORAGE_KEY);
       if (saved) {
         try {
-          const parsed = JSON.parse(saved) as Partial<GameState>;
-          dispatch({ type: "RESTORE", state: { ...initialState, ...parsed } });
+          const parsed = JSON.parse(saved);
+          dispatch({ type: "RESTORE", state: migrateState(parsed) });
         } catch (_) {}
       }
       initializedRef.current = true;
