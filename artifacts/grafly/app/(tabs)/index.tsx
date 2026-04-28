@@ -110,7 +110,7 @@ function LevelUpOverlay() {
       alignItems: "center", justifyContent: "center", zIndex: 9999,
     }]}>
       <Animated.View style={[{
-        backgroundColor: colors.card, borderRadius: colors.radius,
+        backgroundColor: colors.card, borderRadius: colors.radius.md,
         padding: 40, alignItems: "center", marginHorizontal: 32,
       }, animStyle]}>
         <View style={{
@@ -130,7 +130,7 @@ function LevelUpOverlay() {
           You are becoming a real designer.
         </Text>
         <TouchableOpacity
-          style={{ backgroundColor: colors.primary, borderRadius: colors.radius, paddingVertical: 16, paddingHorizontal: 40 }}
+          style={{ backgroundColor: colors.primary, borderRadius: colors.radius.lg, paddingVertical: 16, paddingHorizontal: 40 }}
           onPress={() => dispatch({ type: "DISMISS_LEVEL_UP" })}
           activeOpacity={0.85}
         >

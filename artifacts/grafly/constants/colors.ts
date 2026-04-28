@@ -84,7 +84,12 @@ const colors = {
     warning: "#A36E00",
   },
   brand: BRAND,
-  radius: 20,
+  radius: {
+    sm: 12,
+    md: 20,
+    lg: 32,
+    full: 100,
+  },
 };
 
 export default colors;

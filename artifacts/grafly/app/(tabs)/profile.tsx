@@ -171,7 +171,7 @@ export default function ProfileScreen() {
           entering={FadeIn}
           style={{
             backgroundColor: SOLID.identityBg,
-            borderRadius: colors.radius,
+            borderRadius: colors.radius.md,
             padding: 18,
             flexDirection: "row",
             alignItems: "center",
@@ -277,7 +277,7 @@ export default function ProfileScreen() {
           <View
             style={{
               backgroundColor: SOLID.progressBg,
-              borderRadius: colors.radius,
+              borderRadius: colors.radius.md,
               padding: 18,
               borderWidth: 1.5,
               borderColor: SOLID.progressBorder,
@@ -326,7 +326,7 @@ export default function ProfileScreen() {
                 style={{
                   flex: 1,
                   backgroundColor: stat.tile,
-                  borderRadius: colors.radius,
+                  borderRadius: colors.radius.md,
                   padding: 16,
                   alignItems: "flex-start",
                   borderWidth: 1.5,
@@ -363,7 +363,7 @@ export default function ProfileScreen() {
                 style={{
                   flex: 1,
                   backgroundColor: stat.tile,
-                  borderRadius: colors.radius,
+                  borderRadius: colors.radius.md,
                   padding: 16,
                   alignItems: "flex-start",
                   borderWidth: 1.5,
@@ -479,7 +479,7 @@ export default function ProfileScreen() {
           <View
             style={{
               backgroundColor: colors.card,
-              borderRadius: colors.radius,
+              borderRadius: colors.radius.md,
               paddingHorizontal: 18,
               paddingVertical: 6,
             }}
@@ -570,7 +570,7 @@ export default function ProfileScreen() {
             <TouchableOpacity
               style={{
                 backgroundColor: colors.card,
-                borderRadius: colors.radius,
+                borderRadius: colors.radius.md,
                 paddingVertical: 16,
                 paddingHorizontal: 18,
                 flexDirection: "row",
@@ -608,7 +608,7 @@ export default function ProfileScreen() {
             <TouchableOpacity
               style={{
                 backgroundColor: colors.card,
-                borderRadius: colors.radius,
+                borderRadius: colors.radius.md,
                 paddingVertical: 16,
                 paddingHorizontal: 18,
                 flexDirection: "row",

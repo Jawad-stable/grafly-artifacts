@@ -232,7 +232,7 @@ export default function PaywallScreen() {
           <View
             style={{
               backgroundColor: colors.card,
-              borderRadius: colors.radius,
+              borderRadius: colors.radius.md,
               paddingHorizontal: 18,
               paddingVertical: 6,
             }}
@@ -320,7 +320,7 @@ export default function PaywallScreen() {
                   onPress={() => setSelectedPlan(plan.id)}
                   style={{
                     backgroundColor: colors.card,
-                    borderRadius: colors.radius,
+                    borderRadius: colors.radius.md,
                     padding: 18,
                     borderWidth: 2,
                     borderColor: selected ? colors.foreground : colors.border,

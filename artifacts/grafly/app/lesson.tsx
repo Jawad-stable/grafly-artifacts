@@ -63,7 +63,7 @@ function MultipleChoice({
         return (
           <TouchableOpacity
             key={i}
-            style={{ backgroundColor: bg, borderRadius: colors.radius, paddingVertical: 18, paddingHorizontal: 20, borderWidth: 2, borderColor, flexDirection: "row", alignItems: "center", gap: 12 }}
+            style={{ backgroundColor: bg, borderRadius: colors.radius.md, paddingVertical: 18, paddingHorizontal: 20, borderWidth: 2, borderColor, flexDirection: "row", alignItems: "center", gap: 12 }}
             onPress={() => !answered && onAnswer(i)}
             disabled={answered}
             activeOpacity={0.8}
@@ -169,7 +169,7 @@ function SpotTheDifference({
           return (
             <TouchableOpacity
               key={i}
-              style={{ width: "47%", borderRadius: colors.radius, paddingVertical: 22, paddingHorizontal: 16, borderWidth: 2, borderColor, backgroundColor: bg, alignItems: "center" }}
+              style={{ width: "47%", borderRadius: colors.radius.md, paddingVertical: 22, paddingHorizontal: 16, borderWidth: 2, borderColor, backgroundColor: bg, alignItems: "center" }}
               onPress={() => !answered && onAnswer(i)}
               disabled={answered}
               activeOpacity={0.8}
@@ -221,7 +221,7 @@ function ArrangeInOrder({
       </Text>
       {order.map((itemIdx, pos) => (
         <View key={itemIdx} style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
-          <View style={{ backgroundColor: colors.card, borderRadius: colors.radius, padding: 16, flex: 1, borderWidth: 2, borderColor: colors.border }}>
+          <View style={{ backgroundColor: colors.card, borderRadius: colors.radius.md, padding: 16, flex: 1, borderWidth: 2, borderColor: colors.border }}>
             <Text style={{ fontSize: 14, fontFamily: "Nunito_600SemiBold", color: colors.foreground }}>{items[itemIdx]}</Text>
           </View>
           <View style={{ gap: 6 }}>
@@ -374,7 +374,7 @@ function FillInBlank({
         editable={!submitted}
         style={{
           backgroundColor: colors.card,
-          borderRadius: colors.radius,
+          borderRadius: colors.radius.sm,
           paddingHorizontal: 20, paddingVertical: 16,
           fontSize: 18, fontFamily: "Nunito_800ExtraBold",
           color: submitted ? (isCorrect ? colors.success : colors.destructive) : colors.foreground,
@@ -751,7 +751,7 @@ export default function LessonScreen() {
 
           {/* Rewards */}
           <Animated.View entering={FadeIn.delay(150)} style={{ flexDirection: "row", gap: 12, marginBottom: 20 }}>
-            <View style={{ flex: 1, backgroundColor: colors.card, borderRadius: colors.radius, padding: 20, alignItems: "center", gap: 8 }}>
+            <View style={{ flex: 1, backgroundColor: colors.card, borderRadius: colors.radius.md, padding: 20, alignItems: "center", gap: 8 }}>
               <Icon name="flash" size={28} color={colors.accent} />
               <Text style={{ fontSize: 26, fontFamily: "Nunito_800ExtraBold", color: colors.foreground }}>
                 +{xpEarned}
@@ -760,7 +760,7 @@ export default function LessonScreen() {
                 XP EARNED
               </Text>
             </View>
-            <View style={{ flex: 1, backgroundColor: colors.card, borderRadius: colors.radius, padding: 20, alignItems: "center", gap: 8 }}>
+            <View style={{ flex: 1, backgroundColor: colors.card, borderRadius: colors.radius.md, padding: 20, alignItems: "center", gap: 8 }}>
               <Icon name="coin" size={26} color={colors.warning} weight="fill" />
               <Text style={{ fontSize: 26, fontFamily: "Nunito_800ExtraBold", color: colors.foreground }}>
                 +{coinsEarned}
@@ -769,7 +769,7 @@ export default function LessonScreen() {
                 COINS
               </Text>
             </View>
-            <View style={{ flex: 1, backgroundColor: colors.card, borderRadius: colors.radius, padding: 20, alignItems: "center", gap: 8 }}>
+            <View style={{ flex: 1, backgroundColor: colors.card, borderRadius: colors.radius.md, padding: 20, alignItems: "center", gap: 8 }}>
               <Icon name="heart" size={26} color={perfect ? colors.success : colors.destructive} />
               <Text style={{ fontSize: 26, fontFamily: "Nunito_800ExtraBold", color: colors.foreground }}>
                 {state.hearts}
@@ -782,7 +782,7 @@ export default function LessonScreen() {
 
           {/* Perfect bonus */}
           {perfect && (
-            <Animated.View entering={FadeIn.delay(300)} style={{ backgroundColor: colors.accent + "20", borderRadius: colors.radius, padding: 16, marginBottom: 20, flexDirection: "row", alignItems: "center", gap: 12 }}>
+            <Animated.View entering={FadeIn.delay(300)} style={{ backgroundColor: colors.accent + "20", borderRadius: colors.radius.md, padding: 16, marginBottom: 20, flexDirection: "row", alignItems: "center", gap: 12 }}>
               <Icon name="star" size={22} color={colors.accent} />
               <Text style={{ flex: 1, fontSize: 14, fontFamily: "Nunito_800ExtraBold", color: colors.foreground }}>
                 Perfect! +10 bonus XP for no mistakes
