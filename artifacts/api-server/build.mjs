@@ -3,7 +3,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { build as esbuild } from "esbuild";
 import esbuildPluginPino from "esbuild-plugin-pino";
-import { rm } from "node:fs/promises";
+import { rm, cp, stat } from "node:fs/promises";
 
 // Plugins (e.g. 'esbuild-plugin-pino') may use `require` to resolve dependencies
 globalThis.require = createRequire(import.meta.url);
@@ -141,6 +141,19 @@ globalThis.__dirname = __bannerPath.dirname(globalThis.__filename);
     `,
     },
   });
+
+  // Copy static assets (e.g. critique design images) into dist/ so the
+  // bundled server can serve them via express.static at runtime. The
+  // bundle is `dist/index.mjs` and code resolves these via __dirname →
+  // `dist/assets/...`.
+  const assetsSrc = path.resolve(artifactDir, "assets");
+  try {
+    await stat(assetsSrc);
+    await cp(assetsSrc, path.join(distDir, "assets"), { recursive: true });
+    console.log("⚡ Copied assets/ → dist/assets/");
+  } catch {
+    // No assets folder — that's fine.
+  }
 }
 
 buildAll().catch((err) => {

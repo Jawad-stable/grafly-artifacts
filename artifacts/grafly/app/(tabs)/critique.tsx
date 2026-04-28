@@ -38,7 +38,7 @@ import {
   sendCritiqueMessage,
   type ChatMessage,
 } from "@/services/aiCritique";
-import { pickRandomLocalDesign, type LocalDesign } from "@/data/localDesigns";
+import { getDesignRemoteUrl, pickRandomLocalDesign, type LocalDesign } from "@/data/localDesigns";
 import { PressScale } from "@/components/PressScale";
 import { getBottomBarWidth } from "@/constants/layout";
 import { AI_BOT } from "@/constants/assets";
@@ -690,7 +690,7 @@ export default function CritiqueScreen() {
       const reply = await sendCritiqueMessage({
         designTitle: design.title,
         designDescription: design.description,
-        designImageUrl: design.image_url,
+        designImageUrl: getDesignRemoteUrl(design),
         messages: next,
       });
       const updated: ChatMessage[] = [...next, { role: "assistant", content: reply }];
