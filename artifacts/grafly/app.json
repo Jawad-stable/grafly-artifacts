@@ -53,10 +53,7 @@
       "reactCompiler": true
     },
     "extra": {
-      "eas": {
-        "projectId": "9e4690ce-72f5-4ca8-b905-99e34bb71364"
-      }
-    },
-    "owner": "jawadkh"
+      "eas": {}
+    }
   }
 }
