@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useRef, useState } from "react";
 import {
   View,
   Text,
@@ -10,12 +10,12 @@ import {
 } from "react-native";
 import Animated, { FadeIn, FadeInDown } from "react-native-reanimated";
 import { Icon } from "@/components/Icon";
-import { router, useLocalSearchParams } from "expo-router";
+import { router, useFocusEffect, useLocalSearchParams } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Svg, { Path, Defs, LinearGradient, Stop, Circle } from "react-native-svg";
 import { useColors } from "@/hooks/useColors";
 import { useGame } from "@/context/GameContext";
-import { COURSES, type SkillNode, type Course } from "@/constants/lessons";
+import { COURSES, getCurrentPosition, type SkillNode, type Course } from "@/constants/lessons";
 import { PressScale } from "@/components/PressScale";
 import { onBrand } from "@/constants/contrast";
 import { TreeBackdrop } from "@/components/TreeBackdrop";
@@ -598,14 +598,17 @@ export default function TreeScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
   const { state } = useGame();
-  const params = useLocalSearchParams<{ courseId?: string }>();
+  const params = useLocalSearchParams<{ courseId?: string; nodeId?: string }>();
 
+  // On first render, derive the starting course from the params if any,
+  // otherwise from the user's current learning position.
   const initialIdx = (() => {
     if (params.courseId) {
       const i = COURSES.findIndex((c) => c.id === params.courseId);
       if (i >= 0) return i;
     }
-    return 0;
+    const cur = getCurrentPosition(state.completedLessons);
+    return cur.courseIdx;
   })();
 
   const [selectedCourseIdx, setSelectedCourseIdx] = useState(initialIdx);
@@ -613,15 +616,124 @@ export default function TreeScreen() {
   const [sheetVisible, setSheetVisible] = useState(false);
   const [pickerVisible, setPickerVisible] = useState(false);
 
-  // Sync selection if param changes (deep links / route updates)
-  useEffect(() => {
-    if (params.courseId) {
-      const i = COURSES.findIndex((c) => c.id === params.courseId);
-      if (i >= 0 && i !== selectedCourseIdx) {
-        setSelectedCourseIdx(i);
+  // Refs for auto-scrolling to the user's current module.
+  // treeStartYRef is set by onLayout on the inner tree Animated.View.
+  // pendingScrollRef holds an action that should fire as soon as layout
+  // is known (either immediately, or from onLayout when the course
+  // remounts after a switch).
+  const scrollRef = useRef<ScrollView>(null);
+  const treeStartYRef = useRef(0);
+  const pendingScrollRef = useRef<
+    | { nodeIdx: number; openSheet: boolean; node: SkillNode | null }
+    | null
+  >(null);
+  // Guard for the self-induced re-fire of useFocusEffect that happens
+  // immediately after we call router.setParams to clear consumed params.
+  // Without this, the post-clear re-fire would enter the "plain tap"
+  // branch and overwrite the explicit scroll/sheet we just queued.
+  const swallowNextEmptyParamsRef = useRef(false);
+
+  // Helper: scroll the list so the given module index is comfortably visible
+  const scrollToNodeIdx = useCallback((nodeIdx: number, animated: boolean) => {
+    const treeY = treeStartYRef.current;
+    // Each node sits at (top: nodeIdx * VERTICAL_GAP + 70) inside the tree
+    // container. We subtract a small offset so it lands below the header
+    // rather than glued to the very top edge.
+    const target = Math.max(0, treeY + 70 + nodeIdx * VERTICAL_GAP - 140);
+    scrollRef.current?.scrollTo({ y: target, animated });
+  }, []);
+
+  // Drains the pending scroll once layout is known.
+  const drainPendingScroll = useCallback(() => {
+    const pending = pendingScrollRef.current;
+    if (!pending || treeStartYRef.current <= 0) return;
+    pendingScrollRef.current = null;
+    // requestAnimationFrame guarantees we run after the current paint,
+    // so the absolute-positioned nodes are at their final positions.
+    requestAnimationFrame(() => {
+      scrollToNodeIdx(pending.nodeIdx, true);
+      if (pending.openSheet && pending.node) {
+        setSelectedNode(pending.node);
+        setSheetVisible(true);
       }
-    }
-  }, [params.courseId]);
+    });
+  }, [scrollToNodeIdx]);
+
+  // Every time the tab is focused: if the user did not pass an explicit
+  // courseId param, jump to the course that contains their current module.
+  // If they passed an explicit courseId (and optional nodeId), apply that
+  // jump once and then clear the params so subsequent focuses behave like
+  // a plain tab tap.
+  useFocusEffect(
+    useCallback(() => {
+      const cur = getCurrentPosition(state.completedLessons);
+      const explicitCourseId = params.courseId;
+      const explicitNodeId = params.nodeId;
+
+      // Swallow the self-induced re-fire from router.setParams() below.
+      if (!explicitCourseId && swallowNextEmptyParamsRef.current) {
+        swallowNextEmptyParamsRef.current = false;
+        return undefined;
+      }
+
+      if (!explicitCourseId) {
+        // Plain tab tap: jump to the user's current module.
+        setSelectedCourseIdx((prev) => {
+          if (prev !== cur.courseIdx) treeStartYRef.current = 0;
+          return cur.courseIdx;
+        });
+        setSheetVisible(false);
+        setSelectedNode(null);
+        pendingScrollRef.current = {
+          nodeIdx: cur.nodeIdx,
+          openSheet: false,
+          node: null,
+        };
+      } else {
+        // Explicit navigation (e.g. from "Continue Progress" on home).
+        const courseIdx = COURSES.findIndex((c) => c.id === explicitCourseId);
+        const course = COURSES[courseIdx];
+        const nodeIdx =
+          explicitNodeId && course
+            ? course.nodes.findIndex((n) => n.id === explicitNodeId)
+            : -1;
+
+        if (courseIdx >= 0) {
+          setSelectedCourseIdx((prev) => {
+            if (prev !== courseIdx) treeStartYRef.current = 0;
+            return courseIdx;
+          });
+        }
+        if (nodeIdx >= 0 && course) {
+          pendingScrollRef.current = {
+            nodeIdx,
+            openSheet: true,
+            node: course.nodes[nodeIdx],
+          };
+        }
+        // One-shot: clear the params so re-focusing the tab later does
+        // not replay the explicit jump or reopen the sheet. The guard
+        // below absorbs the immediate re-fire this triggers, so the
+        // pendingScroll/sheet we just queued isn't clobbered.
+        swallowNextEmptyParamsRef.current = true;
+        router.setParams({
+          courseId: undefined as unknown as string,
+          nodeId: undefined as unknown as string,
+        });
+      }
+
+      // Try to drain immediately. If layout is not yet known (course just
+      // changed → onLayout will fire on the new mount), the layout
+      // handler below will drain it instead.
+      drainPendingScroll();
+      return undefined;
+    }, [
+      params.courseId,
+      params.nodeId,
+      state.completedLessons,
+      drainPendingScroll,
+    ]),
+  );
 
   const course = COURSES[selectedCourseIdx];
   const paddingTop = insets.top + (Platform.OS === "web" ? 67 : 0);
@@ -780,6 +892,7 @@ export default function TreeScreen() {
       )}
 
       <ScrollView
+        ref={scrollRef}
         style={{ flex: 1 }}
         contentContainerStyle={{ paddingBottom: paddingBottom }}
         showsVerticalScrollIndicator={false}
@@ -932,6 +1045,11 @@ export default function TreeScreen() {
           {/* Winding node tree */}
           <Animated.View
             entering={FadeInDown.duration(280).delay(60)}
+            onLayout={(e) => {
+              treeStartYRef.current = e.nativeEvent.layout.y;
+              // If a focus-driven jump is waiting on layout, run it now.
+              drainPendingScroll();
+            }}
             style={{ height: treeHeight + 90, position: "relative", alignSelf: "center", width: innerW }}
           >
             {/* START badge */}

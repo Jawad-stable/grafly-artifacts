@@ -24,7 +24,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useColors } from "@/hooks/useColors";
 import { useGame, getXPProgress } from "@/context/GameContext";
 import { useProfile } from "@/context/ProfileContext";
-import { COURSES, getAllLessons } from "@/constants/lessons";
+import { COURSES, getAllLessons, getCurrentPosition } from "@/constants/lessons";
 import { LOGO } from "@/constants/assets";
 import { GraflyMascot } from "@/components/GraflyMascot";
 import { HomeBackdrop } from "@/components/HomeBackdrop";
@@ -158,6 +158,10 @@ export default function HomeScreen() {
     ? COURSES.flatMap((c) => c.nodes).find((n) => n.lessons.some((l) => l.id === nextLesson?.id))
     : null;
   const nextCourse = nextNode ? COURSES.find((c) => c.id === nextNode.courseId) : null;
+
+  // Where the user currently stands in the skill tree (used by the
+  // "Continue Progress" button to land them at the right module).
+  const currentPosition = getCurrentPosition(state.completedLessons);
 
   const todayLessons = state.completedLessons.length;
   const dailyGoal = 3;
@@ -660,6 +664,54 @@ export default function HomeScreen() {
                 }}>
                   <Icon name="arrow-forward" size={20} color={colors.accentForeground} />
                 </View>
+              </View>
+            </PressScale>
+
+            {/* Secondary affordance: jump to the same module in the skill
+                tree, so the user can browse lessons in context instead of
+                going straight into the next lesson. */}
+            <PressScale
+              onPress={() =>
+                router.push({
+                  pathname: "/(tabs)/tree",
+                  params: {
+                    courseId: currentPosition.courseId,
+                    nodeId: currentPosition.nodeId,
+                  },
+                })
+              }
+              style={{
+                marginTop: 12,
+                backgroundColor: colors.card,
+                borderWidth: 1,
+                borderColor: colors.border,
+                borderRadius: 100,
+                paddingVertical: 16,
+                paddingHorizontal: 22,
+                flexDirection: "row",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: 10,
+              }}
+            >
+              <Icon name="compass" size={18} color={colors.foreground} />
+              <Text style={{
+                fontSize: 15,
+                fontFamily: "Nunito_800ExtraBold",
+                color: colors.foreground,
+                letterSpacing: -0.3,
+              }}>
+                Continue Progress
+              </Text>
+              <View style={{
+                width: 26,
+                height: 26,
+                borderRadius: 13,
+                backgroundColor: colors.foreground,
+                alignItems: "center",
+                justifyContent: "center",
+              }}>
+                <Icon name="arrow-forward" size={14} color={colors.background} />
               </View>
             </PressScale>
           </Animated.View>
