@@ -493,7 +493,19 @@ export default function LessonScreen() {
   const course = node ? COURSES.find((c) => c.id === node.courseId) : null;
   const allLessons: Lesson[] = node?.lessons ?? [];
 
-  const [lessonIdx, setLessonIdx] = useState(0);
+  // Resume at the first lesson the user has not yet finished in this
+  // module. Without this, losing all hearts (or otherwise leaving) would
+  // force the user to redo lessons they had already completed before
+  // they can reach the one they were actually stuck on.
+  // If every lesson in the module is already complete, start at 0 so
+  // the user can replay/practice from the beginning.
+  const [lessonIdx, setLessonIdx] = useState(() => {
+    if (!allLessons.length) return 0;
+    const firstUnfinished = allLessons.findIndex(
+      (l) => !state.completedLessons.includes(l.id),
+    );
+    return firstUnfinished >= 0 ? firstUnfinished : 0;
+  });
   const [questionIdx, setQuestionIdx] = useState(0);
   const [introDismissed, setIntroDismissed] = useState(false);
   const [answered, setAnswered] = useState(false);
