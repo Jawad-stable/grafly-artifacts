@@ -42,7 +42,8 @@
         {
           "android": {
             "enableProguardInReleaseBuilds": false,
-            "enableShrinkResourcesInReleaseBuilds": false
+            "enableShrinkResourcesInReleaseBuilds": false,
+            "enableMinifyInReleaseBuilds": false
           }
         }
       ]
@@ -52,7 +53,10 @@
       "reactCompiler": true
     },
     "extra": {
-      "eas": {}
-    }
+      "eas": {
+        "projectId": "9e4690ce-72f5-4ca8-b905-99e34bb71364"
+      }
+    },
+    "owner": "jawadkh"
   }
 }
