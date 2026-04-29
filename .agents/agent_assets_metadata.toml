@@ -59,3 +59,9 @@ id = "cVKPm29rJUcyGWY9WyhUW"
 uri = "file://grafly-clean.tar.gz"
 type = "unspecified"
 title = "grafly-clean.tar.gz (5.6 MB)"
+
+[[outputs]]
+id = "MlVK-F_L6MhiUj9P5VKdT"
+uri = "file://.local/outputs/Game-Learn-Design.pdf"
+type = "pdf"
+title = "Game Learn Design.pdf"

@@ -1,0 +1,92 @@
+@import "tailwindcss";
+
+@font-face {
+  font-family: "Teshrin";
+  src: url("./assets/fonts/Teshrin_Light.ttf") format("truetype");
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Teshrin";
+  src: url("./assets/fonts/Teshrin_Regular.ttf") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Teshrin";
+  src: url("./assets/fonts/Teshrin_Medium.ttf") format("truetype");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Teshrin";
+  src: url("./assets/fonts/Teshrin_Bold.ttf") format("truetype");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Teshrin";
+  src: url("./assets/fonts/Teshrin_Black.ttf") format("truetype");
+  font-weight: 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+@theme inline {
+  --color-ink: var(--brand-ink);
+  --color-cream: var(--brand-cream);
+  --color-brand-blue: var(--brand-blue);
+  --color-brand-yellow: var(--brand-yellow);
+  --color-brand-pink: var(--brand-pink);
+  --color-brand-sky: var(--brand-sky);
+  --color-brand-sky-deep: var(--brand-sky-deep);
+  --font-display: var(--font-display-family);
+  --font-body: var(--font-body-family);
+}
+
+:root {
+  --brand-ink: #21263F;
+  --brand-cream: #F7F4DC;
+  --brand-blue: #00A4FA;
+  --brand-yellow: #E3ED43;
+  --brand-pink: #FF7BD0;
+  --brand-sky: #DCEEFB;
+  --brand-sky-deep: #B8DEF6;
+  --font-display-family: "Teshrin", "Nunito", system-ui, sans-serif;
+  --font-body-family: "Teshrin", "Nunito", system-ui, sans-serif;
+  color-scheme: light;
+}
+
+html,
+body,
+#root {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  font-family: var(--font-body-family);
+}
+
+body {
+  background: #FFFFFF;
+  color: var(--brand-ink);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.slide-bg {
+  background: linear-gradient(155deg, #DCEEFB 0%, #EEF6FD 38%, #FFFFFF 100%);
+}
+
+.slide-viewer {
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+}

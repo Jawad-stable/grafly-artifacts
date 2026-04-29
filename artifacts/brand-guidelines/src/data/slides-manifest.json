@@ -1,0 +1,130 @@
+[
+  {
+    "id": "b1d4f6a0-1111-4101-9a01-000000000001",
+    "position": 1,
+    "filepath": "src/pages/slides/Cover.tsx",
+    "title": "Cover",
+    "description": "Brand guidelines cover with Grafly wordmark, idle mascot, and the Ink Outside The Box tagline.",
+    "speakerNotes": ""
+  },
+  {
+    "id": "b1d4f6a0-1111-4102-9a02-000000000002",
+    "position": 2,
+    "filepath": "src/pages/slides/BrandOverview.tsx",
+    "title": "Brand Overview",
+    "description": "Who Grafly is, our mission, and our brand personality.",
+    "speakerNotes": ""
+  },
+  {
+    "id": "b1d4f6a0-1111-4103-9a03-000000000003",
+    "position": 3,
+    "filepath": "src/pages/slides/LogoSystem.tsx",
+    "title": "Logo System",
+    "description": "Primary logo, lockup variations, clear-space rule, and logo dos and don'ts.",
+    "speakerNotes": ""
+  },
+  {
+    "id": "b1d4f6a0-1111-4104-9a04-000000000004",
+    "position": 4,
+    "filepath": "src/pages/slides/ColorPalette.tsx",
+    "title": "Color Palette",
+    "description": "Primary, secondary, and accent brand colors with HEX values and usage guidance.",
+    "speakerNotes": ""
+  },
+  {
+    "id": "b1d4f6a0-1111-4105-9a05-000000000005",
+    "position": 5,
+    "filepath": "src/pages/slides/Typography.tsx",
+    "title": "Typography",
+    "description": "Teshrin font family with weight ladder and heading-to-body hierarchy examples.",
+    "speakerNotes": ""
+  },
+  {
+    "id": "b1d4f6a0-1111-4106-9a06-000000000006",
+    "position": 6,
+    "filepath": "src/pages/slides/VisualStyle.tsx",
+    "title": "Visual Style",
+    "description": "Overall art direction: modern, playful, with subtle Y2K accents.",
+    "speakerNotes": ""
+  },
+  {
+    "id": "b1d4f6a0-1111-4107-9a07-000000000007",
+    "position": 7,
+    "filepath": "src/pages/slides/Patterns.tsx",
+    "title": "Patterns & Elements",
+    "description": "The squiggle pattern shown across backgrounds, UI strips, and accent moments.",
+    "speakerNotes": ""
+  },
+  {
+    "id": "b1d4f6a0-1111-4108-9a08-000000000008",
+    "position": 8,
+    "filepath": "src/pages/slides/Mascot.tsx",
+    "title": "Character / Mascot",
+    "description": "Meet Grafly: six mascot poses and how each one is used in product.",
+    "speakerNotes": ""
+  },
+  {
+    "id": "b1d4f6a0-1111-4109-9a09-000000000009",
+    "position": 9,
+    "filepath": "src/pages/slides/UIApplications.tsx",
+    "title": "UI Applications",
+    "description": "Sample app screens showing buttons, cards, and layout in the brand system.",
+    "speakerNotes": ""
+  },
+  {
+    "id": "b1d4f6a0-1111-410a-9a0a-000000000010",
+    "position": 10,
+    "filepath": "src/pages/slides/SocialMedia.tsx",
+    "title": "Social Media",
+    "description": "Grafly social posts: daily tip, lesson drop, streak share, and community quote.",
+    "speakerNotes": ""
+  },
+  {
+    "id": "b1d4f6a0-1111-410b-9a0b-000000000011",
+    "position": 11,
+    "filepath": "src/pages/slides/VoiceMessaging.tsx",
+    "title": "Voice & Messaging",
+    "description": "How Grafly talks: voice attributes and side-by-side we-say versus never examples.",
+    "speakerNotes": ""
+  },
+  {
+    "id": "b1d4f6a0-1111-410c-9a0c-000000000012",
+    "position": 12,
+    "filepath": "src/pages/slides/Iconography.tsx",
+    "title": "Iconography",
+    "description": "Icon system: 2px round-stroke icons on a 24px grid with currentColor.",
+    "speakerNotes": ""
+  },
+  {
+    "id": "b1d4f6a0-1111-410d-9a0d-000000000013",
+    "position": 13,
+    "filepath": "src/pages/slides/BrandInUse.tsx",
+    "title": "Brand In Use",
+    "description": "The brand applied to stickers, totes, t-shirts, and event posters.",
+    "speakerNotes": ""
+  },
+  {
+    "id": "b1d4f6a0-1111-410e-9a0e-000000000014",
+    "position": 14,
+    "filepath": "src/pages/slides/Motion.tsx",
+    "title": "Motion Principles",
+    "description": "How things move in product: snappy easing, short durations, one-thing-at-a-time.",
+    "speakerNotes": ""
+  },
+  {
+    "id": "b1d4f6a0-1111-410f-9a0f-000000000015",
+    "position": 15,
+    "filepath": "src/pages/slides/Consistency.tsx",
+    "title": "Consistency Guidelines",
+    "description": "Spacing, alignment, and tone-of-voice rules to keep the brand consistent.",
+    "speakerNotes": ""
+  },
+  {
+    "id": "b1d4f6a0-1111-4110-9a10-000000000016",
+    "position": 16,
+    "filepath": "src/pages/slides/Closing.tsx",
+    "title": "Closing",
+    "description": "Closing card with Grafly logo and the Ink Outside The Box tagline.",
+    "speakerNotes": ""
+  }
+]
