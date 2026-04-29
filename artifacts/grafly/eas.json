@@ -11,7 +11,8 @@
       "pnpm": "10.26.1",
       "env": {
         "EXPO_PUBLIC_SUPABASE_URL": "https://ylvkpbfzyyruacabgfhc.supabase.co",
-        "EXPO_PUBLIC_SUPABASE_ANON_KEY": "sb_publishable_wVXN3lDty7PhvFerX3Immg_yRoi-rvi"
+        "EXPO_PUBLIC_SUPABASE_ANON_KEY": "sb_publishable_wVXN3lDty7PhvFerX3Immg_yRoi-rvi",
+        "EXPO_PUBLIC_DOMAIN": "grafly-api.onrender.com"
       },
       "android": {
         "image": "latest",
@@ -24,7 +25,8 @@
       "pnpm": "10.26.1",
       "env": {
         "EXPO_PUBLIC_SUPABASE_URL": "https://ylvkpbfzyyruacabgfhc.supabase.co",
-        "EXPO_PUBLIC_SUPABASE_ANON_KEY": "sb_publishable_wVXN3lDty7PhvFerX3Immg_yRoi-rvi"
+        "EXPO_PUBLIC_SUPABASE_ANON_KEY": "sb_publishable_wVXN3lDty7PhvFerX3Immg_yRoi-rvi",
+        "EXPO_PUBLIC_DOMAIN": "grafly-api.onrender.com"
       },
       "android": {
         "image": "latest",
@@ -37,7 +39,8 @@
       "pnpm": "10.26.1",
       "env": {
         "EXPO_PUBLIC_SUPABASE_URL": "https://ylvkpbfzyyruacabgfhc.supabase.co",
-        "EXPO_PUBLIC_SUPABASE_ANON_KEY": "sb_publishable_wVXN3lDty7PhvFerX3Immg_yRoi-rvi"
+        "EXPO_PUBLIC_SUPABASE_ANON_KEY": "sb_publishable_wVXN3lDty7PhvFerX3Immg_yRoi-rvi",
+        "EXPO_PUBLIC_DOMAIN": "grafly-api.onrender.com"
       },
       "android": {
         "image": "latest",
