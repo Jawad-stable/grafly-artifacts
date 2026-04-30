@@ -334,8 +334,116 @@ export default function HomeScreen() {
           </Animated.View>
         )}
 
-        {/* Popular Courses — horizontal carousel (editorial cards) */}
-        <Animated.View entering={FadeIn.delay(190)} style={{ marginTop: 28 }}>
+        {/* Continue Learning — promoted to hero. When the user has
+            an unfinished lesson, this is the first thing they see;
+            when not (brand new account), the Popular Courses
+            carousel below naturally takes over as the visual anchor. */}
+        {nextLesson && nextCourse && (
+          <Animated.View entering={FadeIn.delay(170)} style={{ paddingHorizontal: 24, marginTop: 28 }}>
+            <Text style={{ fontSize: 22, fontFamily: "Nunito_800ExtraBold", color: colors.foreground, letterSpacing: -0.4, marginBottom: 14 }}>
+              Pick up where you left off
+            </Text>
+            <PressScale
+              onPress={() => router.push({ pathname: "/lesson", params: { nodeId: nextNode?.id ?? "" } })}
+              style={{
+                backgroundColor: colors.foreground, borderRadius: 28,
+                padding: 22,
+              }}
+            >
+              <View style={{
+                backgroundColor: colors.accent, borderRadius: 100,
+                paddingHorizontal: 12, paddingVertical: 5,
+                alignSelf: "flex-start", marginBottom: 14,
+              }}>
+                <Text style={{ fontSize: 10, fontFamily: "Nunito_800ExtraBold", color: colors.accentForeground, letterSpacing: 1.2 }}>
+                  CONTINUE LESSON
+                </Text>
+              </View>
+              <Text style={{ fontSize: 24, fontFamily: "Nunito_800ExtraBold", color: colors.background, marginBottom: 4, lineHeight: 28, letterSpacing: -0.5 }}>
+                {nextLesson.title}
+              </Text>
+              <Text style={{ fontSize: 13, fontFamily: "Nunito_600SemiBold", color: colors.background + "AA", marginBottom: 18 }}>
+                {nextCourse.title}
+              </Text>
+
+              <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
+                <View style={{ flexDirection: "row", alignItems: "center", gap: 14 }}>
+                  <View style={{ flexDirection: "row", alignItems: "center", gap: 5 }}>
+                    <Icon name="flash" size={14} color={colors.accent} />
+                    <Text style={{ fontSize: 13, fontFamily: "Nunito_800ExtraBold", color: colors.background }}>
+                      +{nextLesson.xpReward} XP
+                    </Text>
+                  </View>
+                  <View style={{ flexDirection: "row", alignItems: "center", gap: 5 }}>
+                    <Icon name="ellipse" size={11} color={colors.warning} />
+                    <Text style={{ fontSize: 13, fontFamily: "Nunito_800ExtraBold", color: colors.background }}>
+                      +{nextLesson.coinReward}
+                    </Text>
+                  </View>
+                </View>
+                <View style={{
+                  width: 44, height: 44, borderRadius: 22,
+                  backgroundColor: colors.accent,
+                  alignItems: "center", justifyContent: "center",
+                }}>
+                  <Icon name="arrow-forward" size={20} color={colors.accentForeground} />
+                </View>
+              </View>
+            </PressScale>
+
+            {/* Secondary affordance: jump to the same module in the skill
+                tree, so the user can browse lessons in context instead of
+                going straight into the next lesson. */}
+            <PressScale
+              onPress={() =>
+                router.push({
+                  pathname: "/(tabs)/tree",
+                  params: {
+                    courseId: currentPosition.courseId,
+                    nodeId: currentPosition.nodeId,
+                  },
+                })
+              }
+              style={{
+                marginTop: 12,
+                backgroundColor: colors.card,
+                borderWidth: 1,
+                borderColor: colors.border,
+                borderRadius: 100,
+                paddingVertical: 16,
+                paddingHorizontal: 22,
+                flexDirection: "row",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: 10,
+              }}
+            >
+              <Icon name="compass" size={18} color={colors.foreground} />
+              <Text style={{
+                fontSize: 15,
+                fontFamily: "Nunito_800ExtraBold",
+                color: colors.foreground,
+                letterSpacing: -0.3,
+              }}>
+                Continue Progress
+              </Text>
+              <View style={{
+                width: 26,
+                height: 26,
+                borderRadius: 13,
+                backgroundColor: colors.foreground,
+                alignItems: "center",
+                justifyContent: "center",
+              }}>
+                <Icon name="arrow-forward" size={14} color={colors.background} />
+              </View>
+            </PressScale>
+          </Animated.View>
+        )}
+
+        {/* Popular Courses — horizontal carousel that doubles as a
+            course switcher (each card pushes to that course's tree). */}
+        <Animated.View entering={FadeIn.delay(240)} style={{ marginTop: 28 }}>
           <View style={{ paddingHorizontal: 24, flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
             <Text style={{ fontSize: 22, fontFamily: "Nunito_800ExtraBold", color: colors.foreground, letterSpacing: -0.4 }}>
               Popular courses
@@ -612,110 +720,6 @@ export default function HomeScreen() {
             }}
           />
         </Animated.View>
-
-        {/* Continue Learning — high-contrast near-black editorial CTA card */}
-        {nextLesson && nextCourse && (
-          <Animated.View entering={FadeIn.delay(240)} style={{ paddingHorizontal: 24, marginTop: 28 }}>
-            <Text style={{ fontSize: 22, fontFamily: "Nunito_800ExtraBold", color: colors.foreground, letterSpacing: -0.4, marginBottom: 14 }}>
-              Pick up where you left off
-            </Text>
-            <PressScale
-              onPress={() => router.push({ pathname: "/lesson", params: { nodeId: nextNode?.id ?? "" } })}
-              style={{
-                backgroundColor: colors.foreground, borderRadius: 28,
-                padding: 22,
-              }}
-            >
-              <View style={{
-                backgroundColor: colors.accent, borderRadius: 100,
-                paddingHorizontal: 12, paddingVertical: 5,
-                alignSelf: "flex-start", marginBottom: 14,
-              }}>
-                <Text style={{ fontSize: 10, fontFamily: "Nunito_800ExtraBold", color: colors.accentForeground, letterSpacing: 1.2 }}>
-                  CONTINUE LESSON
-                </Text>
-              </View>
-              <Text style={{ fontSize: 24, fontFamily: "Nunito_800ExtraBold", color: colors.background, marginBottom: 4, lineHeight: 28, letterSpacing: -0.5 }}>
-                {nextLesson.title}
-              </Text>
-              <Text style={{ fontSize: 13, fontFamily: "Nunito_600SemiBold", color: colors.background + "AA", marginBottom: 18 }}>
-                {nextCourse.title}
-              </Text>
-
-              <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
-                <View style={{ flexDirection: "row", alignItems: "center", gap: 14 }}>
-                  <View style={{ flexDirection: "row", alignItems: "center", gap: 5 }}>
-                    <Icon name="flash" size={14} color={colors.accent} />
-                    <Text style={{ fontSize: 13, fontFamily: "Nunito_800ExtraBold", color: colors.background }}>
-                      +{nextLesson.xpReward} XP
-                    </Text>
-                  </View>
-                  <View style={{ flexDirection: "row", alignItems: "center", gap: 5 }}>
-                    <Icon name="ellipse" size={11} color={colors.warning} />
-                    <Text style={{ fontSize: 13, fontFamily: "Nunito_800ExtraBold", color: colors.background }}>
-                      +{nextLesson.coinReward}
-                    </Text>
-                  </View>
-                </View>
-                <View style={{
-                  width: 44, height: 44, borderRadius: 22,
-                  backgroundColor: colors.accent,
-                  alignItems: "center", justifyContent: "center",
-                }}>
-                  <Icon name="arrow-forward" size={20} color={colors.accentForeground} />
-                </View>
-              </View>
-            </PressScale>
-
-            {/* Secondary affordance: jump to the same module in the skill
-                tree, so the user can browse lessons in context instead of
-                going straight into the next lesson. */}
-            <PressScale
-              onPress={() =>
-                router.push({
-                  pathname: "/(tabs)/tree",
-                  params: {
-                    courseId: currentPosition.courseId,
-                    nodeId: currentPosition.nodeId,
-                  },
-                })
-              }
-              style={{
-                marginTop: 12,
-                backgroundColor: colors.card,
-                borderWidth: 1,
-                borderColor: colors.border,
-                borderRadius: 100,
-                paddingVertical: 16,
-                paddingHorizontal: 22,
-                flexDirection: "row",
-                alignItems: "center",
-                justifyContent: "center",
-                gap: 10,
-              }}
-            >
-              <Icon name="compass" size={18} color={colors.foreground} />
-              <Text style={{
-                fontSize: 15,
-                fontFamily: "Nunito_800ExtraBold",
-                color: colors.foreground,
-                letterSpacing: -0.3,
-              }}>
-                Continue Progress
-              </Text>
-              <View style={{
-                width: 26,
-                height: 26,
-                borderRadius: 13,
-                backgroundColor: colors.foreground,
-                alignItems: "center",
-                justifyContent: "center",
-              }}>
-                <Icon name="arrow-forward" size={14} color={colors.background} />
-              </View>
-            </PressScale>
-          </Animated.View>
-        )}
 
         {/* Daily Goal + Rank — editorial side-by-side cards */}
         <Animated.View entering={FadeIn.delay(290)} style={{ paddingHorizontal: 24, marginTop: 22, flexDirection: "row", gap: 12 }}>
