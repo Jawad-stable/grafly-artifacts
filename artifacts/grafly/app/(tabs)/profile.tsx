@@ -80,7 +80,7 @@ export default function ProfileScreen() {
   const { state } = useGame();
   const { state: profileState, updateProfile } = useProfile();
   const { signOut, user } = useAuth();
-  const { t, dir } = useT();
+  const { t, dir, isRTL } = useT();
   const [editingName, setEditingName] = useState(false);
   const [nameInput, setNameInput] = useState(profileState.username);
 
@@ -489,7 +489,7 @@ export default function ProfileScreen() {
               borderRadius: colors.radius.md,
               paddingHorizontal: 18,
               paddingVertical: 18,
-              flexDirection: "row",
+              flexDirection: isRTL ? "row-reverse" : "row",
               alignItems: "center",
               gap: 14,
             }}
@@ -502,14 +502,14 @@ export default function ProfileScreen() {
               <Icon name="grid-outline" size={20} color={colors.primary} />
             </View>
             <View style={{ flex: 1 }}>
-              <Text style={{ fontSize: 16, fontFamily: "Nunito_800ExtraBold", color: colors.foreground }}>
+              <Text style={{ fontSize: 16, fontFamily: "Nunito_800ExtraBold", color: colors.foreground, ...dir }}>
                 {t("settings.title")}
               </Text>
-              <Text style={{ fontSize: 12, fontFamily: "Nunito_600SemiBold", color: colors.mutedForeground, marginTop: 2 }}>
+              <Text style={{ fontSize: 12, fontFamily: "Nunito_600SemiBold", color: colors.mutedForeground, marginTop: 2, ...dir }}>
                 {t("settings.subtitle")}
               </Text>
             </View>
-            <Icon name="chevron-forward" size={20} color={colors.mutedForeground} />
+            <Icon name={isRTL ? "chevron-back" : "chevron-forward"} size={20} color={colors.mutedForeground} />
           </PressScale>
         </Animated.View>
 

@@ -81,7 +81,7 @@ export default function SettingsScreen() {
         {/* Header — back button + editorial title */}
         <View
           style={{
-            flexDirection: "row",
+            flexDirection: isRTL ? "row-reverse" : "row",
             alignItems: "center",
             gap: 14,
             marginBottom: 6,
@@ -107,7 +107,7 @@ export default function SettingsScreen() {
             />
           </PressScale>
           <View style={{ flex: 1 }}>
-            <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+            <View style={{ flexDirection: isRTL ? "row-reverse" : "row", alignItems: "center", gap: 8 }}>
               <View
                 style={{
                   width: 8,
@@ -185,7 +185,7 @@ export default function SettingsScreen() {
             overflow: "hidden",
           }}
         >
-          <View style={{ position: "absolute", top: -16, right: -16, opacity: 0.5 }}>
+          <View style={{ position: "absolute", top: -16, [isRTL ? "left" : "right"]: -16, opacity: 0.5 }}>
             <BrandSquiggle
               variant="loop"
               width={120}
@@ -197,7 +197,7 @@ export default function SettingsScreen() {
 
           <View
             style={{
-              flexDirection: "row",
+              flexDirection: isRTL ? "row-reverse" : "row",
               alignItems: "center",
               gap: 12,
               marginBottom: 16,
@@ -240,7 +240,7 @@ export default function SettingsScreen() {
             </View>
           </View>
 
-          <View style={{ flexDirection: "row", gap: 12 }}>
+          <View style={{ flexDirection: isRTL ? "row-reverse" : "row", gap: 12 }}>
             {LANGUAGES.map((l) => {
               const active = profileState.language === l.id;
               const sample = l.id === "ar" ? "أب" : "Aa";
@@ -298,7 +298,7 @@ export default function SettingsScreen() {
                       style={{
                         position: "absolute",
                         top: 10,
-                        right: 10,
+                        [isRTL ? "left" : "right"]: 10,
                         width: 20,
                         height: 20,
                         borderRadius: 10,
@@ -331,7 +331,7 @@ export default function SettingsScreen() {
         >
           <View
             style={{
-              flexDirection: "row",
+              flexDirection: isRTL ? "row-reverse" : "row",
               alignItems: "center",
               gap: 12,
               marginBottom: 16,
@@ -378,7 +378,7 @@ export default function SettingsScreen() {
             </View>
           </View>
 
-          <View style={{ flexDirection: "row", gap: 12 }}>
+          <View style={{ flexDirection: isRTL ? "row-reverse" : "row", gap: 12 }}>
             {(["light", "dark"] as const).map((m) => {
               const active = profileState.themeMode === m;
               const p = m === "light" ? lightPreview : darkPreview;
@@ -473,7 +473,7 @@ export default function SettingsScreen() {
 
                   <View
                     style={{
-                      flexDirection: "row",
+                      flexDirection: isRTL ? "row-reverse" : "row",
                       alignItems: "center",
                       gap: 6,
                       marginTop: 12,
@@ -500,7 +500,7 @@ export default function SettingsScreen() {
                       style={{
                         position: "absolute",
                         top: 16,
-                        right: 16,
+                        [isRTL ? "left" : "right"]: 16,
                         width: 22,
                         height: 22,
                         borderRadius: 11,
@@ -542,7 +542,7 @@ export default function SettingsScreen() {
             padding: 20,
             borderWidth: 1,
             borderColor: cardBorder,
-            flexDirection: "row",
+            flexDirection: isRTL ? "row-reverse" : "row",
             alignItems: "center",
             gap: 14,
           }}
