@@ -1,496 +1,61 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
-  View,
-  Text,
+  ActivityIndicator,
+  Dimensions,
+  Image,
+  Modal,
+  Platform,
+  Pressable,
   ScrollView,
+  Text,
   TextInput,
   TouchableOpacity,
-  Platform,
-  Image,
-  ActivityIndicator,
-  Modal,
-  Pressable,
-  Dimensions,
+  View,
   useWindowDimensions,
   type LayoutChangeEvent,
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { KeyboardAvoidingView } from "react-native-keyboard-controller";
 import Animated, {
+  Easing,
   FadeIn,
   FadeInDown,
   FadeInUp,
-  Easing,
-  useSharedValue,
-  useAnimatedStyle,
-  withRepeat,
-  withTiming,
-  cancelAnimation,
-  interpolate,
 } from "react-native-reanimated";
-import { Icon } from "@/components/Icon";
 import { router } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { LinearGradient } from "expo-linear-gradient";
+
+import { Icon } from "@/components/Icon";
+import { PressScale } from "@/components/PressScale";
+import { BrandSquiggle } from "@/components/BrandSquiggle";
+import { AiBot } from "@/components/AiBot";
+import { TypewriterText } from "@/components/TypewriterText";
+import { CritiqueOnboarding } from "@/components/CritiqueOnboarding";
 import { useColors } from "@/hooks/useColors";
 import { useGame } from "@/context/GameContext";
 import {
   sendCritiqueMessage,
   type ChatMessage,
 } from "@/services/aiCritique";
-import { getDesignRemoteUrl, pickRandomLocalDesign, type LocalDesign } from "@/data/localDesigns";
-import { PressScale } from "@/components/PressScale";
+import {
+  getDesignRemoteUrl,
+  pickRandomLocalDesign,
+  type LocalDesign,
+} from "@/data/localDesigns";
 import { getBottomBarWidth } from "@/constants/layout";
-import { AI_BOT } from "@/constants/assets";
-import { BrandSquiggle } from "@/components/BrandSquiggle";
+import {
+  COINS_PER_SESSION,
+  MIN_USER_TURNS_FOR_REWARD,
+  ONBOARDING_KEY,
+  QUICK_PROMPTS,
+  XP_PER_SESSION,
+  pickOpener,
+} from "@/constants/critique";
 
 const SMOOTH = Easing.out(Easing.cubic);
 
-// AI bot avatar. Renders the blue starfish/fan logo. When `spinning` is true
-// it rotates continuously like a fan, used to signal that the AI is thinking.
-function AiBot({ size, spinning = false }: { size: number; spinning?: boolean }) {
-  const rotation = useSharedValue(0);
-
-  useEffect(() => {
-    cancelAnimation(rotation);
-    if (spinning) {
-      // Reset to 0 on the UI thread, then start a continuous repeating
-      // rotation. Linear easing so the spin is even and fan-like.
-      rotation.value = 0;
-      rotation.value = withRepeat(
-        withTiming(360, { duration: 900, easing: Easing.linear }),
-        -1,
-        false,
-      );
-    } else {
-      // Ease back to the rest position when the bot stops thinking.
-      rotation.value = withTiming(0, { duration: 220, easing: SMOOTH });
-    }
-    return () => {
-      cancelAnimation(rotation);
-    };
-  }, [spinning]);
-
-  const animStyle = useAnimatedStyle(() => ({
-    transform: [{ rotate: `${rotation.value}deg` }],
-  }));
-
-  // Wrap the Image in an Animated.View — Animated.View reliably honours
-  // transform styles on every platform (including web), whereas
-  // Animated.Image can drop transforms on some renderers.
-  return (
-    <Animated.View
-      style={[
-        { width: size, height: size, alignItems: "center", justifyContent: "center" },
-        animStyle,
-      ]}
-    >
-      <Image
-        source={AI_BOT}
-        resizeMode="contain"
-        style={{ width: size, height: size }}
-      />
-    </Animated.View>
-  );
-}
-
-const XP_PER_SESSION = 20;
-const COINS_PER_SESSION = 8;
-const MIN_USER_TURNS_FOR_REWARD = 3;
-const TYPEWRITER_SPEED_MS = 14;
-
-const ONBOARDING_KEY = "grafly:critique_onboarding_seen_v1";
-
 const { width: SCREEN_W, height: SCREEN_H } = Dimensions.get("window");
-
-// Quick start prompt chips. Shown above the composer when the user
-// has not yet typed anything, so the screen never confronts them
-// with an empty input. Tapping a chip pre-fills the composer with a
-// concrete starter so they can focus on the design instead of the
-// blank page. Labels follow the house rule: no hyphens / em dashes.
-const QUICK_PROMPTS: Array<{ label: string; icon: string; prompt: string }> = [
-  { label: "First impression", icon: "flash", prompt: "First impression: " },
-  { label: "Color & contrast", icon: "color-filter", prompt: "How is color and contrast working here? " },
-  { label: "Hierarchy", icon: "layers-outline", prompt: "Walk me through the visual hierarchy. " },
-  { label: "Typography", icon: "text-outline", prompt: "Critique the typography choices. " },
-  { label: "Layout", icon: "grid-outline", prompt: "How does the layout balance the elements? " },
-  { label: "What to improve", icon: "pencil", prompt: "If you could change one thing, what would it be and why? " },
-];
-
-// Conversation openers for the critique tab. Each one leads with a real
-// design prompt — an observation to make, a question to sit with, an
-// instruction to look. NO canned greetings ("Hey!", "Oh nice!", "Love
-// this!", "Mmm…") — those felt fake and templated. Warmth comes from
-// the curiosity in the question itself, not from a sticker at the front.
-// Variety in shape matters: some lead with a question, some with an
-// invitation to notice, some with a quick framing.
-const OPENER_TEMPLATES: Array<(title: string) => string> = [
-  (t) => `Take ten seconds with "${t}" before you read anything else.\n\nWhere does your eye land first, and what do you think pulled it there?`,
-  (t) => `Here's "${t}".\n\nWhat feeling does it give you in the first second — before you start analyzing it?`,
-  (t) => `Three words for "${t}". The first ones that come to mind, not the polished ones.\n\nWhich of the three is the design earning hardest right now?`,
-  (t) => `Look at "${t}" and trace your eye's path: first stop, second stop, third stop.\n\nWhat's the designer using to lead you between them?`,
-  (t) => `What problem is "${t}" actually solving for whoever opens it?\n\nThe layout will tell you, if you watch how it's prioritising things.`,
-  (t) => `One thing in "${t}" that's working confidently. One thing that still feels like it's figuring itself out.\n\nWhich is which, in your read?`,
-  (t) => `If "${t}" had to lose one element to feel cleaner, which would you cut?\n\nAnd what would the screen quietly gain without it?`,
-  (t) => `In "${t}", color and typography are splitting the work somehow.\n\nWhich one is doing the heavier lifting — and is that the right call?`,
-  (t) => `Of contrast, hierarchy, rhythm, and balance — which one is loudest in "${t}" right now?\n\nPoint me to where you see it.`,
-  (t) => `"${t}" is quietly asking the viewer to do something.\n\nWhat action, and what's making the invitation feel obvious (or not)?`,
-  (t) => `Cover the bottom half of "${t}" with your hand for a moment. Then the top half.\n\nWhich half could stand on its own, and which one needs the other?`,
-  (t) => `If "${t}" landed in your feed at thumbnail size, what would still survive?\n\nThat's usually the real design — the rest is supporting cast.`,
-];
-
-function pickOpener(title: string): string {
-  const fn = OPENER_TEMPLATES[Math.floor(Math.random() * OPENER_TEMPLATES.length)];
-  return fn(title);
-}
-
-interface TypewriterTextProps {
-  text: string;
-  active: boolean;
-  style: any;
-  onTick?: () => void;
-  onDone?: () => void;
-}
-
-function TypewriterText({ text, active, style, onTick, onDone }: TypewriterTextProps) {
-  const [shown, setShown] = useState(active ? "" : text);
-  const indexRef = useRef(0);
-  const tickRef = useRef(onTick);
-  const doneRef = useRef(onDone);
-  tickRef.current = onTick;
-  doneRef.current = onDone;
-
-  useEffect(() => {
-    if (!active) {
-      setShown(text);
-      return;
-    }
-    indexRef.current = 0;
-    setShown("");
-    const timer = setInterval(() => {
-      indexRef.current += 1;
-      if (indexRef.current >= text.length) {
-        setShown(text);
-        clearInterval(timer);
-        doneRef.current?.();
-        return;
-      }
-      setShown(text.slice(0, indexRef.current));
-      tickRef.current?.();
-    }, TYPEWRITER_SPEED_MS);
-    return () => clearInterval(timer);
-  }, [text, active]);
-
-  return (
-    <Text style={style}>
-      {shown}
-      {active && shown.length < text.length ? (
-        <Text style={{ opacity: 0.55 }}>▍</Text>
-      ) : null}
-    </Text>
-  );
-}
-
-type OnboardStep = {
-  title: string;
-  body: string;
-  ring?: { left: number; top: number; w: number; h: number; radius: number };
-  tooltip: { top?: number; bottom?: number };
-};
-
-function CritiqueOnboarding({
-  insets,
-  onClose,
-  cardRect,
-}: {
-  insets: { top: number; bottom: number };
-  onClose: () => void;
-  cardRect: { left: number; top: number; width: number; height: number };
-}) {
-  const colors = useColors();
-  const [step, setStep] = useState(0);
-
-  const pulse = useSharedValue(0);
-  useEffect(() => {
-    pulse.value = withRepeat(
-      withTiming(1, { duration: 1100, easing: Easing.inOut(Easing.sin) }),
-      -1,
-      true,
-    );
-    return () => cancelAnimation(pulse);
-  }, []);
-  const ringStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: interpolate(pulse.value, [0, 1], [1, 1.18]) }],
-    opacity: interpolate(pulse.value, [0, 1], [0.95, 0.45]),
-  }));
-
-  const headerTop = insets.top + (Platform.OS === "web" ? 67 : 0) + 10;
-  const tabBottomPad = Math.max(insets.bottom, Platform.OS === "web" ? 16 : 10);
-  const tabBarHeight = 62 + tabBottomPad;
-  const composerY = SCREEN_H - tabBarHeight - 12 - 70;
-
-  // Tooltip for the card step sits below the card, with a small gap.
-  const cardTooltipTop = Math.min(
-    cardRect.top + cardRect.height + 18,
-    SCREEN_H - 280,
-  );
-
-  const STEPS: OnboardStep[] = [
-    {
-      title: "Welcome to Critique",
-      body: "Get personalized design feedback from Grafly. Here are a few quick tips to get you started.",
-      tooltip: { top: SCREEN_H * 0.32 },
-    },
-    {
-      title: "Tap shuffle for a fresh design",
-      body: "The shuffle button at the top right loads a brand new design any time you want something new to critique.",
-      ring: { left: SCREEN_W - 60, top: headerTop + 18, w: 44, h: 44, radius: 100 },
-      tooltip: { top: headerTop + 90 },
-    },
-    {
-      title: "Tap the photo to expand",
-      body: "Tap any design image to open it full-screen and study every pixel up close.",
-      ring: {
-        left: cardRect.left,
-        top: cardRect.top,
-        w: cardRect.width,
-        h: cardRect.height,
-        radius: 24,
-      },
-      tooltip: { top: cardTooltipTop },
-    },
-    {
-      title: "Chat to earn XP",
-      body: `Type your observations in the message box. Three thoughtful exchanges earn you +${XP_PER_SESSION} XP and ${COINS_PER_SESSION} coins.`,
-      ring: { left: 16, top: composerY, w: SCREEN_W - 32, h: 64, radius: 28 },
-      tooltip: { bottom: tabBarHeight + 120 },
-    },
-  ];
-
-  const current = STEPS[step];
-  const isLast = step === STEPS.length - 1;
-
-  function next() {
-    if (isLast) onClose();
-    else setStep((s) => s + 1);
-  }
-
-  return (
-    <View
-      pointerEvents="box-none"
-      style={{
-        position: "absolute",
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        zIndex: 1000,
-      }}
-    >
-      {/* Dim backdrop — tap-through disabled to focus on the tooltip */}
-      <Pressable
-        onPress={() => {}}
-        style={{
-          position: "absolute",
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          backgroundColor: "rgba(7, 11, 28, 0.78)",
-        }}
-      />
-
-      {/* Pulsing highlight ring */}
-      {current.ring && (
-        <Animated.View
-          pointerEvents="none"
-          style={[
-            ringStyle,
-            {
-              position: "absolute",
-              left: current.ring.left,
-              top: current.ring.top,
-              width: current.ring.w,
-              height: current.ring.h,
-              borderRadius: current.ring.radius,
-              borderWidth: 3,
-              borderColor: colors.accent,
-              shadowColor: colors.accent,
-              shadowOffset: { width: 0, height: 0 },
-              shadowOpacity: 0.8,
-              shadowRadius: 14,
-              elevation: 8,
-            },
-          ]}
-        />
-      )}
-
-      {/* Step counter chip */}
-      <Animated.View
-        key={`chip-${step}`}
-        entering={FadeIn.duration(220)}
-        style={{
-          position: "absolute",
-          top: insets.top + 14,
-          alignSelf: "center",
-          left: 0,
-          right: 0,
-          alignItems: "center",
-        }}
-      >
-        <View
-          style={{
-            paddingHorizontal: 14,
-            paddingVertical: 6,
-            borderRadius: 100,
-            backgroundColor: "rgba(255,255,255,0.16)",
-            borderWidth: 1,
-            borderColor: "rgba(255,255,255,0.22)",
-          }}
-        >
-          <Text
-            style={{
-              fontSize: 11,
-              fontFamily: "Nunito_800ExtraBold",
-              color: "#FFFFFF",
-              letterSpacing: 1.4,
-            }}
-          >
-            {step + 1} OF {STEPS.length}
-          </Text>
-        </View>
-      </Animated.View>
-
-      {/* Tooltip card */}
-      <Animated.View
-        key={`card-${step}`}
-        entering={FadeInUp.duration(360).easing(Easing.out(Easing.cubic))}
-        style={{
-          position: "absolute",
-          left: 20,
-          right: 20,
-          ...(current.tooltip.top !== undefined
-            ? { top: current.tooltip.top }
-            : { bottom: current.tooltip.bottom }),
-          backgroundColor: colors.card,
-          borderRadius: 22,
-          padding: 20,
-          borderWidth: 1,
-          borderColor: colors.border,
-          shadowColor: "#000",
-          shadowOffset: { width: 0, height: 14 },
-          shadowOpacity: 0.35,
-          shadowRadius: 30,
-          elevation: 14,
-        }}
-      >
-        <View style={{ flexDirection: "row", alignItems: "center", gap: 10, marginBottom: 10 }}>
-          <View
-            style={{
-              width: 32,
-              height: 32,
-              borderRadius: 100,
-              backgroundColor: colors.accent + "26",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
-            <Icon name="bulb" size={16} color={colors.accent} />
-          </View>
-          <Text
-            style={{
-              fontSize: 17,
-              fontFamily: "Nunito_800ExtraBold",
-              color: colors.foreground,
-              letterSpacing: -0.3,
-              flex: 1,
-            }}
-          >
-            {current.title}
-          </Text>
-        </View>
-        <Text
-          style={{
-            fontSize: 14,
-            lineHeight: 20,
-            fontFamily: "Nunito_600SemiBold",
-            color: colors.mutedForeground,
-            marginBottom: 18,
-          }}
-        >
-          {current.body}
-        </Text>
-
-        {/* Step dots */}
-        <View style={{ flexDirection: "row", gap: 6, justifyContent: "center", marginBottom: 14 }}>
-          {STEPS.map((_, i) => (
-            <View
-              key={i}
-              style={{
-                width: i === step ? 18 : 6,
-                height: 6,
-                borderRadius: 3,
-                backgroundColor: i === step ? colors.accent : colors.border,
-              }}
-            />
-          ))}
-        </View>
-
-        <View style={{ flexDirection: "row", alignItems: "center", gap: 12 }}>
-          {!isLast && (
-            <Pressable
-              onPress={onClose}
-              style={{
-                paddingHorizontal: 14,
-                paddingVertical: 12,
-              }}
-            >
-              <Text
-                style={{
-                  fontSize: 13,
-                  fontFamily: "Nunito_800ExtraBold",
-                  color: colors.mutedForeground,
-                  letterSpacing: 0.3,
-                }}
-              >
-                Skip
-              </Text>
-            </Pressable>
-          )}
-          <View style={{ flex: 1 }} />
-          <PressScale
-            onPress={next}
-            style={{
-              backgroundColor: colors.foreground,
-              paddingHorizontal: 22,
-              paddingVertical: 13,
-              borderRadius: 100,
-              flexDirection: "row",
-              alignItems: "center",
-              gap: 8,
-            }}
-          >
-            <Text
-              style={{
-                fontSize: 14,
-                fontFamily: "Nunito_800ExtraBold",
-                color: colors.background,
-                letterSpacing: 0.2,
-              }}
-            >
-              {isLast ? "Got it, let's go" : "Next"}
-            </Text>
-            <Icon
-              name={isLast ? "checkmark" : "arrow-forward"}
-              size={15}
-              color={colors.background}
-            />
-          </PressScale>
-        </View>
-      </Animated.View>
-    </View>
-  );
-}
 
 export default function CritiqueScreen() {
   const colors = useColors();
@@ -535,6 +100,12 @@ export default function CritiqueScreen() {
   const scrollRef = useRef<ScrollView>(null);
   const inputRef = useRef<TextInput>(null);
   const [animateIndex, setAnimateIndex] = useState(-1);
+  // Monotonically increasing token. Bumped every time a fresh design
+  // is loaded. Captured at the start of `handleSend` and re-checked
+  // before the AI reply is applied, so a slow in-flight response from
+  // an OLD design can't poison the chat for a NEW design that the
+  // user shuffled to in the meantime.
+  const requestToken = useRef(0);
 
   const maxSessions = state.isPro ? Infinity : 2;
   const limitReached = sessionsDone >= maxSessions;
@@ -547,104 +118,41 @@ export default function CritiqueScreen() {
   const tabBarBottomOffset = 12;
   const composerLift = tabBarHeight + tabBarBottomOffset + 12;
 
-  // Compact 4:5 social-media style card. We size the card so the entire
-  // pre-chat view (header + eyebrow + card + mentor row + opener bubble
-  // + composer) fits on screen without forcing a scroll. The card width
-  // is the smaller of "edge-to-edge minus padding" and "what fits in
-  // the available vertical space at a 4:5 aspect", then the height is
-  // derived from that width so the aspect stays exactly 4:5.
-  //
-  // The heights of the surrounding blocks (header, eyebrow, mentor row,
-  // opener bubble) are MEASURED at runtime via onLayout instead of being
-  // hardcoded estimates. That way the layout self-corrects on uncommon
-  // phone sizes, with system text scaling, or whenever any block grows
-  // (e.g. a longer opener message). The composer is implicitly accounted
-  // for: the ScrollView is `flex: 1`, so its measured height already
-  // excludes the header above and composer below.
-  //
-  // The static spacing constants below (paddings / margins / gaps) are
-  // pixel values that don't change with content / font scaling, so they
-  // remain literals — they have to match the actual styles applied
-  // inside the ScrollView's pre-chat content tree.
-  const SCROLL_PAD_TOP = 14; // ScrollView contentContainerStyle.paddingTop
-  const SCROLL_PAD_BOTTOM = 12; // ScrollView contentContainerStyle.paddingBottom
-  const SCROLL_GAP = 10; // ScrollView contentContainerStyle.gap (between siblings)
+  // Static spacing constants used inside the pre-chat ScrollView.
+  // They stay literals (rather than props) because they have to match
+  // the actual padding/margin/gap values applied below in the JSX,
+  // and they also drive `heroCardTop` for the onboarding ring's card
+  // highlight.
+  const SCROLL_PAD_TOP = 14;
+  const SCROLL_PAD_BOTTOM = 12;
+  const SCROLL_GAP = 10;
   const EYEBROW_MARGIN_TOP = -4;
   const EYEBROW_MARGIN_BOTTOM = 12;
   const CARD_MARGIN_BOTTOM = 10;
   const MENTOR_ROW_MARGIN_TOP = 6;
   const MENTOR_ROW_MARGIN_BOTTOM = 4;
-  // Sum of every static piece of vertical spacing inside the ScrollView
-  // that surrounds the four measured blocks (eyebrow, card, mentor row,
-  // opener bubble). Gap applies between every adjacent pair of children.
-  const STATIC_SCROLL_OVERHEAD =
-    SCROLL_PAD_TOP +
-    EYEBROW_MARGIN_TOP +
-    EYEBROW_MARGIN_BOTTOM +
-    SCROLL_GAP + // eyebrow → card wrapper
-    CARD_MARGIN_BOTTOM +
-    SCROLL_GAP + // card wrapper → mentor row
-    MENTOR_ROW_MARGIN_TOP +
-    MENTOR_ROW_MARGIN_BOTTOM +
-    SCROLL_GAP + // mentor row → opener bubble
-    SCROLL_PAD_BOTTOM;
 
-  // Sensible defaults so the very first paint (before onLayout has fired)
-  // sizes the card close to its final value. Once measurements come in,
-  // the card snaps to the exact correct size.
+  // Defaults so the very first paint (before onLayout fires) places
+  // the onboarding ring close to its final spot. As soon as the real
+  // measurements come in, the ring snaps to the exact card position.
   const HEADER_BLOCK_H_DEFAULT = 70;
   const EYEBROW_H_DEFAULT = 22;
-  const MENTOR_ROW_H_DEFAULT = 50;
-  const OPENER_BUBBLE_H_DEFAULT = 96;
-  const COMPOSER_BLOCK_H_DEFAULT = 86;
-
   const [headerH, setHeaderH] = useState(HEADER_BLOCK_H_DEFAULT);
-  const [scrollH, setScrollH] = useState(0);
   const [eyebrowH, setEyebrowH] = useState(EYEBROW_H_DEFAULT);
-  const [mentorRowH, setMentorRowH] = useState(MENTOR_ROW_H_DEFAULT);
-  const [openerBubbleH, setOpenerBubbleH] = useState(OPENER_BUBBLE_H_DEFAULT);
 
-  // First-paint fallback for the available ScrollView height: derived from
-  // the screen dims and the default header / composer estimates. As soon
-  // as the ScrollView's onLayout fires, we use the real measured value.
-  const fallbackScrollH = Math.max(
-    0,
-    SCREEN_H -
-      paddingTop -
-      HEADER_BLOCK_H_DEFAULT -
-      composerLift -
-      COMPOSER_BLOCK_H_DEFAULT,
-  );
-  const effectiveScrollH = scrollH > 0 ? scrollH : fallbackScrollH;
-
-  const cardWidthByEdge = SCREEN_W - 40; // ScrollView paddingHorizontal: 20 each side
-  // Sizing policy (revised for phone screens):
-  //
-  // The ORIGINAL policy locked the entire pre-chat view to one
-  // viewport — the card height was clamped to whatever vertical
-  // space was left after the eyebrow, mentor row, opener bubble,
-  // and composer were stacked. Because the card had to keep its
-  // 4:5 aspect, that clamped height also dragged the WIDTH down
-  // (width = height * 4/5), producing a small, thin photo on
-  // ordinary phone sizes. The "no scroll" guarantee was winning
-  // over the photo's visual presence.
-  //
-  // The new policy always honours the full edge-to-edge width and
-  // derives a natural 5:4 height from it, so the photo gets its
-  // proper hero footprint on every device. If the surrounding
-  // blocks ever push the column past the viewport on a very small
-  // phone or with large text scaling, the ScrollView absorbs the
-  // overflow gracefully — that is a better outcome than a
-  // shrunken thumbnail.
-  //
-  // The measured-height infra (eyebrowH, mentorRowH, openerBubbleH,
-  // STATIC_SCROLL_OVERHEAD) is intentionally kept; it still drives
-  // the onboarding ring's positioning below.
-  const heroCardWidth = cardWidthByEdge;
-  const heroCardHeight = Math.round(cardWidthByEdge * (5 / 4));
-  // Single source of truth for where the card actually sits on screen.
-  // Used by the onboarding ring so its highlight stays glued to the card
-  // even when any block above changes height (text scaling, longer text).
+  // Sizing policy: the photo always uses the full edge-to-edge width
+  // (`SCREEN_W - 40` to account for the ScrollView's 20px horizontal
+  // padding) and the height is the natural 5:4 derived from that
+  // width. If the surrounding blocks ever push the column past the
+  // viewport on a very small phone or with large text scaling, the
+  // ScrollView absorbs the overflow gracefully — that is a better
+  // outcome than shrinking the photo into a thumbnail.
+  const heroCardWidth = SCREEN_W - 40;
+  const heroCardHeight = Math.round(heroCardWidth * (5 / 4));
+  // Single source of truth for where the card actually sits on
+  // screen. Used by the onboarding ring so its highlight stays glued
+  // to the card even when any block above changes height (text
+  // scaling, longer text).
   const heroCardTop =
     headerH +
     SCROLL_PAD_TOP +
@@ -654,32 +162,24 @@ export default function CritiqueScreen() {
     SCROLL_GAP;
   const heroCardLeft = Math.round((SCREEN_W - heroCardWidth) / 2);
 
-  // Stable layout callbacks. Each one only triggers a state update when
-  // the new height differs from the previous by more than half a pixel,
-  // to avoid render loops from sub-pixel layout jitter.
+  // Stable layout callbacks. Each one only triggers a state update
+  // when the new height differs from the previous by more than half a
+  // pixel, to avoid render loops from sub-pixel layout jitter.
   const onHeaderLayout = useCallback((e: LayoutChangeEvent) => {
     const h = e.nativeEvent.layout.height;
     setHeaderH((prev) => (Math.abs(prev - h) < 0.5 ? prev : h));
-  }, []);
-  const onScrollLayout = useCallback((e: LayoutChangeEvent) => {
-    const h = e.nativeEvent.layout.height;
-    setScrollH((prev) => (Math.abs(prev - h) < 0.5 ? prev : h));
   }, []);
   const onEyebrowLayout = useCallback((e: LayoutChangeEvent) => {
     const h = e.nativeEvent.layout.height;
     setEyebrowH((prev) => (Math.abs(prev - h) < 0.5 ? prev : h));
   }, []);
-  const onMentorRowLayout = useCallback((e: LayoutChangeEvent) => {
-    const h = e.nativeEvent.layout.height;
-    setMentorRowH((prev) => (Math.abs(prev - h) < 0.5 ? prev : h));
-  }, []);
-  const onOpenerBubbleLayout = useCallback((e: LayoutChangeEvent) => {
-    const h = e.nativeEvent.layout.height;
-    setOpenerBubbleH((prev) => (Math.abs(prev - h) < 0.5 ? prev : h));
-  }, []);
+
   const sessionsLeft = Math.max(0, maxSessions - sessionsDone);
 
   function loadNewDesign() {
+    // Bump the token so any in-flight reply from the previous design
+    // is dropped instead of being appended to the fresh chat.
+    requestToken.current += 1;
     setLoadingDesign(true);
     setMessages([]);
     setRewardedThisDesign(false);
@@ -695,12 +195,25 @@ export default function CritiqueScreen() {
   }, []);
 
   useEffect(() => {
-    setTimeout(() => scrollRef.current?.scrollToEnd({ animated: true }), 50);
+    // Defer scroll-to-end by one tick so the new bubble has been laid
+    // out before we scroll. Cleanup clears the timer so a fast
+    // unmount (e.g. tab-switch) doesn't fire scrollToEnd on a stale
+    // ref.
+    const t = setTimeout(
+      () => scrollRef.current?.scrollToEnd({ animated: true }),
+      50,
+    );
+    return () => clearTimeout(t);
   }, [messages.length, sending]);
 
   async function handleSend() {
     const text = input.trim();
     if (!text || sending || limitReached || !design) return;
+
+    // Snapshot the current request token so we can detect if the user
+    // shuffled to a new design while this AI request was in flight.
+    // If they did, the response (and any error) is silently dropped.
+    const myToken = requestToken.current;
 
     const isFirstUserMessage =
       messages.filter((m) => m.role === "user").length === 0;
@@ -718,27 +231,40 @@ export default function CritiqueScreen() {
         designImageUrl: getDesignRemoteUrl(design),
         messages: next,
       });
-      const updated: ChatMessage[] = [...next, { role: "assistant", content: reply }];
+      if (myToken !== requestToken.current) return; // shuffled away
+      const updated: ChatMessage[] = [
+        ...next,
+        { role: "assistant", content: reply },
+      ];
       setMessages(updated);
       setAnimateIndex(updated.length - 1);
 
       const newUserTurns = next.filter((m) => m.role === "user").length;
-      if (!rewardedThisDesign && newUserTurns >= MIN_USER_TURNS_FOR_REWARD) {
+      if (
+        !rewardedThisDesign &&
+        newUserTurns >= MIN_USER_TURNS_FOR_REWARD
+      ) {
         addXP(XP_PER_SESSION);
         addCoins(COINS_PER_SESSION);
         setSessionsDone((s) => s + 1);
         setRewardedThisDesign(true);
       }
     } catch (err: any) {
+      if (myToken !== requestToken.current) return; // shuffled away
       const msg = err?.message ?? "Could not reach the AI mentor.";
       const updated: ChatMessage[] = [
         ...next,
-        { role: "assistant", content: `Hmm, I had trouble responding. ${msg}` },
+        {
+          role: "assistant",
+          content: `Hmm, I had trouble responding. ${msg}`,
+        },
       ];
       setMessages(updated);
       setAnimateIndex(updated.length - 1);
     } finally {
-      setSending(false);
+      if (myToken === requestToken.current) {
+        setSending(false);
+      }
     }
   }
 
@@ -749,16 +275,61 @@ export default function CritiqueScreen() {
           mentor screen feels part of the same Grafly visual world. */}
       <View
         pointerEvents="none"
-        style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0, overflow: "hidden" }}
+        style={{
+          position: "absolute",
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          overflow: "hidden",
+        }}
       >
         <View style={{ position: "absolute", top: SCREEN_H * 0.12, left: -30 }}>
-          <BrandSquiggle variant="loop" width={160} height={95} color={colors.brand.cyan} opacity={0.07} drift delay={300} />
+          <BrandSquiggle
+            variant="loop"
+            width={160}
+            height={95}
+            color={colors.brand.cyan}
+            opacity={0.07}
+            drift
+            delay={300}
+          />
         </View>
-        <View style={{ position: "absolute", top: SCREEN_H * 0.46, left: SCREEN_W - 110 }}>
-          <BrandSquiggle variant="tube" width={110} height={180} color={colors.brand.pink} opacity={0.06} strokeWidth={5} drift delay={1600} />
+        <View
+          style={{
+            position: "absolute",
+            top: SCREEN_H * 0.46,
+            left: SCREEN_W - 110,
+          }}
+        >
+          <BrandSquiggle
+            variant="tube"
+            width={110}
+            height={180}
+            color={colors.brand.pink}
+            opacity={0.06}
+            strokeWidth={5}
+            drift
+            delay={1600}
+          />
         </View>
-        <View style={{ position: "absolute", top: SCREEN_H * 0.78, left: SCREEN_W * 0.18 }}>
-          <BrandSquiggle variant="wave" width={210} height={34} color={colors.brand.lime} opacity={0.09} strokeWidth={4} drift delay={1000} />
+        <View
+          style={{
+            position: "absolute",
+            top: SCREEN_H * 0.78,
+            left: SCREEN_W * 0.18,
+          }}
+        >
+          <BrandSquiggle
+            variant="wave"
+            width={210}
+            height={34}
+            color={colors.brand.lime}
+            opacity={0.09}
+            strokeWidth={4}
+            drift
+            delay={1000}
+          />
         </View>
       </View>
 
@@ -803,7 +374,9 @@ export default function CritiqueScreen() {
                   width: 6,
                   height: 6,
                   borderRadius: 3,
-                  backgroundColor: state.isPro ? colors.success : colors.brand.cyan,
+                  backgroundColor: state.isPro
+                    ? colors.success
+                    : colors.brand.cyan,
                 }}
               />
               <Text
@@ -817,11 +390,16 @@ export default function CritiqueScreen() {
                 AI MENTOR
               </Text>
             </View>
-            <Text style={{
-              fontSize: 30, fontFamily: "Nunito_800ExtraBold",
-              color: colors.foreground, letterSpacing: -0.8, lineHeight: 34,
-              marginTop: 4,
-            }}>
+            <Text
+              style={{
+                fontSize: 30,
+                fontFamily: "Nunito_800ExtraBold",
+                color: colors.foreground,
+                letterSpacing: -0.8,
+                lineHeight: 34,
+                marginTop: 4,
+              }}
+            >
               Critique
             </Text>
           </View>
@@ -839,9 +417,12 @@ export default function CritiqueScreen() {
             start={{ x: 0, y: 0 }}
             end={{ x: 0, y: 1 }}
             style={{
-              paddingHorizontal: 12, paddingVertical: 8,
+              paddingHorizontal: 12,
+              paddingVertical: 8,
               borderRadius: 100,
-              flexDirection: "row", alignItems: "center", gap: 6,
+              flexDirection: "row",
+              alignItems: "center",
+              gap: 6,
               shadowColor: state.isPro ? colors.brand.cyan : colors.brand.lime,
               shadowOffset: { width: 0, height: 4 },
               shadowOpacity: 0.32,
@@ -855,11 +436,14 @@ export default function CritiqueScreen() {
               color={colors.brand.navy}
               weight="fill"
             />
-            <Text style={{
-              fontSize: 12, fontFamily: "Nunito_800ExtraBold",
-              color: colors.brand.navy,
-              letterSpacing: -0.2,
-            }}>
+            <Text
+              style={{
+                fontSize: 12,
+                fontFamily: "Nunito_800ExtraBold",
+                color: colors.brand.navy,
+                letterSpacing: -0.2,
+              }}
+            >
               {state.isPro ? "Unlimited" : `${sessionsLeft} left`}
             </Text>
           </LinearGradient>
@@ -867,10 +451,14 @@ export default function CritiqueScreen() {
           <PressScale
             onPress={loadNewDesign}
             style={{
-              width: 40, height: 40, borderRadius: 100,
+              width: 40,
+              height: 40,
+              borderRadius: 100,
               backgroundColor: colors.card,
-              borderWidth: 1, borderColor: colors.border,
-              alignItems: "center", justifyContent: "center",
+              borderWidth: 1,
+              borderColor: colors.border,
+              alignItems: "center",
+              justifyContent: "center",
             }}
           >
             <Icon name="shuffle" size={18} color={colors.foreground} />
@@ -898,32 +486,50 @@ export default function CritiqueScreen() {
             >
               <Image
                 source={design.source}
-                style={{ width: 52, height: 52, borderRadius: 12, backgroundColor: colors.muted }}
+                style={{
+                  width: 52,
+                  height: 52,
+                  borderRadius: 12,
+                  backgroundColor: colors.muted,
+                }}
                 resizeMode="cover"
               />
               <View style={{ flex: 1 }}>
-                <Text style={{
-                  fontSize: 10, fontFamily: "Nunito_800ExtraBold",
-                  color: colors.mutedForeground, letterSpacing: 1.4, marginBottom: 2,
-                }}>
+                <Text
+                  style={{
+                    fontSize: 10,
+                    fontFamily: "Nunito_800ExtraBold",
+                    color: colors.mutedForeground,
+                    letterSpacing: 1.4,
+                    marginBottom: 2,
+                  }}
+                >
                   TODAY'S DESIGN
                 </Text>
                 <Text
                   numberOfLines={1}
                   style={{
-                    fontSize: 14, fontFamily: "Nunito_800ExtraBold",
-                    color: colors.foreground, letterSpacing: -0.3,
+                    fontSize: 14,
+                    fontFamily: "Nunito_800ExtraBold",
+                    color: colors.foreground,
+                    letterSpacing: -0.3,
                   }}
                 >
                   {design.title}
                 </Text>
               </View>
-              <View style={{
-                width: 32, height: 32, borderRadius: 100,
-                backgroundColor: colors.background,
-                borderWidth: 1, borderColor: colors.border,
-                alignItems: "center", justifyContent: "center",
-              }}>
+              <View
+                style={{
+                  width: 32,
+                  height: 32,
+                  borderRadius: 100,
+                  backgroundColor: colors.background,
+                  borderWidth: 1,
+                  borderColor: colors.border,
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
                 <Icon name="expand-outline" size={14} color={colors.foreground} />
               </View>
             </Pressable>
@@ -934,8 +540,12 @@ export default function CritiqueScreen() {
         <ScrollView
           ref={scrollRef}
           style={{ flex: 1 }}
-          onLayout={onScrollLayout}
-          contentContainerStyle={{ paddingHorizontal: 20, paddingTop: SCROLL_PAD_TOP, paddingBottom: SCROLL_PAD_BOTTOM, gap: SCROLL_GAP }}
+          contentContainerStyle={{
+            paddingHorizontal: 20,
+            paddingTop: SCROLL_PAD_TOP,
+            paddingBottom: SCROLL_PAD_BOTTOM,
+            gap: SCROLL_GAP,
+          }}
           keyboardShouldPersistTaps="handled"
         >
           {loadingDesign && (
@@ -944,59 +554,96 @@ export default function CritiqueScreen() {
             </View>
           )}
 
-          {/* Compact 4:5 social-media card (chat not started). Sized so
-              the entire pre-chat view fits without scrolling — the
-              title sits on a gradient overlay on the image itself
-              instead of in a separate body block, and the longer
-              description has been moved into the expand modal. */}
+          {/* Pre-chat hero block: eyebrow row + 4:5 design card +
+              mentor identity row. Hidden once the user sends their
+              first message and the chat takes over. */}
           {design && !chatStarted && !loadingDesign && (
             <>
               {/* Eyebrow row — clean two-pill layout: brand pill on
                   the left names the section, soft right pill nudges
-                  the user that the card is tappable. The dividing
-                  line + "4 : 5  •  SOCIAL" tail were removed; that
-                  metadata reads better inside the card overlay. */}
+                  the user that the card is tappable. */}
               <Animated.View
                 entering={FadeInDown.duration(440).easing(SMOOTH).delay(60)}
                 onLayout={onEyebrowLayout}
-                style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 10, marginBottom: EYEBROW_MARGIN_BOTTOM, marginTop: EYEBROW_MARGIN_TOP }}
+                style={{
+                  flexDirection: "row",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  gap: 10,
+                  marginBottom: EYEBROW_MARGIN_BOTTOM,
+                  marginTop: EYEBROW_MARGIN_TOP,
+                }}
               >
-                <View style={{
-                  flexDirection: "row", alignItems: "center", gap: 6,
-                  paddingHorizontal: 10, paddingVertical: 5, borderRadius: 100,
-                  backgroundColor: colors.brand.cyan + "1A",
-                  borderWidth: 1,
-                  borderColor: colors.brand.cyan + "55",
-                }}>
-                  <View style={{ width: 5, height: 5, borderRadius: 3, backgroundColor: colors.brand.cyan }} />
-                  <Text style={{
-                    fontSize: 11, fontFamily: "Nunito_800ExtraBold",
-                    color: colors.brand.cyanDeep, letterSpacing: 1.4,
-                  }}>
+                <View
+                  style={{
+                    flexDirection: "row",
+                    alignItems: "center",
+                    gap: 6,
+                    paddingHorizontal: 10,
+                    paddingVertical: 5,
+                    borderRadius: 100,
+                    backgroundColor: colors.brand.cyan + "1A",
+                    borderWidth: 1,
+                    borderColor: colors.brand.cyan + "55",
+                  }}
+                >
+                  <View
+                    style={{
+                      width: 5,
+                      height: 5,
+                      borderRadius: 3,
+                      backgroundColor: colors.brand.cyan,
+                    }}
+                  />
+                  <Text
+                    style={{
+                      fontSize: 11,
+                      fontFamily: "Nunito_800ExtraBold",
+                      color: colors.brand.cyanDeep,
+                      letterSpacing: 1.4,
+                    }}
+                  >
                     TODAY'S DESIGN
                   </Text>
                 </View>
-                <View style={{
-                  flexDirection: "row", alignItems: "center", gap: 5,
-                  paddingHorizontal: 9, paddingVertical: 5, borderRadius: 100,
-                  backgroundColor: colors.muted,
-                }}>
-                  <Icon name="expand-outline" size={11} color={colors.mutedForeground} />
-                  <Text style={{
-                    fontSize: 10, fontFamily: "Nunito_800ExtraBold",
-                    color: colors.mutedForeground, letterSpacing: 1.2,
-                  }}>
+                <View
+                  style={{
+                    flexDirection: "row",
+                    alignItems: "center",
+                    gap: 5,
+                    paddingHorizontal: 9,
+                    paddingVertical: 5,
+                    borderRadius: 100,
+                    backgroundColor: colors.muted,
+                  }}
+                >
+                  <Icon
+                    name="expand-outline"
+                    size={11}
+                    color={colors.mutedForeground}
+                  />
+                  <Text
+                    style={{
+                      fontSize: 10,
+                      fontFamily: "Nunito_800ExtraBold",
+                      color: colors.mutedForeground,
+                      letterSpacing: 1.2,
+                    }}
+                  >
                     TAP TO STUDY
                   </Text>
                 </View>
               </Animated.View>
 
-              {/* 4:5 card, centered. Image fills the entire card, with
-                  the title overlaid on a soft bottom gradient so the
-                  card stays compact. */}
+              {/* Edge-to-edge 4:5 hero card. Image fills the card,
+                  with the title overlaid on a soft bottom gradient
+                  so the card stays compact on small phones. */}
               <Animated.View
                 entering={FadeInDown.duration(560).easing(SMOOTH).delay(120)}
-                style={{ alignItems: "center", marginBottom: CARD_MARGIN_BOTTOM }}
+                style={{
+                  alignItems: "center",
+                  marginBottom: CARD_MARGIN_BOTTOM,
+                }}
               >
                 <Pressable onPress={() => setImageOpen(true)}>
                   <View
@@ -1022,28 +669,38 @@ export default function CritiqueScreen() {
                     />
 
                     {/* Expand pill (top-right) */}
-                    <View style={{
-                      position: "absolute", top: 12, right: 12,
-                      paddingHorizontal: 11, paddingVertical: 7, borderRadius: 100,
-                      backgroundColor: "rgba(0,0,0,0.55)",
-                      flexDirection: "row", alignItems: "center", gap: 6,
-                    }}>
+                    <View
+                      style={{
+                        position: "absolute",
+                        top: 12,
+                        right: 12,
+                        paddingHorizontal: 11,
+                        paddingVertical: 7,
+                        borderRadius: 100,
+                        backgroundColor: "rgba(0,0,0,0.55)",
+                        flexDirection: "row",
+                        alignItems: "center",
+                        gap: 6,
+                      }}
+                    >
                       <Icon name="expand-outline" size={13} color="#FFFFFF" />
-                      <Text style={{
-                        fontSize: 10, fontFamily: "Nunito_800ExtraBold",
-                        color: "#FFFFFF", letterSpacing: 0.8,
-                      }}>
+                      <Text
+                        style={{
+                          fontSize: 10,
+                          fontFamily: "Nunito_800ExtraBold",
+                          color: "#FFFFFF",
+                          letterSpacing: 0.8,
+                        }}
+                      >
                         EXPAND
                       </Text>
                     </View>
 
-                    {/* Bottom gradient + title overlay. Eyebrow uses
-                        the brand cyan accent so the metadata reads
-                        as part of the Grafly visual world instead of
-                        a generic "white at 70% opacity" caption. The
-                        difficulty token sits in its own pill (left)
-                        with a subtle dot, the format follows on the
-                        right side as a quieter context tag. */}
+                    {/* Bottom gradient + title overlay. Metadata
+                        pills sit on the darker floor of the gradient
+                        (alpha 0.88 + an extra solid pill backing) so
+                        10px text reads AA on bright / variable
+                        photographic backgrounds. */}
                     <LinearGradient
                       colors={["rgba(7,11,28,0)", "rgba(7,11,28,0.88)"]}
                       style={{
@@ -1058,37 +715,64 @@ export default function CritiqueScreen() {
                         justifyContent: "flex-end",
                       }}
                     >
-                      {/* Metadata pills sit on the darker floor of the
-                          gradient (alpha 0.88 + an extra solid pill
-                          backing) so 10px text reads AA on bright /
-                          variable photographic backgrounds, not just
-                          on the gradient stop. */}
-                      <View style={{ flexDirection: "row", alignItems: "center", gap: 6, marginBottom: 8 }}>
-                        <View style={{
-                          flexDirection: "row", alignItems: "center", gap: 5,
-                          paddingHorizontal: 9, paddingVertical: 4, borderRadius: 100,
-                          backgroundColor: "rgba(7,11,28,0.55)",
-                          borderWidth: 1,
-                          borderColor: "rgba(255,255,255,0.28)",
-                        }}>
-                          <View style={{ width: 5, height: 5, borderRadius: 3, backgroundColor: colors.brand.cyan }} />
-                          <Text style={{
-                            fontSize: 10, fontFamily: "Nunito_800ExtraBold",
-                            color: "#FFFFFF", letterSpacing: 1.3,
-                          }}>
+                      <View
+                        style={{
+                          flexDirection: "row",
+                          alignItems: "center",
+                          gap: 6,
+                          marginBottom: 8,
+                        }}
+                      >
+                        <View
+                          style={{
+                            flexDirection: "row",
+                            alignItems: "center",
+                            gap: 5,
+                            paddingHorizontal: 9,
+                            paddingVertical: 4,
+                            borderRadius: 100,
+                            backgroundColor: "rgba(7,11,28,0.55)",
+                            borderWidth: 1,
+                            borderColor: "rgba(255,255,255,0.28)",
+                          }}
+                        >
+                          <View
+                            style={{
+                              width: 5,
+                              height: 5,
+                              borderRadius: 3,
+                              backgroundColor: colors.brand.cyan,
+                            }}
+                          />
+                          <Text
+                            style={{
+                              fontSize: 10,
+                              fontFamily: "Nunito_800ExtraBold",
+                              color: "#FFFFFF",
+                              letterSpacing: 1.3,
+                            }}
+                          >
                             {design.difficulty.toUpperCase()}
                           </Text>
                         </View>
-                        <View style={{
-                          paddingHorizontal: 9, paddingVertical: 4, borderRadius: 100,
-                          backgroundColor: "rgba(7,11,28,0.55)",
-                          borderWidth: 1,
-                          borderColor: "rgba(255,255,255,0.18)",
-                        }}>
-                          <Text style={{
-                            fontSize: 10, fontFamily: "Nunito_800ExtraBold",
-                            color: "rgba(255,255,255,0.92)", letterSpacing: 1.4,
-                          }}>
+                        <View
+                          style={{
+                            paddingHorizontal: 9,
+                            paddingVertical: 4,
+                            borderRadius: 100,
+                            backgroundColor: "rgba(7,11,28,0.55)",
+                            borderWidth: 1,
+                            borderColor: "rgba(255,255,255,0.18)",
+                          }}
+                        >
+                          <Text
+                            style={{
+                              fontSize: 10,
+                              fontFamily: "Nunito_800ExtraBold",
+                              color: "rgba(255,255,255,0.92)",
+                              letterSpacing: 1.4,
+                            }}
+                          >
                             IG POST  ·  4 : 5
                           </Text>
                         </View>
@@ -1096,8 +780,11 @@ export default function CritiqueScreen() {
                       <Text
                         numberOfLines={2}
                         style={{
-                          fontSize: 19, fontFamily: "Nunito_800ExtraBold",
-                          color: "#FFFFFF", letterSpacing: -0.4, lineHeight: 23,
+                          fontSize: 19,
+                          fontFamily: "Nunito_800ExtraBold",
+                          color: "#FFFFFF",
+                          letterSpacing: -0.4,
+                          lineHeight: 23,
                         }}
                       >
                         {design.title}
@@ -1112,29 +799,60 @@ export default function CritiqueScreen() {
                   ONLINE dot inline next to the label. */}
               <Animated.View
                 entering={FadeInDown.duration(480).easing(SMOOTH).delay(220)}
-                onLayout={onMentorRowLayout}
-                style={{ flexDirection: "row", alignItems: "center", gap: 12, marginTop: MENTOR_ROW_MARGIN_TOP, marginBottom: MENTOR_ROW_MARGIN_BOTTOM }}
+                style={{
+                  flexDirection: "row",
+                  alignItems: "center",
+                  gap: 12,
+                  marginTop: MENTOR_ROW_MARGIN_TOP,
+                  marginBottom: MENTOR_ROW_MARGIN_BOTTOM,
+                }}
               >
                 <AiBot size={36} />
                 <View style={{ flex: 1 }}>
-                  <Text style={{
-                    fontSize: 16, fontFamily: "Nunito_800ExtraBold",
-                    color: colors.foreground, letterSpacing: -0.3,
-                  }}>
+                  <Text
+                    style={{
+                      fontSize: 16,
+                      fontFamily: "Nunito_800ExtraBold",
+                      color: colors.foreground,
+                      letterSpacing: -0.3,
+                    }}
+                  >
                     Grafly
                   </Text>
-                  <View style={{ flexDirection: "row", alignItems: "center", gap: 6, marginTop: 2 }}>
-                    <Text style={{
-                      fontSize: 10, fontFamily: "Nunito_800ExtraBold",
-                      color: colors.brand.cyanDeep, letterSpacing: 1.2,
-                    }}>
+                  <View
+                    style={{
+                      flexDirection: "row",
+                      alignItems: "center",
+                      gap: 6,
+                      marginTop: 2,
+                    }}
+                  >
+                    <Text
+                      style={{
+                        fontSize: 10,
+                        fontFamily: "Nunito_800ExtraBold",
+                        color: colors.brand.cyanDeep,
+                        letterSpacing: 1.2,
+                      }}
+                    >
                       DESIGN MENTOR
                     </Text>
-                    <View style={{ width: 4, height: 4, borderRadius: 2, backgroundColor: colors.success }} />
-                    <Text style={{
-                      fontSize: 10, fontFamily: "Nunito_800ExtraBold",
-                      color: colors.success, letterSpacing: 1.2,
-                    }}>
+                    <View
+                      style={{
+                        width: 4,
+                        height: 4,
+                        borderRadius: 2,
+                        backgroundColor: colors.success,
+                      }}
+                    />
+                    <Text
+                      style={{
+                        fontSize: 10,
+                        fontFamily: "Nunito_800ExtraBold",
+                        color: colors.success,
+                        letterSpacing: 1.2,
+                      }}
+                    >
                       ONLINE
                     </Text>
                   </View>
@@ -1157,17 +875,12 @@ export default function CritiqueScreen() {
               <Animated.View
                 key={i}
                 entering={FadeInUp.duration(360).easing(SMOOTH)}
-                onLayout={isOpener ? onOpenerBubbleLayout : undefined}
                 style={{
                   alignSelf: isUser ? "flex-end" : "flex-start",
                   maxWidth: "88%",
                 }}
               >
                 {isUser ? (
-                  // User bubble: deep-blue gradient (cyanDeep ->
-                  // navy-blue). White text passes AA (~5.0:1+ on
-                  // cyanDeep, ~10:1 on navy-blue) and reads as the
-                  // confident "you said this" voice in the chat.
                   <LinearGradient
                     colors={[colors.brand.cyanDeep, "#1E4D8B"]}
                     start={{ x: 0, y: 0 }}
@@ -1220,7 +933,9 @@ export default function CritiqueScreen() {
                       <TypewriterText
                         text={m.content}
                         active={i === animateIndex}
-                        onTick={() => scrollRef.current?.scrollToEnd({ animated: false })}
+                        onTick={() =>
+                          scrollRef.current?.scrollToEnd({ animated: false })
+                        }
                         onDone={() => setAnimateIndex(-1)}
                         style={{
                           fontSize: 14,
@@ -1256,7 +971,14 @@ export default function CritiqueScreen() {
                   alignItems: "center",
                 }}
               >
-                <Text style={{ fontSize: 12, fontFamily: "Nunito_800ExtraBold", color: colors.brand.cyanDeep, letterSpacing: 0.3 }}>
+                <Text
+                  style={{
+                    fontSize: 12,
+                    fontFamily: "Nunito_800ExtraBold",
+                    color: colors.brand.cyanDeep,
+                    letterSpacing: 0.3,
+                  }}
+                >
                   Grafly is Graflying ...
                 </Text>
               </View>
@@ -1264,14 +986,21 @@ export default function CritiqueScreen() {
           )}
 
           {rewardedThisDesign && (
-            <Animated.View entering={FadeIn} style={{ alignSelf: "center", marginTop: 6 }}>
+            <Animated.View
+              entering={FadeIn}
+              style={{ alignSelf: "center", marginTop: 6 }}
+            >
               <LinearGradient
                 colors={[colors.brand.lime, "#C7D11A"]}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 0, y: 1 }}
                 style={{
-                  paddingHorizontal: 14, paddingVertical: 8, borderRadius: 100,
-                  flexDirection: "row", alignItems: "center", gap: 6,
+                  paddingHorizontal: 14,
+                  paddingVertical: 8,
+                  borderRadius: 100,
+                  flexDirection: "row",
+                  alignItems: "center",
+                  gap: 6,
                   shadowColor: colors.brand.lime,
                   shadowOffset: { width: 0, height: 4 },
                   shadowOpacity: 0.4,
@@ -1279,8 +1008,20 @@ export default function CritiqueScreen() {
                   elevation: 4,
                 }}
               >
-                <Icon name="flash" size={14} color={colors.brand.navy} weight="fill" />
-                <Text style={{ fontSize: 12, fontFamily: "Nunito_800ExtraBold", color: colors.brand.navy, letterSpacing: 0.3 }}>
+                <Icon
+                  name="flash"
+                  size={14}
+                  color={colors.brand.navy}
+                  weight="fill"
+                />
+                <Text
+                  style={{
+                    fontSize: 12,
+                    fontFamily: "Nunito_800ExtraBold",
+                    color: colors.brand.navy,
+                    letterSpacing: 0.3,
+                  }}
+                >
                   +{XP_PER_SESSION} XP earned ✨
                 </Text>
               </LinearGradient>
@@ -1294,70 +1035,113 @@ export default function CritiqueScreen() {
             can keep typing or hit send right away. Disappears the
             moment any text is in the input, so it never competes
             with the conversation. */}
-        {!chatStarted && !limitReached && !loadingDesign && input.trim().length === 0 && (
-          <Animated.View
-            entering={FadeInUp.duration(420).easing(SMOOTH).delay(280)}
-            style={{ paddingTop: 4, paddingBottom: 6 }}
-          >
-            <View style={{ flexDirection: "row", alignItems: "center", gap: 8, paddingHorizontal: 22, marginBottom: 8 }}>
-              <Icon name="flash" size={12} color={colors.brand.cyanDeep} weight="fill" />
-              <Text style={{
-                fontSize: 10, fontFamily: "Nunito_800ExtraBold",
-                color: colors.brand.cyanDeep, letterSpacing: 1.4,
-              }}>
-                QUICK START
-              </Text>
-              <View style={{ flex: 1, height: 1, backgroundColor: colors.border, opacity: 0.55 }} />
-              <Text style={{
-                fontSize: 10, fontFamily: "Nunito_800ExtraBold",
-                color: colors.mutedForeground, letterSpacing: 1.2,
-              }}>
-                TAP TO PREFILL
-              </Text>
-            </View>
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              contentContainerStyle={{ paddingHorizontal: 20, gap: 8 }}
-              keyboardShouldPersistTaps="handled"
+        {!chatStarted &&
+          !limitReached &&
+          !loadingDesign &&
+          input.trim().length === 0 && (
+            <Animated.View
+              entering={FadeInUp.duration(420).easing(SMOOTH).delay(280)}
+              style={{ paddingTop: 4, paddingBottom: 6 }}
             >
-              {QUICK_PROMPTS.map((p) => (
-                <PressScale
-                  key={p.label}
-                  onPress={() => {
-                    setInput(p.prompt);
-                    inputRef.current?.focus();
-                  }}
+              <View
+                style={{
+                  flexDirection: "row",
+                  alignItems: "center",
+                  gap: 8,
+                  paddingHorizontal: 22,
+                  marginBottom: 8,
+                }}
+              >
+                <Icon
+                  name="flash"
+                  size={12}
+                  color={colors.brand.cyanDeep}
+                  weight="fill"
+                />
+                <Text
                   style={{
-                    flexDirection: "row",
-                    alignItems: "center",
-                    gap: 7,
-                    paddingHorizontal: 13,
-                    paddingVertical: 10,
-                    borderRadius: 100,
-                    backgroundColor: colors.card,
-                    borderWidth: 1,
-                    borderColor: colors.border,
+                    fontSize: 10,
+                    fontFamily: "Nunito_800ExtraBold",
+                    color: colors.brand.cyanDeep,
+                    letterSpacing: 1.4,
                   }}
                 >
-                  <Icon name={p.icon as any} size={13} color={colors.brand.cyanDeep} />
-                  <Text style={{
-                    fontSize: 12,
+                  QUICK START
+                </Text>
+                <View
+                  style={{
+                    flex: 1,
+                    height: 1,
+                    backgroundColor: colors.border,
+                    opacity: 0.55,
+                  }}
+                />
+                <Text
+                  style={{
+                    fontSize: 10,
                     fontFamily: "Nunito_800ExtraBold",
-                    color: colors.foreground,
-                    letterSpacing: -0.1,
-                  }}>
-                    {p.label}
-                  </Text>
-                </PressScale>
-              ))}
-            </ScrollView>
-          </Animated.View>
-        )}
+                    color: colors.mutedForeground,
+                    letterSpacing: 1.2,
+                  }}
+                >
+                  TAP TO PREFILL
+                </Text>
+              </View>
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={{ paddingHorizontal: 20, gap: 8 }}
+                keyboardShouldPersistTaps="handled"
+              >
+                {QUICK_PROMPTS.map((p) => (
+                  <PressScale
+                    key={p.label}
+                    onPress={() => {
+                      setInput(p.prompt);
+                      inputRef.current?.focus();
+                    }}
+                    style={{
+                      flexDirection: "row",
+                      alignItems: "center",
+                      gap: 7,
+                      paddingHorizontal: 13,
+                      paddingVertical: 10,
+                      borderRadius: 100,
+                      backgroundColor: colors.card,
+                      borderWidth: 1,
+                      borderColor: colors.border,
+                    }}
+                  >
+                    <Icon
+                      name={p.icon as any}
+                      size={13}
+                      color={colors.brand.cyanDeep}
+                    />
+                    <Text
+                      style={{
+                        fontSize: 12,
+                        fontFamily: "Nunito_800ExtraBold",
+                        color: colors.foreground,
+                        letterSpacing: -0.1,
+                      }}
+                    >
+                      {p.label}
+                    </Text>
+                  </PressScale>
+                ))}
+              </ScrollView>
+            </Animated.View>
+          )}
 
         {/* Composer */}
         {limitReached ? (
-          <View style={{ paddingHorizontal: 20, paddingBottom: composerLift, paddingTop: 8 }}>
+          <View
+            style={{
+              paddingHorizontal: 20,
+              paddingBottom: composerLift,
+              paddingTop: 8,
+            }}
+          >
             <PressScale
               style={{
                 backgroundColor: colors.foreground,
@@ -1371,7 +1155,13 @@ export default function CritiqueScreen() {
               onPress={() => router.push("/paywall" as any)}
             >
               <Icon name="star" size={18} color={colors.background} />
-              <Text style={{ fontSize: 16, fontFamily: "Nunito_800ExtraBold", color: colors.background }}>
+              <Text
+                style={{
+                  fontSize: 16,
+                  fontFamily: "Nunito_800ExtraBold",
+                  color: colors.background,
+                }}
+              >
                 Unlock Pro for unlimited sessions
               </Text>
             </PressScale>
@@ -1428,7 +1218,9 @@ export default function CritiqueScreen() {
                   color: colors.foreground,
                   maxHeight: 140,
                   minHeight: 28,
-                  ...(Platform.OS === "web" ? { outlineStyle: "none" as any } : {}),
+                  ...(Platform.OS === "web"
+                    ? { outlineStyle: "none" as any }
+                    : {}),
                 }}
               />
               {/* Send button — cyan gradient when active so the
@@ -1444,7 +1236,8 @@ export default function CritiqueScreen() {
                   height: 40,
                   borderRadius: 20,
                   overflow: "hidden",
-                  shadowColor: input.trim() && !sending ? colors.brand.cyan : "transparent",
+                  shadowColor:
+                    input.trim() && !sending ? colors.brand.cyan : "transparent",
                   shadowOffset: { width: 0, height: 4 },
                   shadowOpacity: 0.4,
                   shadowRadius: 8,
@@ -1464,7 +1257,12 @@ export default function CritiqueScreen() {
                       justifyContent: "center",
                     }}
                   >
-                    <Icon name="arrow-up" size={18} color={colors.brand.navy} weight="bold" />
+                    <Icon
+                      name="arrow-up"
+                      size={18}
+                      color={colors.brand.navy}
+                      weight="bold"
+                    />
                   </LinearGradient>
                 ) : (
                   <View
@@ -1477,7 +1275,11 @@ export default function CritiqueScreen() {
                       justifyContent: "center",
                     }}
                   >
-                    <Icon name="arrow-up" size={18} color={colors.mutedForeground} />
+                    <Icon
+                      name="arrow-up"
+                      size={18}
+                      color={colors.mutedForeground}
+                    />
                   </View>
                 )}
               </PressScale>
@@ -1501,10 +1303,20 @@ export default function CritiqueScreen() {
       )}
 
       {/* Full-image modal */}
-      <Modal visible={imageOpen} transparent animationType="fade" onRequestClose={() => setImageOpen(false)}>
+      <Modal
+        visible={imageOpen}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setImageOpen(false)}
+      >
         <Pressable
           onPress={() => setImageOpen(false)}
-          style={{ flex: 1, backgroundColor: "rgba(0,0,0,0.95)", alignItems: "center", justifyContent: "center" }}
+          style={{
+            flex: 1,
+            backgroundColor: "rgba(0,0,0,0.95)",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
         >
           {design && (
             <Image
@@ -1516,16 +1328,16 @@ export default function CritiqueScreen() {
           <TouchableOpacity
             onPress={() => setImageOpen(false)}
             style={{
-              position: "absolute", top: insets.top + 12, right: 16,
-              padding: 12, backgroundColor: "rgba(255,255,255,0.18)", borderRadius: 100,
+              position: "absolute",
+              top: insets.top + 12,
+              right: 16,
+              padding: 12,
+              backgroundColor: "rgba(255,255,255,0.18)",
+              borderRadius: 100,
             }}
           >
             <Icon name="close" size={22} color="#fff" />
           </TouchableOpacity>
-          {/* Caption block (title + description) removed per user request —
-              the expanded view is now image-only so the design can speak
-              for itself. The title + description are still available on
-              the design card itself in the carousel. */}
         </Pressable>
       </Modal>
     </View>
