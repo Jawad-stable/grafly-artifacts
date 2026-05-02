@@ -1,8 +1,40 @@
 import React, { createContext, useContext, useReducer, useEffect, useState } from "react";
+import { I18nManager, DevSettings, Platform } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { setVoiceEnabled } from "@/services/voiceService";
 
 export type Language = "en" | "ar";
+
+// Sync the native RTL flag with the chosen language. Returns true when the
+// flag actually changed and the app needs to reload to flip layout. We never
+// reload synchronously — callers decide when to trigger DevSettings.reload().
+function syncNativeRTL(language: Language): boolean {
+  const shouldBeRTL = language === "ar";
+  if (I18nManager.isRTL === shouldBeRTL) return false;
+  try {
+    I18nManager.allowRTL(shouldBeRTL);
+    I18nManager.forceRTL(shouldBeRTL);
+  } catch {
+    // forceRTL can throw on web; safe to ignore — web uses CSS direction.
+  }
+  return true;
+}
+
+function reloadApp() {
+  // DevSettings.reload works in Expo Go and dev builds. On web (no native
+  // bridge) and production standalone builds without expo-updates, fall back
+  // to a noop — the user can manually relaunch and the persisted flag will
+  // take effect on the next cold start.
+  if (Platform.OS === "web") {
+    if (typeof window !== "undefined") window.location.reload();
+    return;
+  }
+  try {
+    DevSettings.reload();
+  } catch {
+    // No-op: standalone production build without expo-updates installed.
+  }
+}
 
 export interface ProfileState {
   username: string;
@@ -83,13 +115,25 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
     let cancelled = false;
     async function loadState() {
       const saved = await AsyncStorage.getItem(STORAGE_KEY);
+      let restored: ProfileState = initialState;
       if (saved) {
         try {
-          const parsed = JSON.parse(saved);
-          if (!cancelled) dispatch({ type: "RESTORE", state: migrateState(parsed) });
+          restored = migrateState(JSON.parse(saved));
         } catch (_) {}
       }
-      if (!cancelled) setHydrated(true);
+      // Sync native RTL flag BEFORE marking hydrated. If the persisted
+      // language disagrees with the current I18nManager state (e.g. user
+      // picked Arabic last session, app was just cold-launched in LTR),
+      // flip the flag and reload so the whole tree mounts in the correct
+      // direction.
+      if (syncNativeRTL(restored.language)) {
+        reloadApp();
+        return;
+      }
+      if (!cancelled) {
+        dispatch({ type: "RESTORE", state: restored });
+        setHydrated(true);
+      }
     }
     loadState();
     return () => { cancelled = true; };
@@ -103,16 +147,34 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
     setVoiceEnabled(state.voiceEnabled);
   }, [state.voiceEnabled, hydrated]);
 
-  // Persist to AsyncStorage after hydration.
+  // Persist to AsyncStorage after hydration. After the write resolves,
+  // check whether the native RTL flag needs to flip — if so, reload so the
+  // entire layout (flexDirection, paddings, margins) re-mounts mirrored.
+  // Doing the reload AFTER the persist guarantees the new language survives
+  // the relaunch.
   useEffect(() => {
     if (!hydrated) return;
-    AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    let cancelled = false;
+    AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(state))
+      .catch(() => {})
+      .finally(() => {
+        if (cancelled) return;
+        if (syncNativeRTL(state.language)) {
+          // Defer one tick to let any pending renders/dispatches settle.
+          setTimeout(reloadApp, 50);
+        }
+      });
+    return () => { cancelled = true; };
   }, [state, hydrated]);
 
   const updateProfile = (data: { username?: string; handle?: string; profilePic?: string }) =>
     dispatch({ type: "UPDATE_PROFILE", ...data });
   const toggleVoice = () => dispatch({ type: "TOGGLE_VOICE" });
   const setTheme = (mode: "light" | "dark") => dispatch({ type: "SET_THEME", mode });
+  // setLanguage just dispatches — the persist effect above handles writing
+  // to storage and triggering the reload once the write resolves. This
+  // avoids any race between two concurrent writes and avoids using a stale
+  // closure-captured `state` snapshot.
   const setLanguage = (language: Language) => dispatch({ type: "SET_LANGUAGE", language });
 
   return (
