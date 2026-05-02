@@ -618,30 +618,30 @@ export default function CritiqueScreen() {
   const effectiveScrollH = scrollH > 0 ? scrollH : fallbackScrollH;
 
   const cardWidthByEdge = SCREEN_W - 40; // ScrollView paddingHorizontal: 20 each side
-  const cardHeightByEdge = cardWidthByEdge * (5 / 4);
-  // How much height the card itself can occupy inside the ScrollView once
-  // every other block above/below it (and their static spacing) is
-  // subtracted from the measured ScrollView height.
-  const cardHeightByHeight = Math.max(
-    0,
-    effectiveScrollH -
-      STATIC_SCROLL_OVERHEAD -
-      eyebrowH -
-      mentorRowH -
-      openerBubbleH,
-  );
-  // Soft minimum so on very tall screens the card still has visual presence.
-  // We deliberately cap the floor at `cardHeightByHeight` so it CAN'T force
-  // the content to overflow / scroll — on the smallest phones with large
-  // text scaling, the card is allowed to shrink below this minimum so the
-  // "always fits" guarantee wins over visual-presence.
-  const MIN_CARD_W = 140;
-  const MIN_CARD_H = MIN_CARD_W * (5 / 4);
-  const safeMinH = Math.min(MIN_CARD_H, cardHeightByHeight);
-  const heroCardHeight = Math.round(
-    Math.max(safeMinH, Math.min(cardHeightByEdge, cardHeightByHeight)),
-  );
-  const heroCardWidth = Math.round(heroCardHeight * (4 / 5));
+  // Sizing policy (revised for phone screens):
+  //
+  // The ORIGINAL policy locked the entire pre-chat view to one
+  // viewport — the card height was clamped to whatever vertical
+  // space was left after the eyebrow, mentor row, opener bubble,
+  // and composer were stacked. Because the card had to keep its
+  // 4:5 aspect, that clamped height also dragged the WIDTH down
+  // (width = height * 4/5), producing a small, thin photo on
+  // ordinary phone sizes. The "no scroll" guarantee was winning
+  // over the photo's visual presence.
+  //
+  // The new policy always honours the full edge-to-edge width and
+  // derives a natural 5:4 height from it, so the photo gets its
+  // proper hero footprint on every device. If the surrounding
+  // blocks ever push the column past the viewport on a very small
+  // phone or with large text scaling, the ScrollView absorbs the
+  // overflow gracefully — that is a better outcome than a
+  // shrunken thumbnail.
+  //
+  // The measured-height infra (eyebrowH, mentorRowH, openerBubbleH,
+  // STATIC_SCROLL_OVERHEAD) is intentionally kept; it still drives
+  // the onboarding ring's positioning below.
+  const heroCardWidth = cardWidthByEdge;
+  const heroCardHeight = Math.round(cardWidthByEdge * (5 / 4));
   // Single source of truth for where the card actually sits on screen.
   // Used by the onboarding ring so its highlight stays glued to the card
   // even when any block above changes height (text scaling, longer text).
