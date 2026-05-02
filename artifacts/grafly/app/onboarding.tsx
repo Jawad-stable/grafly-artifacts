@@ -31,6 +31,8 @@ import { LOGO } from "@/constants/assets";
 import type { MascotState } from "@/constants/assets";
 import { AText } from "@/components/AText";
 import { PressScale } from "@/components/PressScale";
+import { useT } from "@/hooks/useT";
+import { LANGUAGES, type Language } from "@/lib/i18n";
 
 const EASE = Easing.out(Easing.cubic);
 const fadeIn = (delay = 0, duration = 300) =>
@@ -39,6 +41,7 @@ const fadeInDown = (duration = 280) =>
   FadeInDown.duration(duration).easing(EASE);
 
 type Step =
+  | "language"
   | "welcome"
   | "name"
   | "goal"
@@ -49,6 +52,7 @@ type Step =
   | "signup";
 
 const STEP_ORDER: Step[] = [
+  "language",
   "welcome",
   "name",
   "goal",
@@ -67,11 +71,11 @@ type TimeId = "5" | "10" | "15";
 
 type GoalTone = "primary" | "success" | "pink" | "accent";
 
-const GOALS: { id: GoalId; label: string; icon: IconName; tone: GoalTone }[] = [
-  { id: "basics", label: "Learn design basics", icon: "book-outline", tone: "primary" },
-  { id: "improve", label: "Improve my skills", icon: "trending-up", tone: "success" },
-  { id: "portfolio", label: "Build a portfolio", icon: "briefcase-outline", tone: "pink" },
-  { id: "career", label: "Start a design career", icon: "rocket-outline", tone: "accent" },
+const GOALS: { id: GoalId; tKey: "onb.goal.basics" | "onb.goal.improve" | "onb.goal.portfolio" | "onb.goal.career"; icon: IconName; tone: GoalTone }[] = [
+  { id: "basics", tKey: "onb.goal.basics", icon: "book-outline", tone: "primary" },
+  { id: "improve", tKey: "onb.goal.improve", icon: "trending-up", tone: "success" },
+  { id: "portfolio", tKey: "onb.goal.portfolio", icon: "briefcase-outline", tone: "pink" },
+  { id: "career", tKey: "onb.goal.career", icon: "rocket-outline", tone: "accent" },
 ];
 
 function getToneColor(palette: ReturnType<typeof useColors>, tone: GoalTone): string {
@@ -87,16 +91,16 @@ function getToneColor(palette: ReturnType<typeof useColors>, tone: GoalTone): st
   }
 }
 
-const LEVELS: { id: SelfLevelId; label: string; desc: string; emoji: string }[] = [
-  { id: "beginner", label: "Beginner", desc: "Just getting started", emoji: "🌱" },
-  { id: "intermediate", label: "Intermediate", desc: "I know the basics", emoji: "🚀" },
-  { id: "advanced", label: "Advanced", desc: "I have real experience", emoji: "⚡" },
+const LEVELS: { id: SelfLevelId; labelKey: "onb.level.beginner" | "onb.level.intermediate" | "onb.level.advanced"; descKey: "onb.level.beginner.desc" | "onb.level.intermediate.desc" | "onb.level.advanced.desc"; emoji: string }[] = [
+  { id: "beginner", labelKey: "onb.level.beginner", descKey: "onb.level.beginner.desc", emoji: "🌱" },
+  { id: "intermediate", labelKey: "onb.level.intermediate", descKey: "onb.level.intermediate.desc", emoji: "🚀" },
+  { id: "advanced", labelKey: "onb.level.advanced", descKey: "onb.level.advanced.desc", emoji: "⚡" },
 ];
 
-const TIMES: { id: TimeId; label: string; desc: string; icon: IconName }[] = [
-  { id: "5", label: "5 min", desc: "A quick warmup", icon: "flash-outline" },
-  { id: "10", label: "10 min", desc: "A solid daily habit", icon: "time-outline" },
-  { id: "15", label: "15+ min", desc: "Serious progress", icon: "trophy-outline" },
+const TIMES: { id: TimeId; labelKey: "onb.time.5" | "onb.time.10" | "onb.time.15"; descKey: "onb.time.5.desc" | "onb.time.10.desc" | "onb.time.15.desc"; icon: IconName }[] = [
+  { id: "5", labelKey: "onb.time.5", descKey: "onb.time.5.desc", icon: "flash-outline" },
+  { id: "10", labelKey: "onb.time.10", descKey: "onb.time.10.desc", icon: "time-outline" },
+  { id: "15", labelKey: "onb.time.15", descKey: "onb.time.15.desc", icon: "trophy-outline" },
 ];
 
 function getPlacementLevel(score: number, total: number): PlacementLevel {
@@ -108,12 +112,12 @@ function getPlacementLevel(score: number, total: number): PlacementLevel {
   return "novice";
 }
 
-const LEVEL_LABELS: Record<PlacementLevel, string> = {
-  novice: "Novice Designer",
-  beginner: "Beginner Designer",
-  intermediate: "Intermediate Designer",
-  advanced: "Advanced Designer",
-  expert: "Expert Designer",
+const LEVEL_LABEL_KEYS: Record<PlacementLevel, "onb.level.novice" | "onb.level.beginner.label" | "onb.level.intermediate.label" | "onb.level.advanced.label" | "onb.level.expert.label"> = {
+  novice: "onb.level.novice",
+  beginner: "onb.level.beginner.label",
+  intermediate: "onb.level.intermediate.label",
+  advanced: "onb.level.advanced.label",
+  expert: "onb.level.expert.label",
 };
 
 function getLevelColor(
@@ -134,22 +138,23 @@ function getLevelColor(
   }
 }
 
-const LEVEL_DESC: Record<PlacementLevel, string> = {
-  novice: "Every expert was once a beginner. Your journey starts now.",
-  beginner: "You have the foundations. Let us build on them.",
-  intermediate: "Solid knowledge. Time to go deeper.",
-  advanced: "Impressive! You will move fast through the early levels.",
-  expert: "You already think like a designer. Let us refine your craft.",
+const LEVEL_DESC_KEYS: Record<PlacementLevel, "onb.level.novice.desc" | "onb.level.beginner.desc2" | "onb.level.intermediate.desc2" | "onb.level.advanced.desc2" | "onb.level.expert.desc2"> = {
+  novice: "onb.level.novice.desc",
+  beginner: "onb.level.beginner.desc2",
+  intermediate: "onb.level.intermediate.desc2",
+  advanced: "onb.level.advanced.desc2",
+  expert: "onb.level.expert.desc2",
 };
 
 export default function OnboardingScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
   const { completeOnboarding } = useGame();
-  const { state: profileState, setTheme, updateProfile } = useProfile();
+  const { state: profileState, setTheme, setLanguage, updateProfile } = useProfile();
   const { signIn, signUp, signInWithGoogle, resetPassword } = useAuth();
+  const { t, dir, isRTL } = useT();
 
-  const [step, setStep] = useState<Step>("welcome");
+  const [step, setStep] = useState<Step>("language");
 
   function nextStep() {
     setStep((current) => {
@@ -329,6 +334,123 @@ export default function OnboardingScreen() {
   const padBottom = insets.bottom + (Platform.OS === "web" ? 34 : 0);
 
   // ============================================================
+  // 0. LANGUAGE
+  // ============================================================
+  if (step === "language") {
+    return (
+      <View style={{ flex: 1, backgroundColor: colors.background }}>
+        <View style={{ flex: 1, paddingTop: padTop, paddingBottom: padBottom, paddingHorizontal: 28 }}>
+          <Animated.View entering={fadeIn(100)} style={{ alignItems: "center", marginTop: 24 }}>
+            <Image source={LOGO.icon_colored} style={{ width: 56, height: 56 }} resizeMode="contain" />
+          </Animated.View>
+
+          <Animated.View entering={fadeIn(220)} style={{ marginTop: 36, alignItems: "center" }}>
+            <Text style={{
+              fontSize: 12, fontFamily: "Nunito_800ExtraBold",
+              color: colors.mutedForeground, letterSpacing: 1.5, marginBottom: 10,
+            }}>
+              {t("onb.language.eyebrow")}
+            </Text>
+            <Text style={{
+              fontSize: 36, fontFamily: "Nunito_800ExtraBold",
+              color: colors.foreground, letterSpacing: -1, lineHeight: 40,
+              textAlign: "center",
+            }}>
+              {t("onb.language.headline")}
+            </Text>
+            <Text style={{
+              fontSize: 14, fontFamily: "Nunito_600SemiBold",
+              color: colors.mutedForeground, marginTop: 12, textAlign: "center",
+            }}>
+              {t("onb.language.sub")}
+            </Text>
+          </Animated.View>
+
+          <View style={{ flex: 1, justifyContent: "center", gap: 14 }}>
+            {LANGUAGES.map((l, i) => {
+              const selected = profileState.language === l.id;
+              return (
+                <Animated.View key={l.id} entering={fadeIn(360 + i * 80)}>
+                  <PressScale
+                    onPress={() => setLanguage(l.id)}
+                    style={{
+                      flexDirection: "row",
+                      alignItems: "center",
+                      gap: 16,
+                      padding: 22,
+                      borderRadius: 22,
+                      borderWidth: 2,
+                      borderColor: selected ? colors.foreground : colors.border,
+                      backgroundColor: selected ? colors.foreground : colors.card,
+                    }}
+                  >
+                    <View style={{
+                      width: 52, height: 52, borderRadius: 26,
+                      backgroundColor: selected ? colors.background : colors.primary + "1F",
+                      alignItems: "center", justifyContent: "center",
+                    }}>
+                      <Text style={{
+                        fontSize: 18, fontFamily: "Nunito_800ExtraBold",
+                        color: selected ? colors.foreground : colors.primary,
+                      }}>
+                        {l.id === "ar" ? "ع" : "A"}
+                      </Text>
+                    </View>
+                    <View style={{ flex: 1 }}>
+                      <Text style={{
+                        fontSize: 22,
+                        fontFamily: "Nunito_800ExtraBold",
+                        color: selected ? colors.background : colors.foreground,
+                        letterSpacing: -0.4,
+                        writingDirection: l.id === "ar" ? "rtl" : "ltr",
+                      }}>
+                        {l.native}
+                      </Text>
+                      <Text style={{
+                        fontSize: 12,
+                        fontFamily: "Nunito_600SemiBold",
+                        color: selected ? colors.background + "B0" : colors.mutedForeground,
+                        marginTop: 2,
+                      }}>
+                        {l.label}
+                      </Text>
+                    </View>
+                    {selected && (
+                      <View style={{
+                        width: 28, height: 28, borderRadius: 14,
+                        backgroundColor: colors.background,
+                        alignItems: "center", justifyContent: "center",
+                      }}>
+                        <Icon name="checkmark" size={18} color={colors.foreground} />
+                      </View>
+                    )}
+                  </PressScale>
+                </Animated.View>
+              );
+            })}
+          </View>
+
+          <Animated.View entering={fadeIn(560)}>
+            <PressScale
+              onPress={() => nextStep()}
+              style={{
+                backgroundColor: colors.foreground, borderRadius: 100,
+                paddingVertical: 20, alignItems: "center", width: "100%",
+                flexDirection: "row", justifyContent: "center", gap: 10,
+              }}
+            >
+              <Text style={{ fontSize: 18, fontFamily: "Nunito_800ExtraBold", color: colors.background }}>
+                {t("common.continue")}
+              </Text>
+              <Icon name={isRTL ? "arrow-back" : "arrow-forward"} size={20} color={colors.background} />
+            </PressScale>
+          </Animated.View>
+        </View>
+      </View>
+    );
+  }
+
+  // ============================================================
   // 1. WELCOME
   // ============================================================
   if (step === "welcome") {
@@ -365,7 +487,7 @@ export default function OnboardingScreen() {
                       fontSize: 12, fontFamily: "Nunito_800ExtraBold",
                       color: active ? colors.background : colors.mutedForeground,
                     }}>
-                      {mode === "light" ? "Light" : "Dark"}
+                      {mode === "light" ? t("onb.theme.light") : t("onb.theme.dark")}
                     </Text>
                   </PressScale>
                 );
@@ -384,8 +506,9 @@ export default function OnboardingScreen() {
             <Animated.Text entering={fadeIn(300)} style={{
               fontSize: 44, fontFamily: "Nunito_800ExtraBold",
               color: colors.foreground, lineHeight: 48, letterSpacing: -1.2,
+              ...dir,
             }}>
-              Learn design{"\n"}by actually{"\n"}designing.
+              {t("onb.welcome.headline")}
             </Animated.Text>
           </View>
 
@@ -427,8 +550,9 @@ export default function OnboardingScreen() {
             <Animated.Text entering={fadeIn(700)} style={{
               fontSize: 16, fontFamily: "Nunito_600SemiBold",
               color: colors.mutedForeground, lineHeight: 24, marginBottom: 24,
+              ...dir,
             }}>
-              Bite sized lessons. Real skills. No boring courses.
+              {t("onb.welcome.tagline")}
             </Animated.Text>
             <Animated.View entering={fadeIn(800)}>
               <PressScale
@@ -440,9 +564,9 @@ export default function OnboardingScreen() {
                 onPress={() => nextStep()}
               >
                 <Text style={{ fontSize: 18, fontFamily: "Nunito_800ExtraBold", color: colors.background }}>
-                  Start
+                  {t("common.start")}
                 </Text>
-                <Icon name="arrow-forward" size={20} color={colors.background} />
+                <Icon name={isRTL ? "arrow-back" : "arrow-forward"} size={20} color={colors.background} />
               </PressScale>
             </Animated.View>
           </View>
@@ -467,8 +591,8 @@ export default function OnboardingScreen() {
     if (step === "name") {
       canContinue = username.trim().length > 0;
       onContinue = () => nextStep();
-      eyebrow = `STEP ${idx + 1} OF ${totalP}`;
-      headline = "What should we call you?";
+      eyebrow = t("onb.step", { n: idx + 1, total: totalP });
+      headline = t("onb.name.headline");
       content = (
         <View style={{ gap: 14 }}>
           <Text style={{
@@ -477,12 +601,12 @@ export default function OnboardingScreen() {
             color: colors.mutedForeground,
             letterSpacing: 1.2,
           }}>
-            YOUR NAME
+            {t("onb.name.label")}
           </Text>
           <TextInput
             value={username}
             onChangeText={(v) => setUsername(v.slice(0, 24))}
-            placeholder="e.g. Alex"
+            placeholder={t("onb.name.placeholder")}
             placeholderTextColor={colors.mutedForeground}
             autoCapitalize="words"
             autoCorrect={false}
@@ -509,16 +633,17 @@ export default function OnboardingScreen() {
             color: colors.mutedForeground,
             lineHeight: 20,
             paddingHorizontal: 4,
+            ...dir,
           }}>
-            We will use this on your profile and progress screens. You can change it later.
+            {t("onb.name.hint")}
           </Text>
         </View>
       );
     } else if (step === "goal") {
       canContinue = goal !== null;
       onContinue = () => nextStep();
-      eyebrow = `STEP ${idx + 1} OF ${totalP}`;
-      headline = "What do you want to achieve?";
+      eyebrow = t("onb.step", { n: idx + 1, total: totalP });
+      headline = t("onb.goal.headline");
       content = (
         <View style={{ gap: 12 }}>
           {GOALS.map((g) => {
@@ -552,8 +677,9 @@ export default function OnboardingScreen() {
                   fontFamily: "Nunito_800ExtraBold",
                   color: selected ? colors.background : colors.foreground,
                   letterSpacing: -0.3,
+                  ...dir,
                 }}>
-                  {g.label}
+                  {t(g.tKey)}
                 </Text>
                 {selected && (
                   <View style={{
@@ -572,8 +698,8 @@ export default function OnboardingScreen() {
     } else if (step === "level") {
       canContinue = selfLevel !== null;
       onContinue = () => nextStep();
-      eyebrow = `STEP ${idx + 1} OF ${totalP}`;
-      headline = "What is your level?";
+      eyebrow = t("onb.step", { n: idx + 1, total: totalP });
+      headline = t("onb.level.headline");
       content = (
         <View style={{ gap: 12 }}>
           {LEVELS.map((lv) => {
@@ -600,16 +726,18 @@ export default function OnboardingScreen() {
                     fontFamily: "Nunito_800ExtraBold",
                     color: selected ? colors.background : colors.foreground,
                     letterSpacing: -0.3,
+                    ...dir,
                   }}>
-                    {lv.label}
+                    {t(lv.labelKey)}
                   </Text>
                   <Text style={{
                     fontSize: 13,
                     fontFamily: "Nunito_600SemiBold",
                     color: selected ? colors.background : colors.mutedForeground,
                     marginTop: 2,
+                    ...dir,
                   }}>
-                    {lv.desc}
+                    {t(lv.descKey)}
                   </Text>
                 </View>
                 {selected && (
@@ -629,16 +757,16 @@ export default function OnboardingScreen() {
     } else if (step === "time") {
       canContinue = dailyTime !== null;
       onContinue = () => { setMascotState("think"); nextStep(); };
-      eyebrow = `STEP ${idx + 1} OF ${totalP}`;
-      headline = "How much time daily?";
+      eyebrow = t("onb.step", { n: idx + 1, total: totalP });
+      headline = t("onb.time.headline");
       content = (
         <View style={{ gap: 12 }}>
-          {TIMES.map((t) => {
-            const selected = dailyTime === t.id;
+          {TIMES.map((tm) => {
+            const selected = dailyTime === tm.id;
             return (
               <PressScale
-                key={t.id}
-                onPress={() => setDailyTime(t.id)}
+                key={tm.id}
+                onPress={() => setDailyTime(tm.id)}
                 style={{
                   flexDirection: "row",
                   alignItems: "center",
@@ -655,7 +783,7 @@ export default function OnboardingScreen() {
                   backgroundColor: selected ? colors.background : colors.muted,
                   alignItems: "center", justifyContent: "center",
                 }}>
-                  <Icon name={t.icon} size={24} color={selected ? colors.foreground : colors.foreground} />
+                  <Icon name={tm.icon} size={24} color={selected ? colors.foreground : colors.foreground} />
                 </View>
                 <View style={{ flex: 1 }}>
                   <Text style={{
@@ -663,16 +791,18 @@ export default function OnboardingScreen() {
                     fontFamily: "Nunito_800ExtraBold",
                     color: selected ? colors.background : colors.foreground,
                     letterSpacing: -0.3,
+                    ...dir,
                   }}>
-                    {t.label}
+                    {t(tm.labelKey)}
                   </Text>
                   <Text style={{
                     fontSize: 13,
                     fontFamily: "Nunito_600SemiBold",
                     color: selected ? colors.background : colors.mutedForeground,
                     marginTop: 2,
+                    ...dir,
                   }}>
-                    {t.desc}
+                    {t(tm.descKey)}
                   </Text>
                 </View>
                 {selected && (
@@ -765,9 +895,9 @@ export default function OnboardingScreen() {
               }}
             >
               <Text style={{ fontSize: 18, fontFamily: "Nunito_800ExtraBold", color: colors.background }}>
-                Continue
+                {t("common.continue")}
               </Text>
-              <Icon name="arrow-forward" size={20} color={colors.background} />
+              <Icon name={isRTL ? "arrow-back" : "arrow-forward"} size={20} color={colors.background} />
             </PressScale>
           </View>
         </View>
@@ -819,7 +949,7 @@ export default function OnboardingScreen() {
                 color: colors.mutedForeground,
                 letterSpacing: 1,
               }}>
-                SKIP
+                {t("common.skip")}
               </Text>
             </PressScale>
           </View>
@@ -837,7 +967,7 @@ export default function OnboardingScreen() {
                   color: colors.mutedForeground,
                   letterSpacing: 1.5,
                 }}>
-                  QUESTION {currentQ + 1} OF {PLACEMENT_QUESTIONS.length}
+                  {t("onb.placement.q", { n: currentQ + 1, total: PLACEMENT_QUESTIONS.length })}
                 </Text>
                 <GraflyMascot state={mascotState} size={88} float />
               </View>
@@ -928,7 +1058,7 @@ export default function OnboardingScreen() {
                           <Icon name={isCorrectAnswer ? "checkmark-circle" : "close-circle"} size={30} color={textColor} />
                         ) : null}
                         <Text style={{ fontSize: 22, fontFamily: "Nunito_800ExtraBold", color: textColor, letterSpacing: 0.3 }}>
-                          {val ? "True" : "False"}
+                          {val ? t("common.true") : t("common.false")}
                         </Text>
                       </PressScale>
                     );
@@ -959,7 +1089,7 @@ export default function OnboardingScreen() {
                   fontSize: 16, fontFamily: "Nunito_800ExtraBold",
                   color: colors.destructiveForeground,
                 }}>
-                  {lastWasCorrect ? "Nice work!" : "Not quite"}
+                  {lastWasCorrect ? t("onb.placement.nice") : t("onb.placement.notQuite")}
                 </Text>
               </View>
               <Text style={{
@@ -977,9 +1107,9 @@ export default function OnboardingScreen() {
                 onPress={handleContinueQuestion}
               >
                 <Text style={{ fontSize: 16, fontFamily: "Nunito_800ExtraBold", color: lastWasCorrect ? colors.success : colors.destructive }}>
-                  {currentQ + 1 >= PLACEMENT_QUESTIONS.length ? "See results" : "Continue"}
+                  {currentQ + 1 >= PLACEMENT_QUESTIONS.length ? t("onb.placement.seeResults") : t("common.continue")}
                 </Text>
-                <Icon name="arrow-forward" size={18} color={lastWasCorrect ? colors.success : colors.destructive} />
+                <Icon name={isRTL ? "arrow-back" : "arrow-forward"} size={18} color={lastWasCorrect ? colors.success : colors.destructive} />
               </PressScale>
             </Animated.View>
           )}
@@ -1008,7 +1138,7 @@ export default function OnboardingScreen() {
               marginTop: 24,
               marginBottom: 8,
             }}>
-              YOU IMPROVED THE DESIGN
+              {t("onb.results.eyebrow")}
             </Text>
 
             <AText style={{
@@ -1020,7 +1150,7 @@ export default function OnboardingScreen() {
               lineHeight: 48,
               marginBottom: 6,
             }}>
-              Great work!
+              {t("onb.results.headline")}
             </AText>
 
             <Text style={{
@@ -1030,7 +1160,7 @@ export default function OnboardingScreen() {
               textAlign: "center",
               marginBottom: 24,
             }}>
-              You are all set up
+              {t("onb.results.sub")}
             </Text>
 
             {/* XP reward chip */}
@@ -1054,16 +1184,16 @@ export default function OnboardingScreen() {
               backgroundColor: levelColor,
             }}>
               <Text style={{ fontSize: 14, fontFamily: "Nunito_800ExtraBold", color: colors.accentForeground }}>
-                {LEVEL_LABELS[placementResult]}
+                {t(LEVEL_LABEL_KEYS[placementResult])}
               </Text>
             </View>
 
             {/* Stats row */}
             <View style={{ flexDirection: "row", gap: 12, marginBottom: 24, width: "100%" }}>
               {[
-                { num: String(score), label: "Correct" },
-                { num: String(PLACEMENT_QUESTIONS.length), label: "Questions" },
-                { num: `${Math.round((score / PLACEMENT_QUESTIONS.length) * 100)}%`, label: "Score" },
+                { num: String(score), label: t("onb.results.correct") },
+                { num: String(PLACEMENT_QUESTIONS.length), label: t("onb.results.questions") },
+                { num: `${Math.round((score / PLACEMENT_QUESTIONS.length) * 100)}%`, label: t("onb.results.score") },
               ].map((s) => (
                 <View key={s.label} style={{
                   flex: 1, backgroundColor: colors.card,
@@ -1085,7 +1215,7 @@ export default function OnboardingScreen() {
               color: colors.mutedForeground, textAlign: "center",
               marginBottom: 28, lineHeight: 20,
             }}>
-              {LEVEL_DESC[placementResult]}
+              {t(LEVEL_DESC_KEYS[placementResult])}
             </Text>
           </Animated.View>
 
@@ -1098,9 +1228,9 @@ export default function OnboardingScreen() {
             onPress={() => nextStep()}
           >
             <Text style={{ fontSize: 18, fontFamily: "Nunito_800ExtraBold", color: colors.background }}>
-              Continue
+              {t("common.continue")}
             </Text>
-            <Icon name="arrow-forward" size={20} color={colors.background} />
+            <Icon name={isRTL ? "arrow-back" : "arrow-forward"} size={20} color={colors.background} />
           </PressScale>
         </View>
       </View>
@@ -1112,16 +1242,16 @@ export default function OnboardingScreen() {
   // ============================================================
   if (step === "signup") {
     const busy = authBusy || googleBusy;
-    const headline = authMode === "reset" ? "Reset password" : "Save your\nprogress";
-    const eyebrow = authMode === "reset" ? "FORGOT PASSWORD" : "ALMOST THERE";
+    const headline = authMode === "reset" ? t("auth.headline.reset") : t("auth.headline.save");
+    const eyebrow = authMode === "reset" ? t("auth.forgot.eyebrow") : t("auth.almost");
     const sub =
       authMode === "reset"
-        ? "Enter the email for your account and we will send you a reset link."
+        ? t("auth.sub.reset")
         : authMode === "signin"
-        ? "Sign in to keep your XP, streaks, and level on every device."
-        : "Create an account so your XP, streaks, and level follow you everywhere.";
+        ? t("auth.sub.signin")
+        : t("auth.sub.signup");
     const primaryLabel =
-      authMode === "reset" ? "Send reset link" : authMode === "signin" ? "Sign in" : "Create account";
+      authMode === "reset" ? t("auth.send.reset") : authMode === "signin" ? t("auth.signin") : t("auth.create");
 
     return (
       <View style={{ flex: 1, backgroundColor: colors.background }}>
@@ -1216,7 +1346,7 @@ export default function OnboardingScreen() {
                           color: active ? colors.background : colors.mutedForeground,
                           letterSpacing: 0.2,
                         }}>
-                          {m === "signin" ? "Sign in" : "Sign up"}
+                          {m === "signin" ? t("auth.signin") : t("auth.signup")}
                         </Text>
                       </PressScale>
                     );
@@ -1230,7 +1360,7 @@ export default function OnboardingScreen() {
                     fontSize: 11, fontFamily: "Nunito_800ExtraBold",
                     color: colors.mutedForeground, letterSpacing: 1.2, marginBottom: 6,
                   }}>
-                    EMAIL
+                    {t("auth.email")}
                   </Text>
                   <TextInput
                     value={authEmail}
@@ -1262,12 +1392,12 @@ export default function OnboardingScreen() {
                       fontSize: 11, fontFamily: "Nunito_800ExtraBold",
                       color: colors.mutedForeground, letterSpacing: 1.2, marginBottom: 6,
                     }}>
-                      PASSWORD
+                      {t("auth.password")}
                     </Text>
                     <TextInput
                       value={authPassword}
                       onChangeText={setAuthPassword}
-                      placeholder="Min. 6 characters"
+                      placeholder={t("auth.password.placeholder")}
                       placeholderTextColor={colors.mutedForeground}
                       secureTextEntry
                       autoCapitalize="none"
@@ -1299,7 +1429,7 @@ export default function OnboardingScreen() {
                       fontSize: 13, fontFamily: "Nunito_800ExtraBold",
                       color: colors.primary, letterSpacing: -0.2,
                     }}>
-                      Forgot password?
+                      {t("auth.forgot")}
                     </Text>
                   </PressScale>
                 )}
@@ -1367,7 +1497,7 @@ export default function OnboardingScreen() {
                       fontSize: 14, fontFamily: "Nunito_800ExtraBold",
                       color: colors.mutedForeground, letterSpacing: -0.2,
                     }}>
-                      Back to sign in
+                      {t("auth.back.signin")}
                     </Text>
                   </PressScale>
                 ) : (
@@ -1378,7 +1508,7 @@ export default function OnboardingScreen() {
                         fontSize: 11, fontFamily: "Nunito_800ExtraBold",
                         color: colors.mutedForeground, letterSpacing: 1.5,
                       }}>
-                        OR
+                        {t("common.or")}
                       </Text>
                       <View style={{ flex: 1, height: 1, backgroundColor: colors.border }} />
                     </View>
@@ -1400,7 +1530,7 @@ export default function OnboardingScreen() {
                         <>
                           <Icon name="logo-google" size={20} color={colors.foreground} />
                           <Text style={{ fontSize: 15, fontFamily: "Nunito_800ExtraBold", color: colors.foreground }}>
-                            Continue with Google
+                            {t("auth.google")}
                           </Text>
                         </>
                       )}
@@ -1421,7 +1551,7 @@ export default function OnboardingScreen() {
                         textDecorationLine: "underline",
                         textDecorationColor: colors.foreground,
                       }}>
-                        Skip for now
+                        {t("auth.skip")}
                       </Text>
                     </PressScale>
                   </>

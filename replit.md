@@ -45,6 +45,7 @@ The project is a pnpm workspace monorepo using TypeScript, comprising the Grafly
 - **Lesson Engine**: Supports 12 question types with data in `constants/lessons.ts`. Includes optional `intro` cards and `ModuleCompleteCelebration` banners.
 - **Design Principles Course**: Six modules with 3-5 lessons each, accessible via `app/course-intro.tsx`.
 - **Auth**: Onboarding-first authentication, Google Sign-In, and `AuthGate` for routing based on `onboardingComplete` state. Hydration gate ensures `GameContext` is loaded.
+- **Internationalization (English / Arabic)**: Lightweight custom i18n in `lib/i18n.ts` (single flat dict, ~5 KB) plus `hooks/useT.ts` returning `{ t, lang, isRTL, dir }`. Language is stored on `ProfileContext` (`language: "en" | "ar"`) and persisted via the existing AsyncStorage flow. The first onboarding step is a language picker (English / العربية). RTL is text-only — `writingDirection: "rtl"` + `textAlign: "right"` spread via `dir`, with arrow icons flipped (`isRTL ? "arrow-back" : "arrow-forward"`). No `I18nManager.forceRTL`. Translation strategy is chrome-only: UI shell, onboarding, profile/settings, and auth screens are translated; lesson curriculum content remains English. The Profile tab has a `SETTINGS` section with Language, Theme (light/dark), and Voice rows.
 
 ## API Server (Express 5)
 - Provides routes for health checks, AI critique (Gemma proxy), design retrieval, and TTS (ElevenLabs proxy).

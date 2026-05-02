@@ -2,6 +2,8 @@ import React, { createContext, useContext, useReducer, useEffect, useState } fro
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { setVoiceEnabled } from "@/services/voiceService";
 
+export type Language = "en" | "ar";
+
 export interface ProfileState {
   username: string;
   handle: string;
@@ -9,12 +11,14 @@ export interface ProfileState {
   voiceEnabled: boolean;
   themeMode: "light" | "dark";
   proBannerDismissed: boolean;
+  language: Language;
 }
 
 type Action =
   | { type: "UPDATE_PROFILE"; username?: string; handle?: string; profilePic?: string }
   | { type: "TOGGLE_VOICE" }
   | { type: "SET_THEME"; mode: "light" | "dark" }
+  | { type: "SET_LANGUAGE"; language: Language }
   | { type: "DISMISS_PRO_BANNER" }
   | { type: "RESTORE"; state: ProfileState };
 
@@ -27,6 +31,7 @@ const initialState: ProfileState = {
   voiceEnabled: true,
   themeMode: "light",
   proBannerDismissed: false,
+  language: "en",
 };
 
 function migrateState(persisted: unknown): ProfileState {
@@ -47,6 +52,8 @@ function reducer(state: ProfileState, action: Action): ProfileState {
       return { ...state, voiceEnabled: !state.voiceEnabled };
     case "SET_THEME":
       return { ...state, themeMode: action.mode };
+    case "SET_LANGUAGE":
+      return { ...state, language: action.language };
     case "DISMISS_PRO_BANNER":
       return { ...state, proBannerDismissed: true };
     case "RESTORE":
@@ -63,6 +70,7 @@ interface ProfileContextType {
   updateProfile: (data: { username?: string; handle?: string; profilePic?: string }) => void;
   toggleVoice: () => void;
   setTheme: (mode: "light" | "dark") => void;
+  setLanguage: (language: Language) => void;
 }
 
 const ProfileContext = createContext<ProfileContextType | null>(null);
@@ -105,10 +113,11 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
     dispatch({ type: "UPDATE_PROFILE", ...data });
   const toggleVoice = () => dispatch({ type: "TOGGLE_VOICE" });
   const setTheme = (mode: "light" | "dark") => dispatch({ type: "SET_THEME", mode });
+  const setLanguage = (language: Language) => dispatch({ type: "SET_LANGUAGE", language });
 
   return (
     <ProfileContext.Provider
-      value={{ state, hydrated, dispatch, updateProfile, toggleVoice, setTheme }}
+      value={{ state, hydrated, dispatch, updateProfile, toggleVoice, setTheme, setLanguage }}
     >
       {children}
     </ProfileContext.Provider>

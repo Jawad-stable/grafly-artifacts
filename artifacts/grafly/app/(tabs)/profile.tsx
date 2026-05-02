@@ -17,6 +17,8 @@ import { useProfile } from "@/context/ProfileContext";
 import { useAuth } from "@/context/AuthContext";
 import { GraflyMascot } from "@/components/GraflyMascot";
 import { AText, ATextInput } from "@/components/AText";
+import { useT } from "@/hooks/useT";
+import { LANGUAGES } from "@/lib/i18n";
 import { HomeBackdrop } from "@/components/HomeBackdrop";
 import { BrandSquiggle } from "@/components/BrandSquiggle";
 import { PressScale } from "@/components/PressScale";
@@ -78,8 +80,9 @@ export default function ProfileScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
   const { state } = useGame();
-  const { state: profileState, toggleVoice, updateProfile } = useProfile();
+  const { state: profileState, toggleVoice, setTheme, setLanguage, updateProfile } = useProfile();
   const { signOut, user } = useAuth();
+  const { t, dir } = useT();
   const [editingName, setEditingName] = useState(false);
   const [nameInput, setNameInput] = useState(profileState.username);
 
@@ -107,10 +110,10 @@ export default function ProfileScreen() {
   // brand watermark sitting behind the scroll view.
   const bg = colors.background;
   const STATS = [
-    { label: "Total XP",   value: state.xp,                       icon: "flash",            color: colors.accent,  tile: mix(colors.accent,  bg, 0.188), border: mix(colors.accent,  bg, 0.30), iconDot: mix(colors.accent,  bg, 0.35), squiggle: "loop" as const },
-    { label: "Streak",     value: state.streak,                   icon: "flame",            color: "#FF7B00",      tile: mix("#FF7B00",      bg, 0.13),  border: mix("#FF7B00",      bg, 0.30), iconDot: mix("#FF7B00",      bg, 0.30), squiggle: "tube" as const },
-    { label: "Max Streak", value: state.streakMax,                icon: "trending-up",      color: colors.success, tile: mix(colors.success, bg, 0.12),  border: mix(colors.success, bg, 0.30), iconDot: mix(colors.success, bg, 0.30), squiggle: "wave" as const },
-    { label: "Lessons",    value: state.completedLessons.length,  icon: "checkmark-circle", color: colors.primary, tile: mix(colors.primary, bg, 0.12),  border: mix(colors.primary, bg, 0.30), iconDot: mix(colors.primary, bg, 0.30), squiggle: "loop" as const },
+    { label: t("profile.totalXP"),   value: state.xp,                       icon: "flash",            color: colors.accent,  tile: mix(colors.accent,  bg, 0.188), border: mix(colors.accent,  bg, 0.30), iconDot: mix(colors.accent,  bg, 0.35), squiggle: "loop" as const },
+    { label: t("profile.streak"),    value: state.streak,                   icon: "flame",            color: "#FF7B00",      tile: mix("#FF7B00",      bg, 0.13),  border: mix("#FF7B00",      bg, 0.30), iconDot: mix("#FF7B00",      bg, 0.30), squiggle: "tube" as const },
+    { label: t("profile.maxStreak"), value: state.streakMax,                icon: "trending-up",      color: colors.success, tile: mix(colors.success, bg, 0.12),  border: mix(colors.success, bg, 0.30), iconDot: mix(colors.success, bg, 0.30), squiggle: "wave" as const },
+    { label: t("profile.lessons"),   value: state.completedLessons.length,  icon: "checkmark-circle", color: colors.primary, tile: mix(colors.primary, bg, 0.12),  border: mix(colors.primary, bg, 0.30), iconDot: mix(colors.primary, bg, 0.30), squiggle: "loop" as const },
   ];
 
   // Pre-mixed solids that replace what used to be alpha-suffixed hex
@@ -158,11 +161,11 @@ export default function ProfileScreen() {
           <View style={{ flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 4 }}>
             <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: colors.primary }} />
             <Text style={{ fontSize: 13, fontFamily: "Nunito_800ExtraBold", color: colors.mutedForeground, letterSpacing: 1.5 }}>
-              YOUR STUDIO
+              {t("profile.eyebrow")}
             </Text>
           </View>
-          <Text style={{ fontSize: 38, fontFamily: "Nunito_800ExtraBold", color: colors.foreground, letterSpacing: -1, lineHeight: 42 }}>
-            Profile
+          <Text style={{ fontSize: 38, fontFamily: "Nunito_800ExtraBold", color: colors.foreground, letterSpacing: -1, lineHeight: 42, ...dir }}>
+            {t("profile.title")}
           </Text>
         </View>
 
@@ -260,7 +263,7 @@ export default function ProfileScreen() {
             <View style={{ flexDirection: "row", alignItems: "center", gap: 6, marginTop: 8 }}>
               <Icon name={divInfo.icon as any} size={14} color={divInfo.color} />
               <Text style={{ fontSize: 12, fontFamily: "Nunito_600SemiBold", color: colors.mutedForeground }}>
-                {state.weeklyXP} XP this week
+                {t("profile.weeklyXP", { n: state.weeklyXP })}
               </Text>
             </View>
           </View>
@@ -270,7 +273,7 @@ export default function ProfileScreen() {
         <Animated.View entering={FadeIn.delay(80)} style={{ marginBottom: 24 }}>
           <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
             <Text style={{ fontSize: 13, fontFamily: "Nunito_800ExtraBold", color: colors.mutedForeground, letterSpacing: 1.5 }}>
-              PROGRESS
+              {t("profile.progress")}
             </Text>
             <Text style={{ fontSize: 13, fontFamily: "Nunito_800ExtraBold", color: colors.mutedForeground }}>
               {xpPct}%
@@ -292,7 +295,7 @@ export default function ProfileScreen() {
             </View>
             <View style={{ flexDirection: "row", alignItems: "baseline", justifyContent: "space-between", marginBottom: 12 }}>
               <Text style={{ fontSize: 22, fontFamily: "Nunito_800ExtraBold", color: colors.foreground, letterSpacing: -0.4 }}>
-                Level {xpProg.level}
+                {t("profile.level", { n: xpProg.level })}
               </Text>
               <Text style={{ fontSize: 13, fontFamily: "Nunito_600SemiBold", color: colors.foreground }}>
                 {xpProg.current} / {xpProg.required} XP
@@ -308,7 +311,7 @@ export default function ProfileScreen() {
               />
             </View>
             <Text style={{ fontSize: 12, fontFamily: "Nunito_600SemiBold", color: colors.foreground, marginTop: 10 }}>
-              {xpProg.required - xpProg.current} XP to Level {xpProg.level + 1}
+              {t("profile.toLevel", { n: xpProg.required - xpProg.current, l: xpProg.level + 1 })}
             </Text>
           </View>
         </Animated.View>
@@ -316,7 +319,7 @@ export default function ProfileScreen() {
         {/* Stats grid */}
         <Animated.View entering={FadeIn.delay(130)} style={{ marginBottom: 24 }}>
           <Text style={{ fontSize: 13, fontFamily: "Nunito_800ExtraBold", color: colors.mutedForeground, letterSpacing: 1.5, marginBottom: 10 }}>
-            BY THE NUMBERS
+            {t("profile.numbers")}
           </Text>
           {/* 2x2 stat grid where each tile carries its own brand-color
               tint + a small drifting squiggle. Big numbers stay in
@@ -402,14 +405,14 @@ export default function ProfileScreen() {
           <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
             <View>
               <Text style={{ fontSize: 13, fontFamily: "Nunito_800ExtraBold", color: colors.mutedForeground, letterSpacing: 1.5 }}>
-                ACHIEVEMENTS
+                {t("profile.achievements")}
               </Text>
               <Text style={{ fontSize: 22, fontFamily: "Nunito_800ExtraBold", color: colors.foreground, letterSpacing: -0.4, marginTop: 2 }}>
-                Badges
+                {t("profile.badges")}
               </Text>
             </View>
             <Text style={{ fontSize: 13, fontFamily: "Nunito_800ExtraBold", color: colors.mutedForeground }}>
-              {unlockedCount} of {ACHIEVEMENTS.length}
+              {t("profile.unlocked", { n: unlockedCount, total: ACHIEVEMENTS.length })}
             </Text>
           </View>
           <ScrollView
@@ -473,10 +476,10 @@ export default function ProfileScreen() {
           </ScrollView>
         </Animated.View>
 
-        {/* Preferences */}
+        {/* Settings */}
         <Animated.View entering={FadeIn.delay(240)} style={{ marginBottom: 24 }}>
           <Text style={{ fontSize: 13, fontFamily: "Nunito_800ExtraBold", color: colors.mutedForeground, letterSpacing: 1.5, marginBottom: 10 }}>
-            PREFERENCES
+            {t("profile.settings")}
           </Text>
           <View
             style={{
@@ -486,6 +489,114 @@ export default function ProfileScreen() {
               paddingVertical: 6,
             }}
           >
+            {/* Language row */}
+            <View style={{ paddingVertical: 14, borderBottomWidth: 1, borderBottomColor: colors.border }}>
+              <View style={{ flexDirection: "row", alignItems: "center", gap: 12, marginBottom: 12 }}>
+                <View style={{
+                  width: 36, height: 36, borderRadius: 18,
+                  backgroundColor: SOLID.settingIconBg,
+                  alignItems: "center", justifyContent: "center",
+                }}>
+                  <Icon name="text-outline" size={18} color={colors.primary} />
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Text style={{ fontSize: 15, fontFamily: "Nunito_800ExtraBold", color: colors.foreground }}>
+                    {t("settings.language")}
+                  </Text>
+                  <Text style={{ fontSize: 12, fontFamily: "Nunito_600SemiBold", color: colors.mutedForeground }}>
+                    {t("settings.language.sub")}
+                  </Text>
+                </View>
+              </View>
+              <View style={{ flexDirection: "row", gap: 8 }}>
+                {LANGUAGES.map((l) => {
+                  const active = profileState.language === l.id;
+                  return (
+                    <PressScale
+                      key={l.id}
+                      onPress={() => setLanguage(l.id)}
+                      style={{
+                        flex: 1,
+                        paddingVertical: 10,
+                        borderRadius: 100,
+                        alignItems: "center",
+                        backgroundColor: active ? colors.foreground : colors.background,
+                        borderWidth: 1,
+                        borderColor: active ? colors.foreground : colors.border,
+                      }}
+                    >
+                      <Text style={{
+                        fontSize: 13,
+                        fontFamily: "Nunito_800ExtraBold",
+                        color: active ? colors.background : colors.foreground,
+                        writingDirection: l.id === "ar" ? "rtl" : "ltr",
+                      }}>
+                        {l.native}
+                      </Text>
+                    </PressScale>
+                  );
+                })}
+              </View>
+            </View>
+
+            {/* Theme row */}
+            <View style={{ paddingVertical: 14, borderBottomWidth: 1, borderBottomColor: colors.border }}>
+              <View style={{ flexDirection: "row", alignItems: "center", gap: 12, marginBottom: 12 }}>
+                <View style={{
+                  width: 36, height: 36, borderRadius: 18,
+                  backgroundColor: SOLID.settingIconBg,
+                  alignItems: "center", justifyContent: "center",
+                }}>
+                  <Icon name={profileState.themeMode === "dark" ? "moon" : "sunny"} size={18} color={colors.primary} />
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Text style={{ fontSize: 15, fontFamily: "Nunito_800ExtraBold", color: colors.foreground }}>
+                    {t("settings.theme")}
+                  </Text>
+                  <Text style={{ fontSize: 12, fontFamily: "Nunito_600SemiBold", color: colors.mutedForeground }}>
+                    {t("settings.theme.sub")}
+                  </Text>
+                </View>
+              </View>
+              <View style={{ flexDirection: "row", gap: 8 }}>
+                {(["light", "dark"] as const).map((m) => {
+                  const active = profileState.themeMode === m;
+                  return (
+                    <PressScale
+                      key={m}
+                      onPress={() => setTheme(m)}
+                      style={{
+                        flex: 1,
+                        paddingVertical: 10,
+                        borderRadius: 100,
+                        alignItems: "center",
+                        flexDirection: "row",
+                        justifyContent: "center",
+                        gap: 6,
+                        backgroundColor: active ? colors.foreground : colors.background,
+                        borderWidth: 1,
+                        borderColor: active ? colors.foreground : colors.border,
+                      }}
+                    >
+                      <Icon
+                        name={m === "light" ? "sunny" : "moon"}
+                        size={14}
+                        color={active ? colors.background : colors.mutedForeground}
+                      />
+                      <Text style={{
+                        fontSize: 13,
+                        fontFamily: "Nunito_800ExtraBold",
+                        color: active ? colors.background : colors.foreground,
+                      }}>
+                        {m === "light" ? t("onb.theme.light") : t("onb.theme.dark")}
+                      </Text>
+                    </PressScale>
+                  );
+                })}
+              </View>
+            </View>
+
+            {/* Voice row */}
             <View
               style={{
                 flexDirection: "row",
@@ -509,10 +620,10 @@ export default function ProfileScreen() {
                 </View>
                 <View style={{ flex: 1 }}>
                   <Text style={{ fontSize: 15, fontFamily: "Nunito_800ExtraBold", color: colors.foreground }}>
-                    Voice feedback
+                    {t("settings.voice")}
                   </Text>
                   <Text style={{ fontSize: 12, fontFamily: "Nunito_600SemiBold", color: colors.mutedForeground }}>
-                    Spoken critiques and lessons
+                    {t("settings.voice.sub")}
                   </Text>
                 </View>
               </View>
@@ -529,7 +640,7 @@ export default function ProfileScreen() {
         {/* Account */}
         <Animated.View entering={FadeIn.delay(290)} style={{ marginBottom: 16 }}>
           <Text style={{ fontSize: 13, fontFamily: "Nunito_800ExtraBold", color: colors.mutedForeground, letterSpacing: 1.5, marginBottom: 10 }}>
-            ACCOUNT
+            {t("profile.account")}
           </Text>
 
           {/* Upgrade-to-Pro CTA: deep-blue gradient pill with WHITE text +
@@ -563,7 +674,7 @@ export default function ProfileScreen() {
             >
               <Icon name="diamond" size={18} color="#FFFFFF" />
               <Text style={{ fontSize: 16, fontFamily: "Nunito_800ExtraBold", color: "#FFFFFF" }}>
-                Upgrade to Pro
+                {t("profile.upgrade")}
               </Text>
             </LinearGradient>
           </PressScale>
@@ -597,10 +708,10 @@ export default function ProfileScreen() {
                 </View>
                 <View>
                   <Text style={{ fontSize: 15, fontFamily: "Nunito_800ExtraBold", color: colors.foreground }}>
-                    Sign out
+                    {t("profile.signout")}
                   </Text>
                   <Text style={{ fontSize: 12, fontFamily: "Nunito_600SemiBold", color: colors.mutedForeground }} numberOfLines={1}>
-                    {user.email ?? "Signed in"}
+                    {user.email ?? t("profile.signedin")}
                   </Text>
                 </View>
               </View>
@@ -637,10 +748,10 @@ export default function ProfileScreen() {
                 </View>
                 <View>
                   <Text style={{ fontSize: 15, fontFamily: "Nunito_800ExtraBold", color: colors.foreground }}>
-                    Save your progress
+                    {t("profile.save")}
                   </Text>
                   <Text style={{ fontSize: 12, fontFamily: "Nunito_600SemiBold", color: colors.mutedForeground }}>
-                    Sign in to sync across devices
+                    {t("profile.sync")}
                   </Text>
                 </View>
               </View>
