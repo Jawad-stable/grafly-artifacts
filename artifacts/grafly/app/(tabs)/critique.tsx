@@ -103,6 +103,20 @@ const ONBOARDING_KEY = "grafly:critique_onboarding_seen_v1";
 
 const { width: SCREEN_W, height: SCREEN_H } = Dimensions.get("window");
 
+// Quick start prompt chips. Shown above the composer when the user
+// has not yet typed anything, so the screen never confronts them
+// with an empty input. Tapping a chip pre-fills the composer with a
+// concrete starter so they can focus on the design instead of the
+// blank page. Labels follow the house rule: no hyphens / em dashes.
+const QUICK_PROMPTS: Array<{ label: string; icon: string; prompt: string }> = [
+  { label: "First impression", icon: "flash", prompt: "First impression: " },
+  { label: "Color & contrast", icon: "color-filter", prompt: "How is color and contrast working here? " },
+  { label: "Hierarchy", icon: "layers-outline", prompt: "Walk me through the visual hierarchy. " },
+  { label: "Typography", icon: "text-outline", prompt: "Critique the typography choices. " },
+  { label: "Layout", icon: "grid-outline", prompt: "How does the layout balance the elements? " },
+  { label: "What to improve", icon: "pencil", prompt: "If you could change one thing, what would it be and why? " },
+];
+
 // Conversation openers for the critique tab. Each one leads with a real
 // design prompt — an observation to make, a question to sit with, an
 // instruction to look. NO canned greetings ("Hey!", "Oh nice!", "Love
@@ -519,6 +533,7 @@ export default function CritiqueScreen() {
   }
 
   const scrollRef = useRef<ScrollView>(null);
+  const inputRef = useRef<TextInput>(null);
   const [animateIndex, setAnimateIndex] = useState(-1);
 
   const maxSessions = state.isPro ? Infinity : 2;
@@ -936,30 +951,44 @@ export default function CritiqueScreen() {
               description has been moved into the expand modal. */}
           {design && !chatStarted && !loadingDesign && (
             <>
-              {/* Eyebrow row */}
+              {/* Eyebrow row — clean two-pill layout: brand pill on
+                  the left names the section, soft right pill nudges
+                  the user that the card is tappable. The dividing
+                  line + "4 : 5  •  SOCIAL" tail were removed; that
+                  metadata reads better inside the card overlay. */}
               <Animated.View
                 entering={FadeInDown.duration(440).easing(SMOOTH).delay(60)}
                 onLayout={onEyebrowLayout}
-                style={{ flexDirection: "row", alignItems: "center", gap: 10, marginBottom: EYEBROW_MARGIN_BOTTOM, marginTop: EYEBROW_MARGIN_TOP }}
+                style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 10, marginBottom: EYEBROW_MARGIN_BOTTOM, marginTop: EYEBROW_MARGIN_TOP }}
               >
                 <View style={{
+                  flexDirection: "row", alignItems: "center", gap: 6,
                   paddingHorizontal: 10, paddingVertical: 5, borderRadius: 100,
-                  backgroundColor: colors.primary + "1F",
+                  backgroundColor: colors.brand.cyan + "1A",
+                  borderWidth: 1,
+                  borderColor: colors.brand.cyan + "55",
                 }}>
+                  <View style={{ width: 5, height: 5, borderRadius: 3, backgroundColor: colors.brand.cyan }} />
                   <Text style={{
                     fontSize: 11, fontFamily: "Nunito_800ExtraBold",
-                    color: colors.primary, letterSpacing: 1.4,
+                    color: colors.brand.cyanDeep, letterSpacing: 1.4,
                   }}>
                     TODAY'S DESIGN
                   </Text>
                 </View>
-                <View style={{ flex: 1, height: 1, backgroundColor: colors.border }} />
-                <Text style={{
-                  fontSize: 11, fontFamily: "Nunito_800ExtraBold",
-                  color: colors.mutedForeground, letterSpacing: 1.2,
+                <View style={{
+                  flexDirection: "row", alignItems: "center", gap: 5,
+                  paddingHorizontal: 9, paddingVertical: 5, borderRadius: 100,
+                  backgroundColor: colors.muted,
                 }}>
-                  4 : 5  •  SOCIAL
-                </Text>
+                  <Icon name="expand-outline" size={11} color={colors.mutedForeground} />
+                  <Text style={{
+                    fontSize: 10, fontFamily: "Nunito_800ExtraBold",
+                    color: colors.mutedForeground, letterSpacing: 1.2,
+                  }}>
+                    TAP TO STUDY
+                  </Text>
+                </View>
               </Animated.View>
 
               {/* 4:5 card, centered. Image fills the entire card, with
@@ -1008,33 +1037,67 @@ export default function CritiqueScreen() {
                       </Text>
                     </View>
 
-                    {/* Bottom gradient + title overlay */}
+                    {/* Bottom gradient + title overlay. Eyebrow uses
+                        the brand cyan accent so the metadata reads
+                        as part of the Grafly visual world instead of
+                        a generic "white at 70% opacity" caption. The
+                        difficulty token sits in its own pill (left)
+                        with a subtle dot, the format follows on the
+                        right side as a quieter context tag. */}
                     <LinearGradient
-                      colors={["rgba(7,11,28,0)", "rgba(7,11,28,0.85)"]}
+                      colors={["rgba(7,11,28,0)", "rgba(7,11,28,0.88)"]}
                       style={{
                         position: "absolute",
                         left: 0,
                         right: 0,
                         bottom: 0,
-                        height: 110,
+                        height: 124,
                         paddingHorizontal: 16,
-                        paddingTop: 28,
+                        paddingTop: 30,
                         paddingBottom: 14,
                         justifyContent: "flex-end",
                       }}
                     >
-                      <Text style={{
-                        fontSize: 11, fontFamily: "Nunito_800ExtraBold",
-                        color: "rgba(255,255,255,0.7)", letterSpacing: 1.4,
-                        marginBottom: 4,
-                      }}>
-                        {design.difficulty.toUpperCase()}  •  IG POST
-                      </Text>
+                      {/* Metadata pills sit on the darker floor of the
+                          gradient (alpha 0.88 + an extra solid pill
+                          backing) so 10px text reads AA on bright /
+                          variable photographic backgrounds, not just
+                          on the gradient stop. */}
+                      <View style={{ flexDirection: "row", alignItems: "center", gap: 6, marginBottom: 8 }}>
+                        <View style={{
+                          flexDirection: "row", alignItems: "center", gap: 5,
+                          paddingHorizontal: 9, paddingVertical: 4, borderRadius: 100,
+                          backgroundColor: "rgba(7,11,28,0.55)",
+                          borderWidth: 1,
+                          borderColor: "rgba(255,255,255,0.28)",
+                        }}>
+                          <View style={{ width: 5, height: 5, borderRadius: 3, backgroundColor: colors.brand.cyan }} />
+                          <Text style={{
+                            fontSize: 10, fontFamily: "Nunito_800ExtraBold",
+                            color: "#FFFFFF", letterSpacing: 1.3,
+                          }}>
+                            {design.difficulty.toUpperCase()}
+                          </Text>
+                        </View>
+                        <View style={{
+                          paddingHorizontal: 9, paddingVertical: 4, borderRadius: 100,
+                          backgroundColor: "rgba(7,11,28,0.55)",
+                          borderWidth: 1,
+                          borderColor: "rgba(255,255,255,0.18)",
+                        }}>
+                          <Text style={{
+                            fontSize: 10, fontFamily: "Nunito_800ExtraBold",
+                            color: "rgba(255,255,255,0.92)", letterSpacing: 1.4,
+                          }}>
+                            IG POST  ·  4 : 5
+                          </Text>
+                        </View>
+                      </View>
                       <Text
                         numberOfLines={2}
                         style={{
-                          fontSize: 18, fontFamily: "Nunito_800ExtraBold",
-                          color: "#FFFFFF", letterSpacing: -0.4, lineHeight: 22,
+                          fontSize: 19, fontFamily: "Nunito_800ExtraBold",
+                          color: "#FFFFFF", letterSpacing: -0.4, lineHeight: 23,
                         }}
                       >
                         {design.title}
@@ -1225,6 +1288,73 @@ export default function CritiqueScreen() {
           )}
         </ScrollView>
 
+        {/* Quick start prompt chips — shown only before the user has
+            typed anything and before the chat has started. Tapping a
+            chip pre-fills the composer and focuses it so the user
+            can keep typing or hit send right away. Disappears the
+            moment any text is in the input, so it never competes
+            with the conversation. */}
+        {!chatStarted && !limitReached && !loadingDesign && input.trim().length === 0 && (
+          <Animated.View
+            entering={FadeInUp.duration(420).easing(SMOOTH).delay(280)}
+            style={{ paddingTop: 4, paddingBottom: 6 }}
+          >
+            <View style={{ flexDirection: "row", alignItems: "center", gap: 8, paddingHorizontal: 22, marginBottom: 8 }}>
+              <Icon name="flash" size={12} color={colors.brand.cyanDeep} weight="fill" />
+              <Text style={{
+                fontSize: 10, fontFamily: "Nunito_800ExtraBold",
+                color: colors.brand.cyanDeep, letterSpacing: 1.4,
+              }}>
+                QUICK START
+              </Text>
+              <View style={{ flex: 1, height: 1, backgroundColor: colors.border, opacity: 0.55 }} />
+              <Text style={{
+                fontSize: 10, fontFamily: "Nunito_800ExtraBold",
+                color: colors.mutedForeground, letterSpacing: 1.2,
+              }}>
+                TAP TO PREFILL
+              </Text>
+            </View>
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={{ paddingHorizontal: 20, gap: 8 }}
+              keyboardShouldPersistTaps="handled"
+            >
+              {QUICK_PROMPTS.map((p) => (
+                <PressScale
+                  key={p.label}
+                  onPress={() => {
+                    setInput(p.prompt);
+                    inputRef.current?.focus();
+                  }}
+                  style={{
+                    flexDirection: "row",
+                    alignItems: "center",
+                    gap: 7,
+                    paddingHorizontal: 13,
+                    paddingVertical: 10,
+                    borderRadius: 100,
+                    backgroundColor: colors.card,
+                    borderWidth: 1,
+                    borderColor: colors.border,
+                  }}
+                >
+                  <Icon name={p.icon as any} size={13} color={colors.brand.cyanDeep} />
+                  <Text style={{
+                    fontSize: 12,
+                    fontFamily: "Nunito_800ExtraBold",
+                    color: colors.foreground,
+                    letterSpacing: -0.1,
+                  }}>
+                    {p.label}
+                  </Text>
+                </PressScale>
+              ))}
+            </ScrollView>
+          </Animated.View>
+        )}
+
         {/* Composer */}
         {limitReached ? (
           <View style={{ paddingHorizontal: 20, paddingBottom: composerLift, paddingTop: 8 }}>
@@ -1280,9 +1410,10 @@ export default function CritiqueScreen() {
               }}
             >
               <TextInput
+                ref={inputRef}
                 value={input}
                 onChangeText={setInput}
-                placeholder="Message Grafly..."
+                placeholder="Share your first thought..."
                 placeholderTextColor={colors.mutedForeground}
                 multiline
                 textAlignVertical="center"
