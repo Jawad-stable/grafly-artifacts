@@ -4,7 +4,6 @@ import {
   Text,
   ScrollView,
   TouchableOpacity,
-  Switch,
   Platform,
 } from "react-native";
 import Animated, { FadeIn } from "react-native-reanimated";
@@ -18,7 +17,6 @@ import { useAuth } from "@/context/AuthContext";
 import { GraflyMascot } from "@/components/GraflyMascot";
 import { AText, ATextInput } from "@/components/AText";
 import { useT } from "@/hooks/useT";
-import { LANGUAGES } from "@/lib/i18n";
 import { HomeBackdrop } from "@/components/HomeBackdrop";
 import { BrandSquiggle } from "@/components/BrandSquiggle";
 import { PressScale } from "@/components/PressScale";
@@ -80,7 +78,7 @@ export default function ProfileScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
   const { state } = useGame();
-  const { state: profileState, toggleVoice, setTheme, setLanguage, updateProfile } = useProfile();
+  const { state: profileState, updateProfile } = useProfile();
   const { signOut, user } = useAuth();
   const { t, dir } = useT();
   const [editingName, setEditingName] = useState(false);
@@ -476,165 +474,43 @@ export default function ProfileScreen() {
           </ScrollView>
         </Animated.View>
 
-        {/* Settings */}
+        {/* Settings — single nav row that pushes to the dedicated
+            Settings page. The full controls (language tiles, theme
+            mockup previews, voice toggle) live there now so this tab
+            stays focused on identity + progress. */}
         <Animated.View entering={FadeIn.delay(240)} style={{ marginBottom: 24 }}>
           <Text style={{ fontSize: 13, fontFamily: "Nunito_800ExtraBold", color: colors.mutedForeground, letterSpacing: 1.5, marginBottom: 10 }}>
             {t("profile.settings")}
           </Text>
-          <View
+          <PressScale
+            onPress={() => router.push("/settings")}
             style={{
               backgroundColor: colors.card,
               borderRadius: colors.radius.md,
               paddingHorizontal: 18,
-              paddingVertical: 6,
+              paddingVertical: 18,
+              flexDirection: "row",
+              alignItems: "center",
+              gap: 14,
             }}
           >
-            {/* Language row */}
-            <View style={{ paddingVertical: 14, borderBottomWidth: 1, borderBottomColor: colors.border }}>
-              <View style={{ flexDirection: "row", alignItems: "center", gap: 12, marginBottom: 12 }}>
-                <View style={{
-                  width: 36, height: 36, borderRadius: 18,
-                  backgroundColor: SOLID.settingIconBg,
-                  alignItems: "center", justifyContent: "center",
-                }}>
-                  <Icon name="text-outline" size={18} color={colors.primary} />
-                </View>
-                <View style={{ flex: 1 }}>
-                  <Text style={{ fontSize: 15, fontFamily: "Nunito_800ExtraBold", color: colors.foreground }}>
-                    {t("settings.language")}
-                  </Text>
-                  <Text style={{ fontSize: 12, fontFamily: "Nunito_600SemiBold", color: colors.mutedForeground }}>
-                    {t("settings.language.sub")}
-                  </Text>
-                </View>
-              </View>
-              <View style={{ flexDirection: "row", gap: 8 }}>
-                {LANGUAGES.map((l) => {
-                  const active = profileState.language === l.id;
-                  return (
-                    <PressScale
-                      key={l.id}
-                      onPress={() => setLanguage(l.id)}
-                      style={{
-                        flex: 1,
-                        paddingVertical: 10,
-                        borderRadius: 100,
-                        alignItems: "center",
-                        backgroundColor: active ? colors.foreground : colors.background,
-                        borderWidth: 1,
-                        borderColor: active ? colors.foreground : colors.border,
-                      }}
-                    >
-                      <Text style={{
-                        fontSize: 13,
-                        fontFamily: "Nunito_800ExtraBold",
-                        color: active ? colors.background : colors.foreground,
-                        writingDirection: l.id === "ar" ? "rtl" : "ltr",
-                      }}>
-                        {l.native}
-                      </Text>
-                    </PressScale>
-                  );
-                })}
-              </View>
+            <View style={{
+              width: 40, height: 40, borderRadius: 20,
+              backgroundColor: SOLID.settingIconBg,
+              alignItems: "center", justifyContent: "center",
+            }}>
+              <Icon name="grid-outline" size={20} color={colors.primary} />
             </View>
-
-            {/* Theme row */}
-            <View style={{ paddingVertical: 14, borderBottomWidth: 1, borderBottomColor: colors.border }}>
-              <View style={{ flexDirection: "row", alignItems: "center", gap: 12, marginBottom: 12 }}>
-                <View style={{
-                  width: 36, height: 36, borderRadius: 18,
-                  backgroundColor: SOLID.settingIconBg,
-                  alignItems: "center", justifyContent: "center",
-                }}>
-                  <Icon name={profileState.themeMode === "dark" ? "moon" : "sunny"} size={18} color={colors.primary} />
-                </View>
-                <View style={{ flex: 1 }}>
-                  <Text style={{ fontSize: 15, fontFamily: "Nunito_800ExtraBold", color: colors.foreground }}>
-                    {t("settings.theme")}
-                  </Text>
-                  <Text style={{ fontSize: 12, fontFamily: "Nunito_600SemiBold", color: colors.mutedForeground }}>
-                    {t("settings.theme.sub")}
-                  </Text>
-                </View>
-              </View>
-              <View style={{ flexDirection: "row", gap: 8 }}>
-                {(["light", "dark"] as const).map((m) => {
-                  const active = profileState.themeMode === m;
-                  return (
-                    <PressScale
-                      key={m}
-                      onPress={() => setTheme(m)}
-                      style={{
-                        flex: 1,
-                        paddingVertical: 10,
-                        borderRadius: 100,
-                        alignItems: "center",
-                        flexDirection: "row",
-                        justifyContent: "center",
-                        gap: 6,
-                        backgroundColor: active ? colors.foreground : colors.background,
-                        borderWidth: 1,
-                        borderColor: active ? colors.foreground : colors.border,
-                      }}
-                    >
-                      <Icon
-                        name={m === "light" ? "sunny" : "moon"}
-                        size={14}
-                        color={active ? colors.background : colors.mutedForeground}
-                      />
-                      <Text style={{
-                        fontSize: 13,
-                        fontFamily: "Nunito_800ExtraBold",
-                        color: active ? colors.background : colors.foreground,
-                      }}>
-                        {m === "light" ? t("onb.theme.light") : t("onb.theme.dark")}
-                      </Text>
-                    </PressScale>
-                  );
-                })}
-              </View>
+            <View style={{ flex: 1 }}>
+              <Text style={{ fontSize: 16, fontFamily: "Nunito_800ExtraBold", color: colors.foreground }}>
+                {t("settings.title")}
+              </Text>
+              <Text style={{ fontSize: 12, fontFamily: "Nunito_600SemiBold", color: colors.mutedForeground, marginTop: 2 }}>
+                {t("settings.subtitle")}
+              </Text>
             </View>
-
-            {/* Voice row */}
-            <View
-              style={{
-                flexDirection: "row",
-                alignItems: "center",
-                justifyContent: "space-between",
-                paddingVertical: 14,
-              }}
-            >
-              <View style={{ flexDirection: "row", alignItems: "center", gap: 12, flex: 1 }}>
-                <View
-                  style={{
-                    width: 36,
-                    height: 36,
-                    borderRadius: 18,
-                    backgroundColor: SOLID.settingIconBg,
-                    alignItems: "center",
-                    justifyContent: "center",
-                  }}
-                >
-                  <Icon name="volume-high-outline" size={18} color={colors.primary} />
-                </View>
-                <View style={{ flex: 1 }}>
-                  <Text style={{ fontSize: 15, fontFamily: "Nunito_800ExtraBold", color: colors.foreground }}>
-                    {t("settings.voice")}
-                  </Text>
-                  <Text style={{ fontSize: 12, fontFamily: "Nunito_600SemiBold", color: colors.mutedForeground }}>
-                    {t("settings.voice.sub")}
-                  </Text>
-                </View>
-              </View>
-              <Switch
-                value={profileState.voiceEnabled}
-                onValueChange={toggleVoice}
-                trackColor={{ false: colors.muted, true: SOLID.switchOnTrack }}
-                thumbColor={profileState.voiceEnabled ? colors.primary : colors.mutedForeground}
-              />
-            </View>
-          </View>
+            <Icon name="chevron-forward" size={20} color={colors.mutedForeground} />
+          </PressScale>
         </Animated.View>
 
         {/* Account */}

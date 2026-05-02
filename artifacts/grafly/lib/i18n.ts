@@ -212,6 +212,14 @@ const dict = {
   "profile.editName": { en: "Edit username", ar: "تعديل الاسم" },
 
   // ---------- Settings ----------
+  "settings.title": { en: "Settings", ar: "الإعدادات" },
+  "settings.subtitle": {
+    en: "Personalize how Grafly looks and sounds.",
+    ar: "خصّص شكل Grafly وصوته كما يناسبك.",
+  },
+  "settings.section.preferences": { en: "PREFERENCES", ar: "التفضيلات" },
+  "settings.section.audio": { en: "AUDIO", ar: "الصوت" },
+  "settings.open": { en: "Open settings", ar: "فتح الإعدادات" },
   "settings.language": { en: "Language", ar: "اللغة" },
   "settings.language.sub": { en: "App display language", ar: "لغة عرض التطبيق" },
   "settings.theme": { en: "Theme", ar: "المظهر" },
