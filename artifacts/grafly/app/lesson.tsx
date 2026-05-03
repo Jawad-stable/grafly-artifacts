@@ -41,6 +41,7 @@ import {
   ColorMatchRenderer,
   ContrastCheckRenderer,
   PaletteBuildRenderer,
+  DragMatchRenderer,
 } from "@/components/LessonScenes";
 import type { MascotState } from "@/constants/assets";
 
@@ -495,6 +496,8 @@ function QuestionRenderer({
       return <ContrastCheckRenderer question={question} onAnswer={(c) => onAnswer(c ? 0 : -1)} answered={answered} />;
     case "palette_build":
       return <PaletteBuildRenderer question={question} onAnswer={(c) => onAnswer(c ? 0 : -1)} answered={answered} />;
+    case "drag_match":
+      return <DragMatchRenderer question={question} onAnswer={(c) => onAnswer(c ? 0 : -1)} answered={answered} />;
     default:
       return <MultipleChoice question={question} onAnswer={onAnswer as (i: number) => void} answered={answered} selectedIndex={selectedIndex} />;
   }
@@ -662,7 +665,8 @@ export default function LessonScreen() {
       q.type === "find_the_cta" ||
       q.type === "color_match" ||
       q.type === "contrast_check" ||
-      q.type === "palette_build"
+      q.type === "palette_build" ||
+      q.type === "drag_match"
     ) return (answer as number) === 0;
     return (answer as number) === q.correctIndex;
   }
@@ -879,6 +883,7 @@ export default function LessonScreen() {
     color_match: t("lesson.q.colormatch"),
     contrast_check: t("lesson.q.contrast"),
     palette_build: t("lesson.q.palette"),
+    drag_match: t("lesson.q.dragmatch"),
   };
 
   // Lesson intro card — shown once before the very first question

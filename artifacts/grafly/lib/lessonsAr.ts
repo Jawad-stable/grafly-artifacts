@@ -25,6 +25,36 @@ import type {
 // ---------------------------------------------------------------------------
 
 const EN_AR: Record<string, string> = {
+  // ===== Drag-match scenes =====
+  "Drag each color into the role it plays in a 60-30-10 system.":
+    "اسحب كل لون لدوره في نظام ٦٠-٣٠-١٠.",
+  "The off-white sits behind everything (60%). The mid-grey carries support text and chrome (30%). The pink is the loud accent — saved for the one action you want users to take (10%).":
+    "الأوف-وايت بيقعد ورا كل شي (٦٠٪). الرمادي بيحمل النصوص الثانوية والإطار (٣٠٪). الزهري هو اللمسة الجريئة — محجوز للإكشن الوحيد يلي بدّك المستخدم يضغطه (١٠٪).",
+  "Drag the swatches into 60%, 30%, and 10%.":
+    "اسحب الألوان لخانات ٦٠٪، ٣٠٪، و١٠٪.",
+  "60% — Surface": "٦٠٪ — السطح",
+  "30% — Support": "٣٠٪ — الداعم",
+  "10% — Action": "١٠٪ — الأكشن",
+  "The dominant tone": "اللون المسيطر",
+  "Text and chrome": "النصوص والإطار",
+  "The one bold color": "اللون الجريء الوحيد",
+  "Off-white": "أوف-وايت",
+  "Mid-grey": "رمادي وسط",
+  "Brand pink": "زهري البراند",
+  "Match each semantic role to its universal color.":
+    "طابق كل دور دلالي مع اللون العالمي تبعه.",
+  "Across cultures and platforms, green = success, amber = warning, red = danger. Get this wrong and users panic when they shouldn't — or stay calm when they shouldn't.":
+    "بكل الثقافات والمنصات: أخضر = نجاح، أصفر = تحذير، أحمر = خطر. إذا غلطت، المستخدم رح يخاف بمكان مش لازم — أو رح يهدا بمكان لازم يخاف فيه.",
+  "Drag each role onto the matching swatch.":
+    "اسحب كل دور على المربّع المطابق.",
+  "Amber": "كهرماني",
+  "Universal calm signal": "إشارة الطمأنينة العالمية",
+  "Universal caution signal": "إشارة الحذر العالمية",
+  "Universal stop signal": "إشارة التوقّف العالمية",
+  "Success": "نجاح",
+  "Warning": "تحذير",
+  "Danger": "خطر",
+
   // ===== Course / module / lesson titles + descriptions =====
   "Design Principles": "مبادئ التصميم",
   "Six modules, real mini-games, and the why behind every rule of good design.":
@@ -1175,6 +1205,19 @@ export function localizeScene(
       ...c,
       label: typeof c.label === "string" ? EN_AR[c.label] ?? c.label : c.label,
       sub: typeof c.sub === "string" ? EN_AR[c.sub] ?? c.sub : c.sub,
+    }));
+  }
+  if (Array.isArray(s.slots)) {
+    s.slots = s.slots.map((sl: any) => ({
+      ...sl,
+      label: typeof sl.label === "string" ? EN_AR[sl.label] ?? sl.label : sl.label,
+      sub: typeof sl.sub === "string" ? EN_AR[sl.sub] ?? sl.sub : sl.sub,
+    }));
+  }
+  if (Array.isArray(s.chips)) {
+    s.chips = s.chips.map((c: any) => ({
+      ...c,
+      label: typeof c.label === "string" ? EN_AR[c.label] ?? c.label : c.label,
     }));
   }
   return s;

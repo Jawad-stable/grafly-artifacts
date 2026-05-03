@@ -690,6 +690,7 @@ const dict = {
   "lesson.q.colormatch": { en: "Tap the matching color", ar: "اضغط على اللون المطابق" },
   "lesson.q.contrast": { en: "Tune the contrast", ar: "ظبّط التباين" },
   "lesson.q.palette": { en: "Build the palette", ar: "ابني الباليت" },
+  "lesson.q.dragmatch": { en: "Drag to match", ar: "اسحب وطابق" },
   "lesson.q.fallback": { en: "Question", ar: "سؤال" },
 
   // ---------- In-lesson scene chrome ----------
@@ -700,6 +701,9 @@ const dict = {
   "scenes.optionA":         { en: "Option A", ar: "الخيار أ" },
   "scenes.optionB":         { en: "Option B", ar: "الخيار ب" },
   "scenes.lockInOrder":     { en: "Lock in this order", ar: "ثبّت هاد الترتيب" },
+  "scenes.dm.tray":         { en: "DRAG ONTO A SLOT", ar: "اسحبها على مكانها" },
+  "scenes.dm.lockIn":       { en: "Lock in my matches", ar: "ثبّت تطابقاتي" },
+  "scenes.dm.dragHint":     { en: "Drag every chip into a slot", ar: "اسحب كل قطعة لمكانها" },
   "scenes.glance":          { en: "GLANCE — DON'T MEMORIZE", ar: "نظرة سريعة — بلا حفظ" },
   "scenes.skipAhead":       { en: "Skip ahead", ar: "تخطّى للأمام" },
   "scenes.showAgain":       { en: "Show me the screen again", ar: "ورجيني الشاشة مرّة ثانية" },

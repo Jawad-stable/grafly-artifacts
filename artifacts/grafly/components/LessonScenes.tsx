@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { View, Text, ScrollView, Pressable } from "react-native";
 import Animated, {
   FadeIn,
@@ -9,12 +9,15 @@ import Animated, {
   useAnimatedStyle,
   useAnimatedProps,
   withTiming,
+  withSpring,
   withSequence,
+  runOnJS,
   Easing,
   withRepeat,
   cancelAnimation,
 } from "react-native-reanimated";
 import type { SharedValue } from "react-native-reanimated";
+import { Gesture, GestureDetector } from "react-native-gesture-handler";
 import Svg, { Circle } from "react-native-svg";
 import type {
   Question,
@@ -1657,5 +1660,369 @@ export function ModuleCompleteCelebration({
         </Text>
       </View>
     </Animated.View>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Drag & Drop Match — true pan-gesture mini-game.
+// Player drags chips from a tray onto labeled slots. Chips snap to the
+// slot under their release point or spring back to the tray. Supports
+// reassignment and swap (dropping on an occupied slot displaces the
+// previous chip back to the tray).
+// ---------------------------------------------------------------------------
+
+const DM_CHIP_W = 108;
+const DM_CHIP_H = 56;
+
+interface DMRect { cx: number; cy: number; w: number; h: number }
+
+export function DragMatchRenderer({ question, answered, onAnswer }: MiniGameProps) {
+  const colors = useColors();
+  const { t } = useT();
+  const scene = question.scene;
+
+  const containerRef = useRef<View>(null);
+  const trayInnerRef = useRef<View>(null);
+  const [trayOffset, setTrayOffset] = useState<{ x: number; y: number } | null>(null);
+  const [slotPos, setSlotPos] = useState<Record<string, DMRect>>({});
+  const [trayPos, setTrayPos] = useState<Record<string, DMRect>>({});
+  const [placement, setPlacement] = useState<Record<string, string | null>>(() => {
+    if (!scene || scene.kind !== "drag_match") return {};
+    return Object.fromEntries(scene.chips.map((c) => [c.id, null]));
+  });
+  const placementRef = useRef(placement);
+  useEffect(() => { placementRef.current = placement; }, [placement]);
+
+  // Measure the tray's inner container *relative to the outer game container*.
+  // We re-run this whenever a tray chip's local layout is captured so the
+  // offset stays in sync if anything above the tray reflows (RTL, font scale,
+  // multi-line slot labels, etc.).
+  function measureTrayOffset() {
+    const inner = trayInnerRef.current as any;
+    const outer = containerRef.current as any;
+    if (!inner || !outer || !inner.measureLayout) return;
+    inner.measureLayout(
+      outer,
+      (x: number, y: number) => setTrayOffset({ x, y }),
+      () => {},
+    );
+  }
+
+  if (!scene || scene.kind !== "drag_match") return null;
+  const { slots, chips, correctMap, prompt } = scene;
+
+  const ready = Object.keys(slotPos).length === slots.length
+    && Object.keys(trayPos).length === chips.length
+    && trayOffset !== null;
+
+  function findSlotAt(x: number, y: number): string | null {
+    for (const [id, r] of Object.entries(slotPos)) {
+      if (x >= r.cx - r.w / 2 && x <= r.cx + r.w / 2 && y >= r.cy - r.h / 2 && y <= r.cy + r.h / 2) {
+        return id;
+      }
+    }
+    return null;
+  }
+
+  function handleDrop(chipId: string, x: number, y: number) {
+    if (answered) return;
+    const slotId = findSlotAt(x, y);
+    const cur = placementRef.current;
+    if (!slotId) {
+      if (cur[chipId] !== null) setPlacement({ ...cur, [chipId]: null });
+      return;
+    }
+    const occupant = Object.keys(cur).find((cid) => cid !== chipId && cur[cid] === slotId);
+    const next = { ...cur };
+    if (occupant) next[occupant] = cur[chipId] ?? null;
+    next[chipId] = slotId;
+    setPlacement(next);
+  }
+
+  const allPlaced = chips.every((c) => placement[c.id]);
+  const correctness: Record<string, boolean> = answered
+    ? Object.fromEntries(chips.map((c) => [c.id, placement[c.id] === correctMap[c.id]]))
+    : {};
+
+  function submit() {
+    const allCorrect = chips.every((c) => placement[c.id] === correctMap[c.id]);
+    onAnswer(allCorrect);
+  }
+
+  return (
+    <Animated.View entering={FadeInDown.duration(420)}>
+      {prompt ? (
+        <Text style={{ fontSize: 13, fontFamily: "Nunito_600SemiBold", color: colors.mutedForeground, marginBottom: 12 }}>
+          {prompt}
+        </Text>
+      ) : null}
+
+      {/* Container hosting slots + tray + absolute chip layer */}
+      <View ref={containerRef} collapsable={false} style={{ position: "relative" }}>
+        {/* Slots column */}
+        <View style={{ gap: 10 }}>
+          {slots.map((slot) => {
+            const placed = Object.keys(placement).find((cid) => placement[cid] === slot.id);
+            const swatch = slot.bgHex ?? colors.muted;
+            const onSwatch = slot.fgHex ?? colors.foreground;
+            const correct = answered && placed && correctness[placed];
+            const wrong = answered && placed && !correctness[placed];
+            return (
+              <View
+                key={slot.id}
+                onLayout={(e) => {
+                  const { x, y, width, height } = e.nativeEvent.layout;
+                  setSlotPos((p) => ({
+                    ...p,
+                    [slot.id]: { cx: x + width / 2, cy: y + height / 2, w: width, h: height },
+                  }));
+                }}
+                style={{
+                  height: 86,
+                  borderRadius: 18,
+                  backgroundColor: swatch,
+                  borderWidth: 2,
+                  borderStyle: placed ? "solid" : "dashed",
+                  borderColor: correct
+                    ? colors.success
+                    : wrong
+                    ? colors.destructive
+                    : placed
+                    ? onSwatch + "55"
+                    : onSwatch + "44",
+                  paddingHorizontal: 16,
+                  flexDirection: "row",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  overflow: "hidden",
+                }}
+              >
+                <View style={{ flex: 1 }}>
+                  <Text style={{ fontSize: 14, fontFamily: "Nunito_900Black", color: onSwatch, letterSpacing: -0.2 }}>
+                    {slot.label}
+                  </Text>
+                  {slot.sub ? (
+                    <Text style={{ fontSize: 11, fontFamily: "Nunito_600SemiBold", color: onSwatch + "BB", marginTop: 2 }}>
+                      {slot.sub}
+                    </Text>
+                  ) : null}
+                </View>
+                {/* Reserve right-side space so a chip placed here doesn't collide visually with text */}
+                <View style={{ width: DM_CHIP_W, height: DM_CHIP_H }} />
+                {answered ? (
+                  <View style={{ position: "absolute", top: 8, right: 10 }}>
+                    <Icon
+                      name={correct ? "checkmark-circle" : wrong ? "close-circle" : "ellipse-outline"}
+                      size={18}
+                      color={correct ? colors.success : wrong ? colors.destructive : onSwatch + "88"}
+                      weight="fill"
+                    />
+                  </View>
+                ) : null}
+              </View>
+            );
+          })}
+        </View>
+
+        {/* Tray */}
+        <View style={{ marginTop: 22 }}>
+          <Text style={{ fontSize: 11, fontFamily: "Nunito_800ExtraBold", color: colors.mutedForeground, letterSpacing: 1.2, marginBottom: 8 }}>
+            {t("scenes.dm.tray")}
+          </Text>
+          <View
+            ref={trayInnerRef}
+            collapsable={false}
+            onLayout={measureTrayOffset}
+            style={{
+              flexDirection: "row",
+              flexWrap: "wrap",
+              gap: 12,
+              padding: 12,
+              borderRadius: 18,
+              backgroundColor: colors.muted,
+              borderWidth: 1,
+              borderColor: colors.border,
+              minHeight: DM_CHIP_H + 24,
+            }}
+          >
+            {chips.map((chip) => (
+              <View
+                key={chip.id}
+                onLayout={(e) => {
+                  // Position relative to the tray's inner padded container.
+                  // Composed with `trayOffset` (measured relative to the
+                  // outer game container) to get a final absolute position
+                  // for the draggable chip layer below.
+                  const { x, y, width, height } = e.nativeEvent.layout;
+                  setTrayPos((p) => ({
+                    ...p,
+                    [chip.id]: { cx: x + width / 2, cy: y + height / 2, w: width, h: height },
+                  }));
+                  // Re-sync tray offset in case this chip's mount caused the
+                  // tray to grow (e.g. wrap-onto-new-row).
+                  measureTrayOffset();
+                }}
+                style={{ width: DM_CHIP_W, height: DM_CHIP_H }}
+              />
+            ))}
+          </View>
+        </View>
+
+        {/* Absolute chip layer */}
+        {ready && chips.map((chip) => {
+          const placedSlot = placement[chip.id];
+          const home = placedSlot ? slotPos[placedSlot] : null;
+          const trayPt = trayPos[chip.id];
+          const off = trayOffset ?? { x: 0, y: 0 };
+          const homeCx = home ? home.cx : (trayPt?.cx ?? 0) + off.x;
+          const homeCy = home ? home.cy : (trayPt?.cy ?? 0) + off.y;
+          // When placed in a slot, sit on the right side of the slot label area
+          const offsetXInSlot = home ? (home.w / 2 - DM_CHIP_W / 2 - 12) : 0;
+          return (
+            <DraggableChip
+              key={chip.id}
+              chip={chip}
+              homeCx={homeCx + offsetXInSlot}
+              homeCy={homeCy}
+              answered={answered}
+              correct={correctness[chip.id]}
+              onDrop={(x, y) => handleDrop(chip.id, x, y)}
+            />
+          );
+        })}
+      </View>
+
+      {!answered ? (
+        <PressScale
+          onPress={allPlaced ? submit : () => {}}
+          style={{
+            marginTop: 22,
+            backgroundColor: allPlaced ? colors.foreground : colors.muted,
+            borderRadius: 100,
+            paddingVertical: 16,
+            alignItems: "center",
+          }}
+        >
+          <Text style={{
+            fontSize: 15,
+            fontFamily: "Nunito_800ExtraBold",
+            color: allPlaced ? colors.background : colors.mutedForeground,
+          }}>
+            {allPlaced ? t("scenes.dm.lockIn") : t("scenes.dm.dragHint")}
+          </Text>
+        </PressScale>
+      ) : null}
+    </Animated.View>
+  );
+}
+
+function DraggableChip({
+  chip,
+  homeCx,
+  homeCy,
+  answered,
+  correct,
+  onDrop,
+}: {
+  chip: { id: string; label: string; bgHex?: string; fgHex?: string };
+  homeCx: number;
+  homeCy: number;
+  answered: boolean;
+  correct: boolean | undefined;
+  onDrop: (x: number, y: number) => void;
+}) {
+  const colors = useColors();
+  const homeX = useSharedValue(homeCx);
+  const homeY = useSharedValue(homeCy);
+  const dragX = useSharedValue(0);
+  const dragY = useSharedValue(0);
+  const scale = useSharedValue(1);
+  const elevated = useSharedValue(0);
+
+  useEffect(() => {
+    homeX.value = withSpring(homeCx, { damping: 18, stiffness: 220, mass: 0.6 });
+    homeY.value = withSpring(homeCy, { damping: 18, stiffness: 220, mass: 0.6 });
+    // reset any residual drag offset (release path also clears, but this
+    // guarantees the chip sits in its new home if home changed externally).
+    dragX.value = withSpring(0, { damping: 20, stiffness: 240 });
+    dragY.value = withSpring(0, { damping: 20, stiffness: 240 });
+  }, [homeCx, homeCy, homeX, homeY, dragX, dragY]);
+
+  const pan = Gesture.Pan()
+    .enabled(!answered)
+    .onStart(() => {
+      scale.value = withSpring(1.08, { damping: 15, stiffness: 260 });
+      elevated.value = withTiming(1, { duration: 120 });
+    })
+    .onUpdate((e) => {
+      dragX.value = e.translationX;
+      dragY.value = e.translationY;
+    })
+    .onEnd((e) => {
+      scale.value = withSpring(1, { damping: 15, stiffness: 240 });
+      elevated.value = withTiming(0, { duration: 200 });
+      const dropX = homeX.value + e.translationX;
+      const dropY = homeY.value + e.translationY;
+      runOnJS(onDrop)(dropX, dropY);
+      dragX.value = withSpring(0, { damping: 18, stiffness: 220 });
+      dragY.value = withSpring(0, { damping: 18, stiffness: 220 });
+    });
+
+  const style = useAnimatedStyle(() => ({
+    transform: [
+      { translateX: homeX.value + dragX.value - DM_CHIP_W / 2 },
+      { translateY: homeY.value + dragY.value - DM_CHIP_H / 2 },
+      { scale: scale.value },
+    ],
+    shadowOpacity: 0.15 + elevated.value * 0.25,
+    shadowRadius: 6 + elevated.value * 10,
+    shadowOffset: { width: 0, height: 2 + elevated.value * 6 },
+    elevation: 3 + elevated.value * 8,
+    zIndex: elevated.value > 0.5 ? 100 : 10,
+  }));
+
+  const bg = chip.bgHex ?? colors.foreground;
+  const fg = chip.fgHex ?? colors.background;
+  const border = answered
+    ? correct
+      ? colors.success
+      : colors.destructive
+    : "transparent";
+
+  return (
+    <GestureDetector gesture={pan}>
+      <Animated.View
+        style={[
+          {
+            position: "absolute",
+            left: 0,
+            top: 0,
+            width: DM_CHIP_W,
+            height: DM_CHIP_H,
+            borderRadius: 14,
+            backgroundColor: bg,
+            borderWidth: 2.5,
+            borderColor: border,
+            alignItems: "center",
+            justifyContent: "center",
+            shadowColor: "#000",
+            paddingHorizontal: 8,
+          },
+          style,
+        ]}
+      >
+        <Text
+          numberOfLines={1}
+          style={{
+            fontSize: 14,
+            fontFamily: "Nunito_900Black",
+            color: fg,
+            letterSpacing: -0.2,
+          }}
+        >
+          {chip.label}
+        </Text>
+      </Animated.View>
+    </GestureDetector>
   );
 }

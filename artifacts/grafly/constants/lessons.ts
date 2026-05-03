@@ -14,7 +14,8 @@ export type QuestionType =
   | "find_the_cta"
   | "color_match"
   | "contrast_check"
-  | "palette_build";
+  | "palette_build"
+  | "drag_match";
 
 export interface MatchPair {
   left: string;
@@ -104,6 +105,17 @@ export type Scene =
       correctIndices: number[];
       selectCount: number;
       ruleLabel: string;
+      prompt?: string;
+    }
+  | {
+      // True drag-and-drop. The player drags each chip from a tray onto one
+      // of the labeled slots. Slots can show a colored backdrop (so the
+      // player drops a label onto a swatch) or just a label (so the player
+      // drops a colored chip onto a role). `correctMap` is chipId → slotId.
+      kind: "drag_match";
+      slots: { id: string; label: string; sub?: string; bgHex?: string; fgHex?: string }[];
+      chips: { id: string; label: string; bgHex?: string; fgHex?: string }[];
+      correctMap: Record<string, string>;
       prompt?: string;
     };
 
@@ -1652,6 +1664,32 @@ export const COURSES: Course[] = [
                   prompt: "Three are neutrals. One is the accent. Tap the accent.",
                 },
               },
+              {
+                id: "ct-s1-q3",
+                type: "drag_match",
+                question: "Drag each color into the role it plays in a 60-30-10 system.",
+                explanation: "The off-white sits behind everything (60%). The mid-grey carries support text and chrome (30%). The pink is the loud accent — saved for the one action you want users to take (10%).",
+                difficulty: 3,
+                scene: {
+                  kind: "drag_match",
+                  prompt: "Drag the swatches into 60%, 30%, and 10%.",
+                  slots: [
+                    { id: "slot-60", label: "60% — Surface", sub: "The dominant tone", bgHex: "#F5F6FA", fgHex: "#21263F" },
+                    { id: "slot-30", label: "30% — Support", sub: "Text and chrome", bgHex: "#21263F", fgHex: "#FFFFFF" },
+                    { id: "slot-10", label: "10% — Action", sub: "The one bold color", bgHex: "#FFFFFF", fgHex: "#21263F" },
+                  ],
+                  chips: [
+                    { id: "chip-cream", label: "Off-white", bgHex: "#F5F6FA", fgHex: "#21263F" },
+                    { id: "chip-grey", label: "Mid-grey", bgHex: "#646A88", fgHex: "#FFFFFF" },
+                    { id: "chip-pink", label: "Brand pink", bgHex: "#FF7BD0", fgHex: "#21263F" },
+                  ],
+                  correctMap: {
+                    "chip-cream": "slot-60",
+                    "chip-grey": "slot-30",
+                    "chip-pink": "slot-10",
+                  },
+                },
+              },
             ],
           },
           {
@@ -1678,6 +1716,32 @@ export const COURSES: Course[] = [
                   choices: ["#7DD181", "#FFB400", "#FF3D3D", "#00A4FA"],
                   correctIndex: 2,
                   prompt: "Which color sends 'this is irreversible — be sure'?",
+                },
+              },
+              {
+                id: "ct-s2-q1b",
+                type: "drag_match",
+                question: "Match each semantic role to its universal color.",
+                explanation: "Across cultures and platforms, green = success, amber = warning, red = danger. Get this wrong and users panic when they shouldn't — or stay calm when they shouldn't.",
+                difficulty: 2,
+                scene: {
+                  kind: "drag_match",
+                  prompt: "Drag each role onto the matching swatch.",
+                  slots: [
+                    { id: "slot-green", label: "Green", sub: "Universal calm signal", bgHex: "#7DD181", fgHex: "#0E2A14" },
+                    { id: "slot-amber", label: "Amber", sub: "Universal caution signal", bgHex: "#FFB400", fgHex: "#3A2700" },
+                    { id: "slot-red", label: "Red", sub: "Universal stop signal", bgHex: "#FF3D3D", fgHex: "#FFFFFF" },
+                  ],
+                  chips: [
+                    { id: "chip-success", label: "Success", bgHex: "#FFFFFF", fgHex: "#21263F" },
+                    { id: "chip-warning", label: "Warning", bgHex: "#FFFFFF", fgHex: "#21263F" },
+                    { id: "chip-danger", label: "Danger", bgHex: "#FFFFFF", fgHex: "#21263F" },
+                  ],
+                  correctMap: {
+                    "chip-success": "slot-green",
+                    "chip-warning": "slot-amber",
+                    "chip-danger": "slot-red",
+                  },
                 },
               },
               {
