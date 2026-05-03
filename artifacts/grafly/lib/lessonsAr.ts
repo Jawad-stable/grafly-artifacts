@@ -1130,6 +1130,476 @@ const EN_AR: Record<string, string> = {
     "فتحت التسلسل. اقد كل عين.",
   "UX basics down. Your screens feel obvious.":
     "أساسيات تجربة الاستخدام بإيدك. شاشاتك صارت تحسّها واضحة.",
+
+  // ===== Course: Design with AI =====
+  "Design with AI": "التصميم بالذكاء الاصطناعي",
+  "Four modules on using AI tools the way designers -- not users -- actually do.":
+    "أربع وحدات بتعلّمك تستخدم أدوات الذكاء الاصطناعي مثل المصمّمين — مش مثل المستخدم العادي.",
+
+  // -- Module: Prompting --
+  "Prompting": "كتابة البرومبت",
+  "Write prompts that get what you actually mean.":
+    "اكتب برومبتات بتجيب يلي قصدك فعلاً.",
+
+  "What Makes a Good Prompt": "شو يلي بيخلّي البرومبت كويس",
+  "Vague in, vague out. Specific in, useful out.":
+    "ضبابي بتدخل، ضبابي بيطلع. دقيق بتدخل، مفيد بيطلع.",
+  "AI mirrors your clarity.": "الذكاء الاصطناعي بيعكس وضوحك.",
+  "A bad prompt gets you something. A good prompt gets you what you need.":
+    "البرومبت الضعيف بيجيبلك شي. البرومبت الكويس بيجيبلك يلي بدّك ياه.",
+  "Which part of a prompt does the most work?":
+    "أيّ جزء من البرومبت بيشتغل أكتر؟",
+  "Style + constraints collapse the search space. The model can't guess your taste -- you have to describe it.":
+    "الستايل + القيود بتضيّق خيارات النموذج. الذكاء الاصطناعي ما بيقدر يحزر ذوقك — لازم توصفه أنت.",
+  "The greeting ('Please can you...')": "التحية ('لو سمحت ممكن...')",
+  "The style and constraint details": "تفاصيل الستايل والقيود",
+  "The length of the message": "طول الرسالة",
+  "Using all-caps for emphasis": "استخدام أحرف كبيرة للتأكيد",
+  "A longer prompt is always better than a short one.":
+    "البرومبت الطويل دايماً أحسن من القصير.",
+  "Length doesn't matter -- precision does. A 10-word prompt with the right constraints beats a 100-word ramble.":
+    "الطول مش مهم — الدقّة هي المهمّة. برومبت من ١٠ كلمات بقيود صحيحة بيتفوّق على ١٠٠ كلمة بدون تركيز.",
+  "Adding a style reference like 'flat, no shadows' to a prompt mainly helps because:":
+    "ليش إضافة مرجع ستايل مثل 'flat, no shadows' للبرومبت بتفيد؟",
+  "Style references are shorthand. 'Flat, no shadows' maps to: minimal, clean, geometric. One phrase does heavy lifting.":
+    "مراجع الستايل هي اختصار. 'Flat, no shadows' بتعني: بسيط، نظيف، هندسي. عبارة وحدة بتشيل حمل كبير.",
+  "It makes the prompt longer": "بتطوّل البرومبت",
+  "It gives the AI a shared visual vocabulary to anchor to":
+    "بتعطي الذكاء الاصطناعي قاموس بصري مشترك يثبّت عليه",
+  "It tells the AI which designer to copy exactly":
+    "بتخبر الذكاء الاصطناعي أيّ مصمّم يقلّد بالظبط",
+  "It prevents the AI from generating images":
+    "بتمنع الذكاء الاصطناعي من توليد الصور",
+
+  "Spot the Weak Prompt": "لاقي البرومبت الضعيف",
+  "One of these prompts will waste your time. Tap it.":
+    "واحد من هالبرومبتات رح يضيّع وقتك. ضغط عليه.",
+  "Weak prompts cost more than one round.":
+    "البرومبتات الضعيفة بتكلّفك أكتر من جولة وحدة.",
+  "Every bad prompt is a revision cycle you didn't plan for.":
+    "كل برومبت ضعيف هو دورة تعديل ما حسبت حسابها.",
+  "Tap the prompt that will waste the most iterations.":
+    "ضغط على البرومبت يلي رح يضيّع أكتر عدد من الجولات.",
+  "Prompt B has no subject, style, or constraint. 'Nice and modern' means something different to every AI -- and every client.":
+    "البرومبت B ما إله موضوع ولا ستايل ولا قيود. 'حلو وعصري' بيعني شي مختلف لكل ذكاء اصطناعي — ولكل عميل.",
+  "Make it look nice and modern.": "خلّيه شكله حلو وعصري.",
+  "Hero section for a SaaS design tool. Dark background, bold white headline, single teal CTA button, no images.":
+    "هيدر لأداة تصميم SaaS. خلفية داكنة، عنوان أبيض عريض، زرّ أكشن واحد لون تركواز، بدون صور.",
+  "Design a hero section that looks professional and catches the eye with a good vibe.":
+    "صمّم هيدر شكله احترافي وبيلفت النظر وعنده فايب حلو.",
+  "Which constraint reduces AI output variance the most?":
+    "أيّ قيد بيقلّل تغيّر النتائج عند الذكاء الاصطناعي أكتر؟",
+  "Color and style references are the tightest anchors you have. They narrow the output space from millions of possibilities to dozens.":
+    "مراجع اللون والستايل هي أقوى مرابط بإيدك. بتضيّق فضاء النتائج من ملايين الاحتمالات لعشرات.",
+  "Saying 'please' and 'thank you'": "قول 'لو سمحت' و'شكراً'",
+  "Specifying a color palette or style reference":
+    "تحديد باليت لوني أو مرجع ستايل",
+  "Writing the prompt in uppercase": "كتابة البرومبت بأحرف كبيرة",
+  "Adding 'high quality' at the end": "إضافة 'high quality' بالآخر",
+
+  "Build the Prompt": "ركّب البرومبت",
+  "Drag the parts into the right order for maximum clarity.":
+    "اسحب الأجزاء بالترتيب الصح للحصول على أوضح نتيجة.",
+  "A prompt is an architecture.": "البرومبت هو هيكل.",
+  "Subject first. Then style. Then constraints. That sequence always wins.":
+    "الموضوع أولاً. بعدين الستايل. بعدين القيود. هالترتيب دايماً بيربح.",
+  "Stack these prompt components in the order that produces the clearest output.":
+    "رتّب مكوّنات البرومبت بالترتيب يلي بينتج عنه أوضح مخرجات.",
+  "Subject anchors the AI. Tone sets the feeling. Style defines the look. Constraints prevent the wrong turns.":
+    "الموضوع بيثبّت الذكاء الاصطناعي. النبرة بتحدّد الإحساس. الستايل بيحدّد الشكل. القيود بتمنع المنعطفات الغلط.",
+  "Tap the arrows to put these prompt blocks in the most effective order.":
+    "ضغط على الأسهم لترتيب بلوكات البرومبت بأكتر ترتيب فعّال.",
+  "Subject": "الموضوع",
+  "Tone / emotion": "النبرة / الإحساس",
+  "Visual style": "الستايل البصري",
+  "Constraints": "القيود",
+
+  "Choose the Better Prompt": "اختار البرومبت الأحسن",
+  "Two prompts, same goal. One gets there in one round.":
+    "برومبتين، نفس الهدف. واحد منهم بيوصل بجولة وحدة.",
+  "One will cost you. One won't.": "واحد رح يكلّفك. والتاني لأ.",
+  "Both prompts target the same output. Only one is built to ship fast.":
+    "البرومبتين بيستهدفوا نفس النتيجة. بس واحد منهم مصنوع ليطلع للسوق بسرعة.",
+  "Which prompt gets you a usable result fastest?":
+    "أيّ برومبت بيوصلك لنتيجة قابلة للاستخدام بأسرع وقت؟",
+  "B specifies background, headline treatment, CTA, and bans images. A says nothing -- 'good vibe' is the designer's job to define, not the AI's to guess.":
+    "B بيحدّد الخلفية ومعالجة العنوان وزرّ الأكشن وبيمنع الصور. A ما بيقول شي — 'فايب حلو' شغلة المصمّم يحدّدها، مش الذكاء الاصطناعي يحزرها.",
+  "Choose a prompt": "اختار برومبت",
+
+  // -- Module: Image Generation --
+  "Image Generation": "توليد الصور",
+  "Generate, critique, and direct AI visuals with a designer's eye.":
+    "ولّد ونقّد ووجّه الصور المنتَجة بالذكاء الاصطناعي بعين مصمّم.",
+
+  "How AI Sees Your Words": "كيف الذكاء الاصطناعي بيشوف كلماتك",
+  "Words map to pixels -- and the map is imperfect.":
+    "الكلمات بتنرسم على بكسلات — والخريطة مش مثالية.",
+  "AI doesn't visualize. It predicts.":
+    "الذكاء الاصطناعي ما بيتخيّل. هو بيتنبّأ.",
+  "Image models work by predicting the most likely pixels for your words. Know the gap.":
+    "نماذج الصور بتشتغل بالتنبّؤ بأكتر بكسلات محتملة لكلماتك. اعرف الفجوة.",
+  "Why do AI image models often get hands wrong?":
+    "ليش نماذج الصور بالذكاء الاصطناعي بتغلط بالأيادي كتير؟",
+  "Hand structure is highly variable. Statistically, the model predicts 'hand-like' rather than 'correct hand.' It's a data gap, not a bug.":
+    "تركيب الأيدي بيتغيّر كتير. إحصائياً، النموذج بيتنبّأ بـ'شكل يشبه الأيد' مش بـ'أيد صحيحة'. هاي فجوة بالداتا، مش باگ.",
+  "They weren't trained on hand photos": "ما اتدرّبوا على صور أيادي",
+  "Hands are complex and hard to represent consistently in training data":
+    "الأيادي معقّدة وصعب تمثيلها بشكل ثابت بالداتا التدريبية",
+  "Hands are too small to render at low resolution":
+    "الأيادي صغيرة كتير ليتمّ رسمها بدقّة منخفضة",
+  "The model skips body parts by design":
+    "النموذج بيتجاوز أعضاء الجسم بتصميمه",
+  "Specifying a camera angle ('top-down' or 'close-up') makes AI image outputs more predictable.":
+    "تحديد زاوية الكاميرا ('من فوق' أو 'قريبة') بيخلّي مخرجات الذكاء الاصطناعي أكتر قابلية للتنبّؤ.",
+  "Camera terms are part of the model's training vocabulary. They constrain composition reliably -- and reliably is what you want.":
+    "مصطلحات الكاميرا جزء من قاموس تدريب النموذج. بتقيّد التكوين بشكل موثوق — والموثوقية هي يلي بدّك ياها.",
+  "Which addition to an image prompt most reliably improves composition quality?":
+    "أيّ إضافة لبرومبت الصورة بتحسّن جودة التكوين بشكل موثوق أكتر؟",
+  "'Studio photography, f/2.8, soft natural light' maps to well-composed training images. 'Ultra realistic' is noise -- everything was labeled that.":
+    "'Studio photography, f/2.8, soft natural light' بتنرسم على صور تدريب منسّقة منيح. 'Ultra realistic' هي ضجيج — كل شي اتسمّى هيك.",
+  "'ultra realistic'": "'ultra realistic'",
+  "A photography style or camera descriptor": "ستايل تصوير أو وصف كاميرا",
+  "'8K resolution'": "'8K resolution'",
+  "Repeating the main subject twice": "تكرار الموضوع الرئيسي مرّتين",
+
+  "5-Second AI Review": "مراجعة الذكاء الاصطناعي بـ٥ ثواني",
+  "Glance at this AI-generated layout, then answer.":
+    "بصّ على هالتصميم المولّد بالذكاء الاصطناعي، بعدين جاوب.",
+  "Your gut reads AI artifacts instantly.":
+    "حدسك بيقرأ آثار الذكاء الاصطناعي بثواني.",
+  "Something is off in seconds. The skill is naming what.":
+    "بثواني بتحسّ في شي غلط. المهارة هي إنّك تسمّي شو هو.",
+  "Look at this AI-generated hero section, then answer.":
+    "بصّ على هاد الهيدر المولّد بالذكاء الاصطناعي، بعدين جاوب.",
+  "AI layout defaults often miss hierarchy between primary and secondary actions. Train your eye to name the problem, not just feel it.":
+    "تخطيطات الذكاء الاصطناعي الافتراضية بتفوّت التسلسل بين الأكشن الأساسي والثانوي. درّب عينك تسمّي المشكلة، مش بس تحسّها.",
+  "What design problem did you notice first?":
+    "شو مشكلة التصميم يلي لاحظتها أوّل شي؟",
+  "Both buttons have equal visual weight":
+    "الزرّين عندهم نفس الوزن البصري",
+  "The headline is too small": "العنوان صغير كتير",
+  "The background color is wrong": "لون الخلفية غلط",
+  "There's too much whitespace": "في فراغ زيادة",
+  "Two identical full-width green buttons split attention -- the AI gave them equal weight because CTAs 'look like' that in its training data. A designer catches it in seconds.":
+    "زرّين أخضر متطابقين بكامل العرض بيقسموا الانتباه — الذكاء الاصطناعي عطاهم نفس الوزن لأنّ أزرار الأكشن 'بتبيّن هيك' بداتاه التدريبية. المصمّم بيكتشفها بثواني.",
+  "Get Started Free": "ابدأ مجاناً",
+  "View Documentation": "شوف الدوكيومنتيشن",
+  "Design Faster, Build Smarter": "صمّم أسرع، ابني أذكى",
+  "The AI-powered platform for modern creative teams and design professionals.":
+    "المنصّة المدعومة بالذكاء الاصطناعي للفرق الإبداعية الحديثة ومحترفي التصميم.",
+  "AI-GENERATED LAYOUT": "تصميم مولّد بالذكاء الاصطناعي",
+
+  "Spot the AI Text": "لاقي نصّ الذكاء الاصطناعي",
+  "AI-generated copy has patterns. Find the one that wasn't reviewed.":
+    "النصوص المولّدة بالذكاء الاصطناعي عندها أنماط. لاقي يلي ما تمّت مراجعته.",
+  "AI has tells. Learn them.": "للذكاء الاصطناعي علامات. تعلّمها.",
+  "Typography, symmetry, and copy are where AI output falls apart first.":
+    "الخط والتماثل والنصّ هنّي أول الأماكن يلي بتنهار فيها مخرجات الذكاء الاصطناعي.",
+  "Tap the element that looks most like unreviewed AI output.":
+    "ضغط على العنصر يلي شكله أكتر مثل مخرجات ذكاء اصطناعي ما اتراجعت.",
+  "'Passionate... innovative... cutting-edge solutions...' is word-for-word AI boilerplate. No real team writes their bio this way. Flag it before it ships.":
+    "'شغوف... مبتكر... حلول متطوّرة...' هاد كلام جاهز من الذكاء الاصطناعي حرفياً. ما في فريق حقيقي بيكتب تعريفه هيك. أوقفه قبل ما يطلع.",
+  "Meet the team": "تعرّف على الفريق",
+  "We are a passionate team of creative professionals who strive to deliver innovative and cutting-edge solutions that transform digital experiences.":
+    "نحنا فريق شغوف من محترفي الإبداع، عم نسعى لتقديم حلول مبتكرة ومتطوّرة بتحوّل التجارب الرقمية.",
+  "Sara Al-Sayed": "سارة السيّد",
+  "Lead Designer": "مصمّمة قائدة",
+  "Omar Bakr": "عمر بكر",
+  "Full-stack Developer": "مطوّر فول-ستاك",
+  "Words like 'innovative', 'cutting-edge', and 'synergistic' in copy often signal unedited AI output.":
+    "كلمات مثل 'مبتكر' و'متطوّر' و'تكاملي' بالنصوص غالباً بتشير لمخرجات ذكاء اصطناعي ما اتعدّلت.",
+  "These cluster in AI training data as generic 'positive business language.' They're statistically common -- and say nothing specific.":
+    "هالكلمات بتتجمّع بداتا تدريب الذكاء الاصطناعي كـ'لغة شركاتية إيجابية' عامّة. شائعة إحصائياً — وما بتقول شي محدّد.",
+
+  "Style vs. Subject": "الستايل ضدّ الموضوع",
+  "Two prompts, same subject. Which one directs better?":
+    "برومبتين، نفس الموضوع. أيّ واحد بيوجّه أحسن؟",
+  "Style is half the prompt.": "الستايل هو نصّ البرومبت.",
+  "What you're generating and how it should look are two different instructions.":
+    "إيش عم تولّد وكيف لازم يبيّن هنّي تعليمتين مختلفتين.",
+  "Which image prompt gives you a more controlled, consistent result?":
+    "أيّ برومبت صورة بيعطيك نتيجة أكتر تحكّم وثبات؟",
+  "B defines format (vector), colors (hex values), shape count, text exclusion, and container. A says 'fun' -- which regenerates differently every single time.":
+    "B بيحدّد الفورمات (vector) والألوان (hex) وعدد الأشكال واستثناء النصّ والحاوية. A بيقول 'fun' — يلي بيتولّد بشكل مختلف كل مرّة.",
+  "Same subject -- an app icon. Pick the prompt that will actually be consistent.":
+    "نفس الموضوع — أيقونة تطبيق. اختار البرومبت يلي رح يكون فعلاً ثابت.",
+  "Create a beautiful app icon for a design learning app. Make it colorful and fun.":
+    "اعمل أيقونة تطبيق حلوة لتطبيق تعلّم تصميم. خلّيها ملوّنة وممتعة.",
+  "App icon for a design education platform. Flat vector, dark navy (#21263F) base, single yellow accent shape, no text, rounded square.":
+    "أيقونة تطبيق لمنصّة تعليم تصميم. Flat vector، خلفية كحلي داكن (#21263F)، شكل أصفر مميّز واحد، بدون نصّ، مربّع بزوايا دائرية.",
+  "FOR: app icon": "للموضوع: أيقونة تطبيق",
+  "PROMPT A": "برومبت A",
+  "PROMPT B": "برومبت B",
+  "PROMPT C": "برومبت C",
+  "Same goal -- a hero section for a design tool. Pick the prompt that ships faster.":
+    "نفس الهدف — هيدر لأداة تصميم. اختار البرومبت يلي بيطلع للسوق أسرع.",
+
+  // -- Module: AI Workflow --
+  "AI Workflow": "سير العمل بالذكاء الاصطناعي",
+  "Where to plug AI into the process -- and where to keep it out.":
+    "وين تدخّل الذكاء الاصطناعي بالعمليّة — ووين تبعّده عنها.",
+
+  "Where AI Belongs": "وين بينتمي الذكاء الاصطناعي",
+  "AI belongs in some steps. Not all of them.":
+    "الذكاء الاصطناعي بينتمي لبعض الخطوات. مش كلّها.",
+  "The tool should serve the process.": "الأداة لازم تخدم العمليّة.",
+  "AI is fast at divergence, slow at taste. Know which mode you're in.":
+    "الذكاء الاصطناعي سريع بالتوسّع، بطيء بالذوق. اعرف بأيّ وضع أنت.",
+  "At which design phase is AI most valuable?":
+    "بأيّ مرحلة من التصميم بيكون الذكاء الاصطناعي الأكتر فايدة؟",
+  "AI is fastest when options are wide open. Once direction is decided, designer judgment drives better decisions than generation.":
+    "الذكاء الاصطناعي أسرع لمّا الخيارات بتكون مفتوحة كلياً. بعد ما يتقرّر الاتجاه، حكم المصمّم بياخد قرارات أحسن من التوليد.",
+  "Final delivery to the client": "التسليم النهائي للعميل",
+  "Early exploration and divergent ideation":
+    "الاستكشاف المبكّر وتوليد الأفكار المتوسّعة",
+  "Presenting the rationale to stakeholders":
+    "تقديم المنطق لأصحاب المصلحة",
+  "User research and interviews": "أبحاث المستخدمين والمقابلات",
+  "AI can reliably replace user research because it has seen many products.":
+    "الذكاء الاصطناعي بيقدر يستبدل أبحاث المستخدمين لأنّه شاف منتجات كتير.",
+  "AI reflects average patterns from past data -- not your specific users, their context, or their problems. Research is irreplaceable.":
+    "الذكاء الاصطناعي بيعكس أنماط متوسّطة من داتا قديمة — مش مستخدمينك المحدّدين ولا سياقهم ولا مشاكلهم. البحث ما بينعوّض.",
+  "A designer generates 20 logo concepts with AI in 10 minutes, then picks and refines the best 2. This is:":
+    "مصمّم ولّد ٢٠ فكرة لوغو بالذكاء الاصطناعي بـ١٠ دقايق، بعدين اختار وحسّن أحسن ٢ منهم. هاد اسمه:",
+  "Divergence (many ideas fast) is AI's strength. Convergence (what's actually right) is the designer's job. This split is the most productive pattern.":
+    "التوسّع (أفكار كتير بسرعة) هي قوّة الذكاء الاصطناعي. التركيز (شو فعلاً صح) هي شغلة المصمّم. هاد التقسيم هو أكتر نمط منتج.",
+  "Laziness replacing skill": "كسل بيستبدل المهارة",
+  "Using AI for divergence and the designer for convergence":
+    "استخدام الذكاء الاصطناعي للتوسّع، والمصمّم للتركيز",
+  "Plagiarism from training data": "نسخ من داتا التدريب",
+  "Skipping the client brief": "تخطّي بريف العميل",
+
+  "Right Tool, Right Step": "الأداة الصح، بالخطوة الصح",
+  "Drag each AI task to the phase it actually belongs in.":
+    "اسحب كل مهمّة ذكاء اصطناعي للمرحلة يلي فعلاً بتنتمي إلها.",
+  "Phase matters more than tool.": "المرحلة أهمّ من الأداة.",
+  "The same AI task used in the wrong phase creates rework, not output.":
+    "نفس مهمّة الذكاء الاصطناعي لمّا تتستخدم بمرحلة غلط، بتنتج إعادة شغل، مش مخرجات.",
+  "Arrange these AI design tasks from earliest to latest in the design process.":
+    "رتّب مهام التصميم بالذكاء الاصطناعي من الأبكر للأخير بعمليّة التصميم.",
+  "Order these from the earliest to latest in the design process.":
+    "رتّبهم من الأبكر للأخير بعمليّة التصميم.",
+  "Research grounds the work. Ideation opens possibilities. Refinement locks specifics. Handoff closes the loop. This order prevents expensive directional mistakes.":
+    "البحث بيؤسّس الشغل. توليد الأفكار بيفتح الاحتمالات. التحسين بيثبّت التفاصيل. التسليم بيقفل الدورة. هاد الترتيب بيمنع أخطاء توجيه مكلفة.",
+  "Use AI to generate a first-draft color palette from a brand brief":
+    "استخدم الذكاء الاصطناعي لتوليد مسوّدة أولى لباليت لوني من بريف البراند",
+  "Generate 10 moodboard directions": "ولّد ١٠ اتجاهات لموودبورد",
+  "Use AI to generate and annotate icon variants for a design system":
+    "استخدم الذكاء الاصطناعي لتوليد ووصف أيقونات متنوّعة لنظام تصميم",
+  "Generate component documentation for the design system":
+    "ولّد دوكيومنتيشن لمكوّنات نظام التصميم",
+  "Research synthesis": "تجميع البحث",
+  "Concept ideation": "توليد المفاهيم",
+  "Copy refinement": "تحسين النصّ",
+  "Design handoff": "تسليم التصميم",
+
+  "Spot the AI Overreach": "لاقي تجاوز الذكاء الاصطناعي",
+  "Find the step where handing to AI costs more than it saves.":
+    "لاقي الخطوة يلي تسليمها للذكاء الاصطناعي بيكلّف أكتر ممّا بيوفّر.",
+  "Automation has a cost ceiling.": "الأتمتة إلها سقف تكلفة.",
+  "Past a point, AI output needs so much correction it would've been faster to do it yourself.":
+    "بعد نقطة معيّنة، مخرجات الذكاء الاصطناعي بتحتاج تصحيح كتير، يا ريت كنت عملتها بإيدك من الأوّل.",
+  "Tap the workflow step that creates the most hidden rework.":
+    "ضغط على خطوة سير العمل يلي بتصنع أكبر قدر من إعادة الشغل المخفيّة.",
+  "AI-conducted user interviews produce AI-average responses, not real human insight. The data looks clean but is fundamentally wrong -- requiring a full research redo.":
+    "المقابلات يلي بيجريها الذكاء الاصطناعي بتنتج إجابات متوسّطة، مش رؤى بشريّة حقيقيّة. الداتا شكلها نظيف بس غلط من جوّاتها — وبتتطلّب إعادة بحث كاملة.",
+  "AI-FIRST WORKFLOW": "سير عمل الذكاء الاصطناعي أوّلاً",
+  "DESIGNER-FIRST, AI-ASSISTED": "المصمّم أوّلاً، والذكاء الاصطناعي مساعد",
+  "Let AI conduct user interviews and synthesize insights -- no human reviews the questions":
+    "خلّي الذكاء الاصطناعي يجري مقابلات المستخدمين ويجمّع الرؤى — بدون ما يراجع حدا الأسئلة",
+  "Generate copy variants for the final hero headline":
+    "ولّد تنويعات نصّ للعنوان الرئيسي النهائي",
+  "Research -> AI for moodboard variations -> Designer curates -> Refine -> Deliver":
+    "بحث ← ذكاء اصطناعي لتنويعات الموودبورد ← المصمّم يختار ← تحسين ← تسليم",
+  "AI accelerates divergent phases. Human judgment handles direction.":
+    "الذكاء الاصطناعي بيسرّع المراحل التوسّعية. الحكم البشري بيتولّى التوجيه.",
+  "AI without context produces fast, wrong answers.":
+    "الذكاء الاصطناعي بلا سياق بينتج إجابات سريعة وغلط.",
+  "AI after research = speed where it helps, judgment where it counts.":
+    "الذكاء الاصطناعي بعد البحث = سرعة وين بتفيد، وحكم وين بيهمّ.",
+  "Generate logo -> Skip research -> Ship to client":
+    "ولّد لوغو ← تخطّى البحث ← سلّم للعميل",
+  "Generic icon. Wrong style. Wrong colors. Starts over.":
+    "أيقونة عامّة. ستايل غلط. ألوان غلط. ترجع من الأوّل.",
+  "On-brand output. Minor edits. Ships in one round.":
+    "نتيجة متوافقة مع البراند. تعديلات بسيطة. بتطلع بجولة وحدة.",
+  "Fast output, no context. Client rejects. Starts over.":
+    "نتيجة سريعة، بلا سياق. العميل بيرفض. بترجع من الأوّل.",
+  "One of these AI decisions will cost more hours than it saves. Tap it.":
+    "واحد من قرارات الذكاء الاصطناعي هاي رح يكلّف ساعات أكتر ممّا بيوفّر. ضغط عليه.",
+  "The best AI workflow decisions come from asking: 'what is repeatable and low-stakes here?'":
+    "أحسن قرارات سير عمل الذكاء الاصطناعي بتيجي من السؤال: 'شو يلي متكرّر ومخاطره قليلة هون؟'",
+  "Repeatable = AI does it faster every time. Low-stakes = mistakes are cheap to fix. That combination is the real sweet spot.":
+    "متكرّر = الذكاء الاصطناعي بيعمله أسرع كل مرّة. مخاطر قليلة = الأخطاء رخيصة التصليح. هاد المزيج هو نقطة الذهب الحقيقية.",
+  "Project workflow": "سير عمل المشروع",
+
+  // -- Module: AI Ethics in Design --
+  "AI Ethics in Design": "أخلاقيات الذكاء الاصطناعي بالتصميم",
+  "Bias, attribution, and where designer responsibility begins.":
+    "التحيّز، والإسناد، ومن وين بتبدأ مسؤولية المصمّم.",
+
+  "Bias in the Model": "التحيّز بالنموذج",
+  "AI reflects what it was trained on -- including the problems.":
+    "الذكاء الاصطناعي بيعكس يلي اتدرّب عليه — بما فيه المشاكل.",
+  "Training data isn't neutral.": "داتا التدريب مش محايدة.",
+  "Every model learned from someone's internet. That internet had biases. Your output will too.":
+    "كل نموذج تعلّم من إنترنت حدا. هاد الإنترنت كان فيه تحيّزات. مخرجاتك كمان رح تكون فيها.",
+  "Why do AI image models often default to Western, male representations of professionals?":
+    "ليش نماذج الصور بالذكاء الاصطناعي غالباً بترجع لتمثيلات غربيّة وذكوريّة للمحترفين؟",
+  "Models learn from what exists online. Historically, certain demographics are over-represented in certain professional contexts. That bias gets inherited.":
+    "النماذج بتتعلّم من يلي موجود أونلاين. تاريخياً، فئات معيّنة ممثّلة أكتر بسياقات مهنيّة معيّنة. هاد التحيّز بينورث.",
+  "The developers chose this intentionally": "المطوّرين اختاروا هاد عمداً",
+  "Training data reflects historical representation imbalances on the internet":
+    "داتا التدريب بتعكس اختلالات تمثيل تاريخيّة على الإنترنت",
+  "The model has no way to understand demographics":
+    "النموذج ما عنده طريقة يفهم التركيبة السكانيّة",
+  "This only happens with free AI tools":
+    "هاد بيصير بس مع أدوات الذكاء الاصطناعي المجّانيّة",
+  "As the designer, you are responsible for reviewing AI output for biased representations before it ships.":
+    "كمصمّم، أنت مسؤول عن مراجعة مخرجات الذكاء الاصطناعي للتحيّزات بالتمثيل قبل ما تطلع.",
+  "The model generated it. But you shipped it. Responsibility for what reaches users is always the designer's.":
+    "النموذج ولّدها. بس أنت طلّعتها. مسؤوليّة يلي بيوصل للمستخدم دايماً للمصمّم.",
+  "A designer uses AI to generate user persona portraits. The best practice is to:":
+    "مصمّم بيستخدم الذكاء الاصطناعي لتوليد صور بيرسونات للمستخدمين. أحسن ممارسة هي:",
+  "Intentional review and prompt adjustment is the professional standard. Speed is not a valid trade-off for biased representation in shipped products.":
+    "المراجعة المتعمّدة وتعديل البرومبت هي المعيار المهني. السرعة مش مقايضة مقبولة مع تمثيل متحيّز بمنتجات بتطلع للسوق.",
+  "Use the first results as-is to save time":
+    "استخدم أوّل نتائج زي ما هي توفيراً للوقت",
+  "Review all outputs for demographic diversity and adjust prompts accordingly":
+    "راجع كل المخرجات للتنوّع السكاني وعدّل البرومبتات بناء عليه",
+  "Only generate personas that match the designer's own identity":
+    "ولّد بس بيرسونات بتطابق هويّة المصمّم نفسه",
+  "Avoid AI for personas entirely":
+    "تجنّب الذكاء الاصطناعي للبيرسونات تماماً",
+  "Generate a photo of a surgeon at work":
+    "ولّد صورة لجرّاح أثناء عمله",
+  "Generate a photo of a female surgeon of Middle Eastern descent at work":
+    "ولّد صورة لجرّاحة من أصول شرق-أوسطيّة أثناء عملها",
+  "Skews heavily male and Western. Default biases from training data.":
+    "بتميل بشدّة للذكوري والغربي. تحيّزات افتراضيّة من داتا التدريب.",
+  "Default outputs reflect dominant training data -- not your user base.":
+    "المخرجات الافتراضيّة بتعكس داتا التدريب المهيمنة — مش قاعدة مستخدمينك.",
+  "You control representation. If you don't specify, the model picks for you.":
+    "أنت بتتحكّم بالتمثيل. إذا ما حدّدت، النموذج بيختار عنّك.",
+  "Explicit specification overrides the default. Representation is a choice you make.":
+    "التحديد الصريح بيتجاوز الافتراضي. التمثيل خيار أنت بتاخده.",
+  "UNSPECIFIED PROMPT": "برومبت بدون تحديد",
+  "INTENTIONAL PROMPT": "برومبت متعمّد",
+  "Result: Stock-photo look, incorrect hands, random background, wrong demographic.":
+    "النتيجة: شكل صورة جاهزة، أيادي غلط، خلفيّة عشوائيّة، تركيبة سكانيّة غلط.",
+  "Result: Consistent composition, correct framing, usable in an actual product.":
+    "النتيجة: تكوين ثابت، تأطير صح، قابلة للاستخدام بمنتج فعلي.",
+
+  "Attribution and Credit": "الإسناد والاعتراف",
+  "Who made it -- you, the AI, or both?":
+    "مين عمله — أنت، ولّا الذكاء الاصطناعي، ولّا الاتنين سوا؟",
+  "Authorship has shifted. Responsibility hasn't.":
+    "التأليف تغيّر. المسؤولية ما تغيّرت.",
+  "AI generates from patterns learned from human work. That history matters professionally and legally.":
+    "الذكاء الاصطناعي بيولّد من أنماط تعلّمها من شغل بشري. هاد التاريخ مهمّ مهنياً وقانونياً.",
+  "When using AI-generated visuals in a client project, the professional standard is to:":
+    "لمّا بتستخدم صور مولّدة بالذكاء الاصطناعي بمشروع عميل، المعيار المهني هو:",
+  "Disclosure builds trust and manages expectations. Many clients have policies or legal considerations around AI-generated content.":
+    "الإفصاح بيبني ثقة وبيدير التوقّعات. كتير عملاء عندهم سياسات أو اعتبارات قانونيّة حول المحتوى المولّد بالذكاء الاصطناعي.",
+  "Never disclose -- clients don't need to know":
+    "ما تفصح أبداً — العملاء مش لازم يعرفوا",
+  "Disclose AI assistance and ensure the client approves its use":
+    "أفصح عن استخدام الذكاء الاصطناعي وتأكّد إنّ العميل موافق على استعماله",
+  "Only disclose if the client asks directly":
+    "أفصح بس إذا العميل سأل مباشرة",
+  "Add a small 'AI' watermark in the corner":
+    "ضيف علامة مائيّة صغيرة 'AI' بالزاوية",
+  "AI-generated images may contain elements derived from copyrighted works in their training data.":
+    "الصور المولّدة بالذكاء الاصطناعي ممكن تحتوي عناصر مأخوذة من أعمال محميّة بحقوق النشر بداتا تدريبها.",
+  "This is an active legal and ethical area. For commercial work, knowing what your AI tool was trained on -- and its licensing policy -- is part of professional due diligence.":
+    "هاد مجال قانوني وأخلاقي نشط. للشغل التجاري، معرفة شو اتدرّبت عليه أداتك — وسياسة الترخيص تبعها — جزء من العناية المهنيّة الواجبة.",
+  "A designer generates an illustration with AI, edits it significantly, and shows it in their portfolio. The right approach is:":
+    "مصمّم ولّد رسم توضيحي بالذكاء الاصطناعي، عدّل عليه كتير، وعرضه ببورتفوليو. المنهج الصحيح هو:",
+  "Transparency is the standard. Significant editing is creative work worth showing -- the origin of the base asset is still relevant context.":
+    "الشفافية هي المعيار. التعديل الكبير شغل إبداعي يستاهل العرض — أصل الأصل مازال سياق مهمّ.",
+  "No disclosure needed since they edited it":
+    "ما في حاجة لإفصاح طالما إنّه عدّل عليه",
+  "Note that it was AI-assisted in the project description":
+    "نوّه إنّه عُمل بمساعدة ذكاء اصطناعي بوصف المشروع",
+  "Remove it -- AI work can't be in a portfolio":
+    "شيله — شغل الذكاء الاصطناعي ما إله مكان بالبورتفوليو",
+  "List the AI tool as the co-designer":
+    "حطّ أداة الذكاء الاصطناعي كمصمّم مشارك",
+
+  "The Designer's Role": "دور المصمّم",
+  "Where does human judgment stay non-negotiable?":
+    "وين بيضلّ الحكم البشري غير قابل للتفاوض؟",
+  "Tools change. Responsibility doesn't.":
+    "الأدوات بتتغيّر. المسؤوليّة لأ.",
+  "What AI can do and what you should delegate to it are two different questions.":
+    "شو الذكاء الاصطناعي يقدر يعمل، وشو لازم تفوّضه فيه، سؤالين مختلفين.",
+  "Glance at this portfolio case study intro, then answer.":
+    "بصّ على مقدّمة هاي دراسة الحالة بالبورتفوليو، بعدين جاوب.",
+  "AI copy in a portfolio undermines the one thing the portfolio must prove: that you can think, decide, and communicate as a designer.":
+    "نصوص الذكاء الاصطناعي بالبورتفوليو بتدمّر الشي الوحيد يلي البورتفوليو لازم يثبته: إنّك بتقدر تفكّر وتقرّر وتتواصل كمصمّم.",
+  "What was the biggest problem with that intro?":
+    "شو أكبر مشكلة بهاي المقدّمة؟",
+  "The body copy was vague AI boilerplate with no real insight":
+    "نصّ المتن كان كلام جاهز ضبابي من الذكاء الاصطناعي بلا أيّ رؤية حقيقيّة",
+  "The title was too long": "العنوان طويل كتير",
+  "There were no images": "ما كان في صور",
+  "The button was the wrong color": "الزرّ كان لونه غلط",
+  "'Innovative methodologies', 'cutting-edge', 'synergistic outcomes' -- this says nothing. A portfolio intro should describe real decisions, not AI filler.":
+    "'منهجيّات مبتكرة'، 'متطوّر'، 'نتائج تكامليّة' — هاد ما بيقول شي. مقدّمة البورتفوليو لازم توصف قرارات حقيقيّة، مش حشو ذكاء اصطناعي.",
+  "View case study": "شوف دراسة الحالة",
+  "Redesigning Checkout for a Global E-Commerce Platform":
+    "إعادة تصميم الدفع لمنصّة تجارة إلكترونيّة عالميّة",
+  "This project involved leveraging innovative design methodologies to create a seamless, cutting-edge user experience that transformed the checkout flow and delivered synergistic outcomes for stakeholders.":
+    "هاد المشروع تضمّن الاستفادة من منهجيّات تصميم مبتكرة لخلق تجربة مستخدم سلسة ومتطوّرة بتحوّل سير عمليّة الدفع وبتسلّم نتائج تكامليّة لأصحاب المصلحة.",
+  "Which design task is least appropriate to fully delegate to AI?":
+    "أيّ مهمّة تصميم هي الأقلّ مناسبة لتفويضها كاملة للذكاء الاصطناعي؟",
+  "Brand direction requires understanding the client's values, market, and future. AI has none of that. The 'final call' is always a human judgment.":
+    "اتجاه البراند بيحتاج فهم لقيم العميل وسوقه ومستقبله. الذكاء الاصطناعي ما عنده شي من هاد. 'القرار النهائي' دايماً حكم بشري.",
+  "Generating a first-draft icon set": "توليد مسوّدة أولى لمجموعة أيقونات",
+  "Creating multiple color palette variations":
+    "إنشاء تنويعات متعدّدة لباليتات لونيّة",
+  "Making the final call on brand direction for a client":
+    "اتّخاذ القرار النهائي لاتجاه البراند للعميل",
+  "Summarize competitor app reviews": "تلخيص مراجعات تطبيقات المنافسين",
+  "Summarizing competitor app reviews": "تلخيص مراجعات تطبيقات المنافسين",
+  "A designer who uses AI tools well is a stronger designer, not a weaker one.":
+    "المصمّم يلي بيستخدم أدوات الذكاء الاصطناعي منيح هو مصمّم أقوى، مش أضعف.",
+  "AI amplifies the designer's intent. Strong taste + clear thinking + good prompting = more output, better quality, in less time.":
+    "الذكاء الاصطناعي بيكبّر نيّة المصمّم. ذوق قوي + تفكير واضح + برومبت كويس = مخرجات أكتر، جودة أحسن، بوقت أقلّ.",
+
+  // -- Shared scene strings --
+  "PROMPT": "البرومبت",
+  "RESULT": "النتيجة",
+  "GOAL: hero section": "الهدف: هيدر",
+  "Too vague: the AI has to guess everything.":
+    "ضبابي كتير: الذكاء الاصطناعي لازم يحزر كل شي.",
+  "Generic words produce generic -- and often wrong -- outputs.":
+    "كلمات عامّة بتنتج مخرجات عامّة — وغالباً غلط.",
+  "Subject + style + constraints = a result you can use.":
+    "موضوع + ستايل + قيود = نتيجة بتقدر تستخدمها.",
+  "Camera angle + subject + setting = a directed result.":
+    "زاوية كاميرا + موضوع + إعداد = نتيجة موجّهة.",
+  "make me a logo": "اعملّي لوغو",
+  "a person working on a laptop": "شخص عم يشتغل على لابتوب",
+  "Calm, trustworthy, minimal": "هادي، موثوق، بسيط",
+  "Flat UI, muted greens and white, DM Sans":
+    "Flat UI، أخضر هادئ وأبيض، خط DM Sans",
+  "No gradients. Mobile only. No stock photos.":
+    "بدون تدرّجات. للجوّال بس. بدون صور جاهزة.",
+  "Minimalist wordmark for a design education app. Sans-serif, dark navy and electric blue, no gradients.":
+    "وردمارك بسيط لتطبيق تعليم تصميم. خط بدون أرجل، كحلي داكن وأزرق كهربائي، بدون تدرّجات.",
+  "Dark-mode dashboard card showing weekly stats. Bold numbers, muted label text, single accent color.":
+    "كرت داشبورد بالوضع الداكن بيعرض إحصائيّات الأسبوع. أرقام عريضة، نصّ ليبل هادئ، لون مميّز واحد.",
+  "Clean mobile onboarding screen for a fitness app. 3 steps, pastel green palette, no stock photos.":
+    "شاشة أونبوردنغ نظيفة لتطبيق لياقة. ٣ خطوات، باليت أخضر هادئ، بدون صور جاهزة.",
+  "top-down flat lay of a laptop and notebook, neutral linen background, product photography, f/2.8":
+    "تصوير من فوق للابتوب ودفتر، خلفية كتّان محايد، تصوير منتجات، f/2.8",
+  "App onboarding screen for a budgeting tool":
+    "شاشة أونبوردنغ لأداة ميزانيّة",
+  "One of these will force multiple rounds. Tap it.":
+    "واحد من هدول رح يفرض عليك جولات متعدّدة. ضغط عليه.",
+  "One element here wasn't reviewed by a human. Tap it.":
+    "في عنصر هون ما تمّت مراجعته من إنسان. ضغط عليه.",
 };
 
 // ---------------------------------------------------------------------------
