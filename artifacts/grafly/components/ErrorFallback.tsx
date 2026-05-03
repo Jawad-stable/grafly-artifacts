@@ -122,7 +122,7 @@ export function ErrorFallback({ error, resetError }: ErrorFallbackProps) {
                 ]}
               >
                 <Text style={[styles.modalTitle, { color: colors.foreground }]}>
-                  Error Details
+                  {t("err.details")}
                 </Text>
                 <Pressable
                   onPress={() => setIsModalVisible(false)}

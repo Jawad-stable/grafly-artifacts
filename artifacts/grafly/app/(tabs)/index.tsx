@@ -751,7 +751,7 @@ export default function HomeScreen() {
               color: colors.mutedForeground,
               letterSpacing: 1.4,
             }}>
-              DAILY GOAL
+              {t("home.dailyGoal")}
             </Text>
             <View style={{ flexDirection: "row", alignItems: "baseline", gap: 4, marginTop: 8 }}>
               <Text style={{
@@ -815,7 +815,7 @@ export default function HomeScreen() {
                 color: colors.mutedForeground,
                 letterSpacing: 1.4,
               }}>
-                YOUR RANK
+                {t("home.yourRank")}
               </Text>
               <View style={{
                 width: 28, height: 28, borderRadius: 10,

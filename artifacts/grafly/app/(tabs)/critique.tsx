@@ -695,7 +695,7 @@ export default function CritiqueScreen() {
                           letterSpacing: 0.8,
                         }}
                       >
-                        EXPAND
+                        {t("critique.expand")}
                       </Text>
                     </View>
 

@@ -256,7 +256,7 @@ export default function OnboardingScreen() {
     setMascotState("celebrate");
   }
 
-  const displayName = username.trim() || "Designer";
+  const displayName = username.trim() || t("onb.defaultName");
 
   function finishOnboarding() {
     updateProfile({ username: displayName, handle: "", profilePic: "" });
@@ -286,7 +286,7 @@ export default function OnboardingScreen() {
     setAuthNotice("");
     if (authMode === "reset") {
       if (!authEmail.trim()) {
-        setAuthError("Please enter your email.");
+        setAuthError(t("auth.error.missingEmail"));
         return;
       }
       setAuthBusy(true);
@@ -296,15 +296,15 @@ export default function OnboardingScreen() {
         setAuthError(error);
         return;
       }
-      setAuthNotice("Check your email for a reset link.");
+      setAuthNotice(t("auth.notice.reset"));
       return;
     }
     if (!authEmail.trim() || !authPassword.trim()) {
-      setAuthError("Please enter your email and password.");
+      setAuthError(t("auth.error.missingCreds"));
       return;
     }
     if (authPassword.length < 6) {
-      setAuthError("Password must be at least 6 characters.");
+      setAuthError(t("auth.error.weakPassword"));
       return;
     }
     setAuthBusy(true);
@@ -324,7 +324,7 @@ export default function OnboardingScreen() {
         return;
       }
       if (needsConfirmation) {
-        setAuthNotice("We sent a confirmation link to " + authEmail.trim() + ". Verify your email then sign in.");
+        setAuthNotice(t("auth.confirmEmail.body", { email: authEmail.trim() }));
         setAuthMode("signin");
         setAuthPassword("");
         return;

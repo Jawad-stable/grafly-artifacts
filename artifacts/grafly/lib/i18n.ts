@@ -710,6 +710,14 @@ const dict = {
   "err.something": { en: "Something went wrong", ar: "صار خطأ ما" },
   "err.reload": { en: "Please reload the app to continue.", ar: "أعد تحميل التطبيق علشان تكمّل." },
   "err.tryAgain": { en: "Try Again", ar: "حاول مرّة ثانية" },
+  "err.details": { en: "Error Details", ar: "تفاصيل الخطأ" },
+
+  // ---------- Misc UI bits ----------
+  "critique.expand": { en: "EXPAND", ar: "توسيع" },
+  "onb.defaultName": { en: "Designer", ar: "مصمّم" },
+  "auth.error.missingEmail": { en: "Please enter your email.", ar: "اكتب بريدك الإلكتروني." },
+  "auth.error.missingCreds": { en: "Please enter your email and password.", ar: "اكتب بريدك وكلمة المرور." },
+  "auth.error.weakPassword": { en: "Password must be at least 6 characters.", ar: "كلمة المرور لازم تكون 6 حروف على الأقل." },
 } as const;
 
 export type TranslationKey = keyof typeof dict;
