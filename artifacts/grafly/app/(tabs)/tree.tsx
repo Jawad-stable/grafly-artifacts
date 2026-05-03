@@ -27,20 +27,24 @@ import Svg, { Path, Defs, LinearGradient, Stop, Circle } from "react-native-svg"
 import { useColors } from "@/hooks/useColors";
 import { useT } from "@/hooks/useT";
 import { useGame } from "@/context/GameContext";
-import { COURSES as RAW_COURSES, getCurrentPosition, type SkillNode, type Course } from "@/constants/lessons";
+import { type SkillNode, type Course } from "@/constants/lessons";
+import { useCourses } from "@/context/CoursesContext";
 import { localizeCourse } from "@/lib/lessonsAr";
 import type { Language } from "@/lib/i18n";
 
-// Lang-aware wrapper around COURSES. Memoised per language so consumers
-// can call `getCourses(lang)` without paying the deep-clone cost on every
-// render. English short-circuits to the raw array.
-const _coursesCache: Partial<Record<Language, Course[]>> = {};
-function getCourses(lang: Language): Course[] {
-  if (lang === "en") return RAW_COURSES;
-  if (!_coursesCache[lang]) {
-    _coursesCache[lang] = RAW_COURSES.map((c) => localizeCourse(c, lang));
+// Lang-aware localiser. Cached per (sourceArray, lang) so consumers can call
+// `localiseCourses(rawCourses, lang)` without paying the deep-clone cost on
+// every render. English short-circuits to the raw array.
+const _coursesCache = new WeakMap<Course[], Partial<Record<Language, Course[]>>>();
+function localiseCourses(raw: Course[], lang: Language): Course[] {
+  if (lang === "en") return raw;
+  let perLang = _coursesCache.get(raw);
+  if (!perLang) {
+    perLang = {};
+    _coursesCache.set(raw, perLang);
   }
-  return _coursesCache[lang]!;
+  if (!perLang[lang]) perLang[lang] = raw.map((c) => localizeCourse(c, lang));
+  return perLang[lang]!;
 }
 import { PressScale } from "@/components/PressScale";
 import { onBrand } from "@/constants/contrast";
@@ -126,7 +130,8 @@ function CoursePickerModal({
 }) {
   const colors = useColors();
   const { t, lang } = useT();
-  const COURSES = getCourses(lang);
+  const { courses: rawCourses } = useCourses();
+  const COURSES = localiseCourses(rawCourses, lang);
   const insets = useSafeAreaInsets();
 
   return (
@@ -697,7 +702,8 @@ function NodeSheet({ node, course, isCompleted, isLocked, visible, onClose, comp
 export default function TreeScreen() {
   const colors = useColors();
   const { t, lang } = useT();
-  const COURSES = getCourses(lang);
+  const { courses: rawCourses, getCurrentPosition } = useCourses();
+  const COURSES = localiseCourses(rawCourses, lang);
   const insets = useSafeAreaInsets();
   const { state } = useGame();
   const params = useLocalSearchParams<{ courseId?: string; nodeId?: string }>();

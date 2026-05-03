@@ -1,22 +1,21 @@
 /**
- * Remote courses: fetch additional courses from Supabase at runtime so we can
- * publish new content WITHOUT shipping a new APK.
+ * Remote courses: Supabase is the SINGLE source of truth for course content.
+ * The bundled COURSES constant is no longer used as fallback content; the
+ * `app_courses` table in Supabase holds every course.
  *
  * Strategy:
- *   - On app start, try to fetch the `app_courses` table from Supabase.
- *   - Cache the result in AsyncStorage (offline + cold-start instant).
- *   - Merge with the bundled COURSES: remote rows with the same `id` override
- *     the bundled course; new ids are appended.
- *
- * Failure mode is safe: if Supabase is unreachable AND no cache exists, we
- * just use the bundled COURSES — the app keeps working exactly as before.
+ *   - On startup, hand back any cached payload immediately for instant UX.
+ *   - Always kick off a background refresh from Supabase.
+ *   - If neither cache nor remote yields rows, return an empty list and let
+ *     the UI surface a retry state. We never silently fall back to bundled
+ *     content.
  */
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 import { supabase } from "./supabase";
-import { COURSES, type Course } from "@/constants/lessons";
+import type { Course } from "@/constants/lessons";
 
-const CACHE_KEY = "@grafly_remote_courses_v1";
+const CACHE_KEY = "@grafly_remote_courses_v2";
 const CACHE_TTL_MS = 1000 * 60 * 60 * 6; // 6 hours
 
 interface CachedPayload {
@@ -60,59 +59,55 @@ async function fetchFromSupabase(): Promise<Course[] | null> {
 }
 
 /**
- * Merge bundled + remote courses. Remote overrides bundled by id; new remote
- * courses are appended at the end so existing skill-tree positions stay stable.
- */
-export function mergeCourses(bundled: Course[], remote: Course[]): Course[] {
-  const remoteById = new Map(remote.map((c) => [c.id, c]));
-  const merged: Course[] = bundled.map((c) => remoteById.get(c.id) ?? c);
-  const bundledIds = new Set(bundled.map((c) => c.id));
-  for (const c of remote) {
-    if (!bundledIds.has(c.id)) merged.push(c);
-  }
-  return merged;
-}
-
-/**
- * Get the effective course list. Tries cache first for instant render, then
- * refreshes from Supabase in the background. Always falls back to bundled
- * COURSES so the app works offline / on first launch.
+ * Get the effective course list. Returns cached data immediately when fresh,
+ * otherwise blocks on a one-shot remote fetch (with a budget) and caches it.
+ * Returns an empty array if the remote is unreachable AND no cache exists —
+ * the UI is responsible for showing a retry state.
  */
 export async function loadCourses(): Promise<Course[]> {
   const cached = await readCache();
-  const cacheFresh =
-    cached && Date.now() - cached.fetchedAt < CACHE_TTL_MS;
+  const cacheFresh = cached && Date.now() - cached.fetchedAt < CACHE_TTL_MS;
 
-  // Kick off a background refresh whenever cache is missing or stale.
-  if (!cacheFresh) {
+  if (cached && cacheFresh) {
+    // Refresh in the background so the next launch is fully up-to-date.
     void (async () => {
       const fresh = await fetchFromSupabase();
-      if (fresh) await writeCache(fresh);
+      if (fresh && fresh.length > 0) await writeCache(fresh);
     })();
+    return cached.courses;
   }
 
-  if (cached) return mergeCourses(COURSES, cached.courses);
-  // No cache yet — try a one-shot fetch with a short budget.
+  // No fresh cache — try a one-shot fetch with a short budget.
   const fresh = await Promise.race<Course[] | null>([
     fetchFromSupabase(),
-    new Promise((resolve) => setTimeout(() => resolve(null), 1500)),
+    new Promise((resolve) => setTimeout(() => resolve(null), 4000)),
   ]);
-  if (fresh) {
+  if (fresh && fresh.length > 0) {
     await writeCache(fresh);
-    return mergeCourses(COURSES, fresh);
+    return fresh;
   }
-  return COURSES;
+
+  // Last resort: return whatever stale cache we have, even if expired.
+  if (cached) return cached.courses;
+  return [];
+}
+
+/**
+ * Force a fresh fetch from Supabase, bypassing cache. Used by the retry
+ * button in the UI when courses fail to load on first launch.
+ */
+export async function refreshCourses(): Promise<Course[] | null> {
+  const fresh = await fetchFromSupabase();
+  if (fresh && fresh.length > 0) {
+    await writeCache(fresh);
+    return fresh;
+  }
+  return null;
 }
 
 /**
  * Mint a short-lived signed URL for an image in the private `course-assets`
- * bucket. Use this whenever a remote course references an image (e.g. a
- * critique design that lives only in Supabase). The URL is cached in memory
- * until just before it expires so we don't sign the same key repeatedly.
- *
- * Example:
- *   const uri = await getCourseAssetUrl("designs/social_coffee.webp");
- *   <Image source={{ uri }} />
+ * bucket.
  */
 const SIGNED_TTL_SEC = 60 * 60; // 1 hour
 const REFRESH_BEFORE_MS = 60 * 1000; // re-sign 1 min before expiry

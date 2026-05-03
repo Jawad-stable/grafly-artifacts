@@ -25,7 +25,8 @@ import { useColors } from "@/hooks/useColors";
 import { useT } from "@/hooks/useT";
 import { useGame } from "@/context/GameContext";
 import { voiceService } from "@/services/voiceService";
-import { COURSES, findNodeById, type Question, type Lesson } from "@/constants/lessons";
+import { type Question, type Lesson } from "@/constants/lessons";
+import { useCourses } from "@/context/CoursesContext";
 import { localizeLesson, localizeNode, localizeCourse, localizeQuestion } from "@/lib/lessonsAr";
 import { adaptiveQuestions } from "@/utils/adaptive";
 import { GraflyMascot } from "@/components/GraflyMascot";
@@ -513,8 +514,9 @@ export default function LessonScreen() {
   // Raw (English) refs are kept for stable IDs / voice service keys, while
   // `node` / `course` / `allLessons` exposed below are localised when the
   // user is in Arabic mode (via lib/lessonsAr.ts deep-clones).
+  const { findNodeById, courses } = useCourses();
   const rawNode = nodeId ? findNodeById(nodeId) : null;
-  const rawCourse = rawNode ? COURSES.find((c) => c.id === rawNode.courseId) : null;
+  const rawCourse = rawNode ? courses.find((c) => c.id === rawNode.courseId) : null;
   const node = useMemo(
     () => (rawNode ? localizeNode(rawNode, lang) : null),
     [rawNode, lang],

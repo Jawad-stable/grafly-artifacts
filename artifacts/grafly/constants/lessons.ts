@@ -2317,18 +2317,6 @@ export const PLACEMENT_QUESTIONS: Question[] = [
   },
 ];
 
-export function getAllLessons(): Lesson[] {
-  return COURSES.flatMap((c) => c.nodes.flatMap((n) => n.lessons));
-}
-
-export function findNodeById(nodeId: string): SkillNode | undefined {
-  return COURSES.flatMap((c) => c.nodes).find((n) => n.id === nodeId);
-}
-
-export function findCourseByNodeId(nodeId: string): Course | undefined {
-  return COURSES.find((c) => c.nodes.some((n) => n.id === nodeId));
-}
-
 export interface CurrentPosition {
   courseId: string;
   nodeId: string;
@@ -2337,39 +2325,11 @@ export interface CurrentPosition {
   allComplete: boolean;
 }
 
-/**
- * Returns the user's current learning position based on completed lessons.
- * "Current" = the first module (in course → node order) that still has at
- * least one unfinished lesson. If everything is finished, returns the very
- * first node so the user can review/practice.
- */
-export function getCurrentPosition(completedLessons: string[]): CurrentPosition {
-  for (let ci = 0; ci < COURSES.length; ci++) {
-    const course = COURSES[ci];
-    for (let ni = 0; ni < course.nodes.length; ni++) {
-      const node = course.nodes[ni];
-      const allDone = node.lessons.every((l) => completedLessons.includes(l.id));
-      if (!allDone) {
-        return {
-          courseId: course.id,
-          nodeId: node.id,
-          courseIdx: ci,
-          nodeIdx: ni,
-          allComplete: false,
-        };
-      }
-    }
-  }
-  const firstCourse = COURSES[0];
-  const firstNode = firstCourse?.nodes[0];
-  return {
-    courseId: firstCourse?.id ?? "",
-    nodeId: firstNode?.id ?? "",
-    courseIdx: 0,
-    nodeIdx: 0,
-    allComplete: true,
-  };
-}
+// NOTE: The legacy `getAllLessons` / `findNodeById` / `findCourseByNodeId` /
+// `getCurrentPosition` helpers used to live here and iterate the bundled
+// COURSES constant. They have moved into `context/CoursesContext.tsx` so they
+// always reflect the live Supabase-backed course list. Importing them from
+// here would silently return stale bundled data — use `useCourses()` instead.
 
 export const MODULE_UNLOCK_MESSAGES: Record<string, string> = {
   "dp-contrast": "Contrast unlocked. Your designs will pop.",

@@ -17,7 +17,9 @@ import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { AuthProvider, useAuth } from "@/context/AuthContext";
 import { GameProvider, useGame } from "@/context/GameContext";
 import { ProfileProvider, useProfile } from "@/context/ProfileContext";
+import { CoursesProvider } from "@/context/CoursesContext";
 import { TESHRIN_FONTS } from "@/constants/fonts";
+import { CoursesGate } from "@/components/CoursesGate";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -120,7 +122,11 @@ export default function RootLayout() {
               <AuthProvider>
                 <GameProvider>
                   <ProfileProvider>
-                    <RootLayoutNav />
+                    <CoursesProvider>
+                      <CoursesGate>
+                        <RootLayoutNav />
+                      </CoursesGate>
+                    </CoursesProvider>
                   </ProfileProvider>
                 </GameProvider>
               </AuthProvider>

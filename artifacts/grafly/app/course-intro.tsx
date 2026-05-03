@@ -17,7 +17,7 @@ import { router, useLocalSearchParams } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useColors } from "@/hooks/useColors";
 import { useGame } from "@/context/GameContext";
-import { COURSES as RAW_COURSES } from "@/constants/lessons";
+import { useCourses } from "@/context/CoursesContext";
 import { localizeCourse } from "@/lib/lessonsAr";
 import { GraflyMascot } from "@/components/GraflyMascot";
 import { PressScale } from "@/components/PressScale";
@@ -39,9 +39,10 @@ export default function CourseIntroScreen() {
   const insets = useSafeAreaInsets();
   const { state } = useGame();
   const { t, isRTL, lang } = useT();
+  const { courses: RAW_COURSES } = useCourses();
   const COURSES = useMemo(
     () => (lang === "en" ? RAW_COURSES : RAW_COURSES.map((c) => localizeCourse(c, lang))),
-    [lang],
+    [lang, RAW_COURSES],
   );
   const params = useLocalSearchParams<{ courseId?: string }>();
 

@@ -24,14 +24,13 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useColors } from "@/hooks/useColors";
 import { useGame, getXPProgress } from "@/context/GameContext";
 import { useProfile } from "@/context/ProfileContext";
-import { getAllLessons as getRawAllLessons, getCurrentPosition } from "@/constants/lessons";
 import { localizeCourse, localizeLesson } from "@/lib/lessonsAr";
 import { LOGO } from "@/constants/assets";
 import { GraflyMascot } from "@/components/GraflyMascot";
 import { HomeBackdrop } from "@/components/HomeBackdrop";
 import { CourseCardMotion } from "@/components/CourseCardMotion";
 import { Skeleton } from "@/components/Skeleton";
-import { useRemoteCourses } from "@/hooks/useRemoteCourses";
+import { useCourses } from "@/context/CoursesContext";
 import { voiceService } from "@/services/voiceService";
 import { AText } from "@/components/AText";
 import { PressScale } from "@/components/PressScale";
@@ -148,7 +147,12 @@ export default function HomeScreen() {
   const { state } = useGame();
   const { state: profileState, dispatch: profileDispatch } = useProfile();
   const { t, isRTL, lang } = useT();
-  const { courses: RAW_COURSES, loading: coursesLoading } = useRemoteCourses();
+  const {
+    courses: RAW_COURSES,
+    loading: coursesLoading,
+    getAllLessons: getRawAllLessons,
+    getCurrentPosition,
+  } = useCourses();
   const COURSES = useMemo(
     () => (lang === "en" ? RAW_COURSES : RAW_COURSES.map((c) => localizeCourse(c, lang))),
     [lang, RAW_COURSES],
@@ -157,7 +161,7 @@ export default function HomeScreen() {
     () => () => (lang === "en"
       ? getRawAllLessons()
       : getRawAllLessons().map((l) => localizeLesson(l, lang))),
-    [lang],
+    [lang, getRawAllLessons],
   );
 
   const greetingPrefix = (() => {

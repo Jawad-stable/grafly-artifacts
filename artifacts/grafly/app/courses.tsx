@@ -18,14 +18,14 @@ import { CourseCardMotion } from "@/components/CourseCardMotion";
 import { Skeleton } from "@/components/Skeleton";
 import { onBrand } from "@/constants/contrast";
 import { useT } from "@/hooks/useT";
-import { useRemoteCourses } from "@/hooks/useRemoteCourses";
+import { useCourses } from "@/context/CoursesContext";
 
 export default function CoursesScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
   const { state } = useGame();
   const { t, isRTL, lang } = useT();
-  const { courses: RAW_COURSES, loading: coursesLoading } = useRemoteCourses();
+  const { courses: RAW_COURSES, loading: coursesLoading } = useCourses();
   // Localise lesson/module/course strings for Arabic mode. English short-circuits.
   const COURSES = React.useMemo(
     () => (lang === "en" ? RAW_COURSES : RAW_COURSES.map((c) => localizeCourse(c, lang))),
