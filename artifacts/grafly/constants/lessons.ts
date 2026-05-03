@@ -1305,6 +1305,411 @@ export const COURSES: Course[] = [
     ],
   },
 
+  // 4 modules of color fundamentals taught through interactive games:
+  // tap-the-target swatches, live WCAG contrast tuners, and harmony builders.
+  // ===========================================================================
+  {
+    id: "color-theory",
+    title: "Color Theory",
+    icon: "color-palette-outline",
+    description: "Learn color by actually picking, mixing, and tuning it.",
+    color: "#7B5CFF",
+    nodes: [
+      // ========== MODULE 1: COLOR FOUNDATIONS ==========
+      {
+        id: "ct-basics",
+        courseId: "color-theory",
+        title: "Color Foundations",
+        icon: "water-outline",
+        description: "Hue, saturation, lightness — the building blocks.",
+        prerequisites: [],
+        lessons: [
+          {
+            id: "ct-basics-1",
+            title: "Hue, Saturation, Lightness",
+            description: "Three dials describe every color you'll ever use.",
+            xpReward: 25,
+            coinReward: 8,
+            intro: {
+              headline: "Every color is three dials.",
+              body: "Hue is the family (red, blue, green). Saturation is how vivid. Lightness is how bright. Master the three and you can tune any color on demand.",
+            },
+            questions: [
+              {
+                id: "ct-b1-q1",
+                type: "multiple_choice",
+                question: "Which property describes whether a color is red, blue, or green?",
+                options: ["Saturation", "Hue", "Lightness", "Opacity"],
+                correctIndex: 1,
+                explanation: "Hue is the color family — its position on the color wheel. Saturation and lightness modify it.",
+                difficulty: 1,
+              },
+              {
+                id: "ct-b1-q2",
+                type: "color_match",
+                question: "Tap the most saturated swatch.",
+                explanation: "Saturation = how vivid the color is. The pure pink pops because it has no grey mixed in.",
+                difficulty: 2,
+                scene: {
+                  kind: "color_match",
+                  targetHex: "#FF7BD0",
+                  targetLabel: "MOST SATURATED",
+                  choices: ["#C49AB6", "#FF7BD0", "#7B6571", "#A87BA1"],
+                  correctIndex: 1,
+                  prompt: "Three are muted versions of one base. Pick the original.",
+                },
+              },
+              {
+                id: "ct-b1-q3",
+                type: "true_false",
+                question: "Lowering a color's saturation moves it toward grey.",
+                correctBool: true,
+                explanation: "Saturation is the dial between full color and pure grey. Drop it all the way and any hue becomes grey.",
+                difficulty: 1,
+              },
+            ],
+          },
+          {
+            id: "ct-basics-2",
+            title: "Warm vs Cool",
+            description: "Half the wheel feels hot. The other half feels calm.",
+            xpReward: 25,
+            coinReward: 8,
+            intro: {
+              headline: "Color has temperature.",
+              body: "Reds, oranges and yellows feel warm and energetic. Blues, greens and purples feel cool and calm. Designers use this to set mood before words ever land.",
+            },
+            questions: [
+              {
+                id: "ct-b2-q1",
+                type: "color_match",
+                question: "Tap the coolest swatch.",
+                explanation: "Cool colors live on the blue/green/purple side of the wheel. The teal sits squarely there.",
+                difficulty: 1,
+                scene: {
+                  kind: "color_match",
+                  targetHex: "#21263F",
+                  targetLabel: "COOLEST",
+                  choices: ["#FFB400", "#E07A5F", "#00A4FA", "#FF7BD0"],
+                  correctIndex: 2,
+                  prompt: "Which swatch feels coldest to the eye?",
+                },
+              },
+              {
+                id: "ct-b2-q2",
+                type: "multiple_choice",
+                question: "Why do designers often pick a warm accent on a cool background?",
+                options: [
+                  "Warm colors are always brighter",
+                  "It's a brand convention required by Apple",
+                  "Temperature contrast makes the accent pop without needing huge saturation",
+                  "Cool backgrounds are easier to print",
+                ],
+                correctIndex: 2,
+                explanation: "Temperature contrast is one of the strongest ways to make an element jump forward — it works even when saturation is restrained.",
+                difficulty: 2,
+              },
+            ],
+          },
+        ],
+      },
+
+      // ========== MODULE 2: COLOR WHEEL & HARMONY ==========
+      {
+        id: "ct-wheel",
+        courseId: "color-theory",
+        title: "Color Wheel & Harmony",
+        icon: "sync-outline",
+        description: "Use the wheel to build palettes that just work.",
+        prerequisites: ["ct-basics"],
+        lessons: [
+          {
+            id: "ct-wheel-1",
+            title: "Complementary Colors",
+            description: "Opposite sides of the wheel. Maximum punch.",
+            xpReward: 30,
+            coinReward: 10,
+            intro: {
+              headline: "Opposites attract — loudly.",
+              body: "Complementary colors sit across from each other on the wheel. They create the strongest possible vibration. Use sparingly — they fight if both go full strength.",
+            },
+            questions: [
+              {
+                id: "ct-w1-q1",
+                type: "color_match",
+                question: "Tap the complement of this orange.",
+                explanation: "Orange's complement is blue. They sit directly opposite on the wheel and create the strongest contrast.",
+                difficulty: 2,
+                scene: {
+                  kind: "color_match",
+                  targetHex: "#FF8A3D",
+                  targetLabel: "COMPLEMENT OF",
+                  choices: ["#FFB400", "#7DD181", "#3D8AFF", "#FF3D8A"],
+                  correctIndex: 2,
+                  prompt: "Which swatch sits directly opposite the target on the wheel?",
+                },
+              },
+              {
+                id: "ct-w1-q2",
+                type: "true_false",
+                question: "Pairing two complementary colors at 100% saturation usually feels comfortable to read.",
+                correctBool: false,
+                explanation: "Two full-saturation complements vibrate hard and cause eye strain. Pros pull one color's saturation down so the other can lead.",
+                difficulty: 2,
+              },
+            ],
+          },
+          {
+            id: "ct-wheel-2",
+            title: "Analogous Harmony",
+            description: "Three neighbours on the wheel. Calm, cohesive.",
+            xpReward: 30,
+            coinReward: 10,
+            intro: {
+              headline: "Neighbours sing together.",
+              body: "Analogous palettes pick three colors that sit next to each other on the wheel. They feel calm and unified — perfect for backgrounds, gradients, and moods.",
+            },
+            questions: [
+              {
+                id: "ct-w2-q1",
+                type: "palette_build",
+                question: "Pick the two analogous neighbours of this teal.",
+                explanation: "Analogous colors live next to each other on the wheel. The blue and the green are the teal's wheel neighbours; the pink and yellow are far away.",
+                difficulty: 3,
+                scene: {
+                  kind: "palette_build",
+                  baseHex: "#00C2A8",
+                  baseLabel: "BASE TEAL",
+                  choices: [
+                    "#00A4FA", // good — adjacent blue
+                    "#FF7BD0", // bad — opposite side
+                    "#7DD181", // good — adjacent green
+                    "#FFB400", // bad — far away
+                    "#9D4EDD", // bad — far away
+                    "#FF3D3D", // bad — opposite side
+                  ],
+                  correctIndices: [0, 2],
+                  selectCount: 2,
+                  ruleLabel: "analogous harmony",
+                  prompt: "Build an analogous trio with this teal.",
+                },
+              },
+              {
+                id: "ct-w2-q2",
+                type: "multiple_choice",
+                question: "Which palette type uses three colors evenly spaced around the wheel?",
+                options: ["Analogous", "Complementary", "Triadic", "Monochromatic"],
+                correctIndex: 2,
+                explanation: "Triadic palettes pick three colors equally spaced (120° apart). They feel vibrant and balanced — think red/yellow/blue.",
+                difficulty: 2,
+              },
+            ],
+          },
+        ],
+      },
+
+      // ========== MODULE 3: CONTRAST & ACCESSIBILITY ==========
+      {
+        id: "ct-contrast",
+        courseId: "color-theory",
+        title: "Contrast & Accessibility",
+        icon: "contrast-outline",
+        description: "Color choices that real users can actually read.",
+        prerequisites: ["ct-basics"],
+        lessons: [
+          {
+            id: "ct-contrast-1",
+            title: "WCAG in Plain English",
+            description: "The rules every product designer should know cold.",
+            xpReward: 25,
+            coinReward: 8,
+            intro: {
+              headline: "Pretty doesn't ship. Readable does.",
+              body: "WCAG is the worldwide standard for color contrast. Body text needs at least 4.5:1. Big headlines can get away with 3:1. Anything below fails real users.",
+            },
+            questions: [
+              {
+                id: "ct-c1-q1",
+                type: "multiple_choice",
+                question: "What's the minimum WCAG AA contrast ratio for body text?",
+                options: ["2:1", "3:1", "4.5:1", "7:1"],
+                correctIndex: 2,
+                explanation: "4.5:1 is the AA bar for body text. Large text (18pt+) can drop to 3:1. AAA bumps body text to 7:1.",
+                difficulty: 2,
+              },
+              {
+                id: "ct-c1-q2",
+                type: "contrast_check",
+                question: "Tune this CTA text until it passes WCAG AA.",
+                explanation: "White on hot pink looks good — but it's only ~2.3:1. To clear 4.5:1, the text actually has to go darker. Some bg colors just can't take white.",
+                difficulty: 2,
+                scene: {
+                  kind: "contrast_check",
+                  bgHex: "#FF7BD0",
+                  startTextHex: "#FFFFFF",
+                  sampleHeading: "Get started",
+                  sampleBody: "Free for the first 14 days",
+                  targetMinRatio: 4.5,
+                  prompt: "Looks fine, right? It isn't — white on this pink fails WCAG. Push the text darker until it passes.",
+                },
+              },
+            ],
+          },
+          {
+            id: "ct-contrast-2",
+            title: "Hands-on Contrast",
+            description: "Tune two real cards until they ship-ready.",
+            xpReward: 30,
+            coinReward: 10,
+            intro: {
+              headline: "Designers fix contrast every day.",
+              body: "This is the most common edit you'll make in real product work. Train the muscle now.",
+            },
+            questions: [
+              {
+                id: "ct-c2-q1",
+                type: "contrast_check",
+                question: "Push this body copy until it passes on a dark background.",
+                explanation: "On dark backgrounds you usually need to lighten the text — pure white isn't always required, but you need to clear 4.5:1.",
+                difficulty: 2,
+                scene: {
+                  kind: "contrast_check",
+                  bgHex: "#21263F",
+                  startTextHex: "#5B6285",
+                  sampleHeading: "Welcome back",
+                  sampleBody: "Pick up where you left off — your draft is saved.",
+                  targetMinRatio: 4.5,
+                  prompt: "The body text is too dim against the navy. Lighten it.",
+                },
+              },
+              {
+                id: "ct-c2-q2",
+                type: "contrast_check",
+                question: "Tune the header until it clears the AA-large bar (3:1).",
+                explanation: "Large headline text only needs 3:1 to pass AA. The bar is lower because big shapes are easier to read.",
+                difficulty: 1,
+                scene: {
+                  kind: "contrast_check",
+                  bgHex: "#F5F6FA",
+                  startTextHex: "#C8CCDD",
+                  sampleHeading: "Big numbers, easy reads",
+                  sampleBody: "Trends at a glance.",
+                  targetMinRatio: 3.0,
+                  prompt: "Push the headline darker until it passes the large-text bar.",
+                },
+              },
+            ],
+          },
+        ],
+      },
+
+      // ========== MODULE 4: BRAND COLOR SYSTEMS ==========
+      {
+        id: "ct-systems",
+        courseId: "color-theory",
+        title: "Brand Color Systems",
+        icon: "layers-outline",
+        description: "Turn one brand color into a working palette.",
+        prerequisites: ["ct-wheel"],
+        lessons: [
+          {
+            id: "ct-systems-1",
+            title: "The 60-30-10 Rule",
+            description: "A simple recipe for balanced color.",
+            xpReward: 30,
+            coinReward: 10,
+            intro: {
+              headline: "60% calm. 30% support. 10% punch.",
+              body: "Most great interfaces follow the 60-30-10 rule: a dominant neutral, a secondary tone, and a tiny dose of brand accent. The accent only works because the rest is restrained.",
+            },
+            questions: [
+              {
+                id: "ct-s1-q1",
+                type: "multiple_choice",
+                question: "In the 60-30-10 rule, what should the 10% color be used for?",
+                options: [
+                  "Backgrounds and large surfaces",
+                  "Body text and section dividers",
+                  "Primary actions and accents that need attention",
+                  "Borders around every component",
+                ],
+                correctIndex: 2,
+                explanation: "The 10% is your loudest color — reserved for the action you want users to take. Spread it everywhere and it loses meaning.",
+                difficulty: 2,
+              },
+              {
+                id: "ct-s1-q2",
+                type: "color_match",
+                question: "Pick the swatch that should be the 10% accent.",
+                explanation: "Neutrals make up the 60% and 30%. The saturated brand pink is the 10% — used only for the primary action.",
+                difficulty: 2,
+                scene: {
+                  kind: "color_match",
+                  targetHex: "#FF7BD0",
+                  targetLabel: "10% ACCENT ROLE",
+                  choices: ["#F5F6FA", "#646A88", "#FF7BD0", "#21263F"],
+                  correctIndex: 2,
+                  prompt: "Three are neutrals. One is the accent. Tap the accent.",
+                },
+              },
+            ],
+          },
+          {
+            id: "ct-systems-2",
+            title: "Semantic Colors",
+            description: "Colors that mean something — across every product.",
+            xpReward: 30,
+            coinReward: 10,
+            intro: {
+              headline: "Some colors come with meaning attached.",
+              body: "Red means stop or destroy. Green means go or success. Yellow means caution. Use them on purpose — and never use red for a non-destructive button.",
+            },
+            questions: [
+              {
+                id: "ct-s2-q1",
+                type: "color_match",
+                question: "Tap the swatch you'd use for a 'Delete' button.",
+                explanation: "Red signals destruction across cultures and platforms. Use it for delete, archive, and similar irreversible actions.",
+                difficulty: 1,
+                scene: {
+                  kind: "color_match",
+                  targetHex: "#21263F",
+                  targetLabel: "DESTRUCTIVE ACTION",
+                  choices: ["#7DD181", "#FFB400", "#FF3D3D", "#00A4FA"],
+                  correctIndex: 2,
+                  prompt: "Which color sends 'this is irreversible — be sure'?",
+                },
+              },
+              {
+                id: "ct-s2-q2",
+                type: "palette_build",
+                question: "Build a semantic set: success, warning, and danger.",
+                explanation: "Green = success, yellow/amber = warning, red = danger. The blues and pinks are brand colors, not semantic ones.",
+                difficulty: 3,
+                scene: {
+                  kind: "palette_build",
+                  baseHex: "#21263F",
+                  baseLabel: "PRODUCT NAVY",
+                  choices: [
+                    "#7DD181", // good — success
+                    "#FF7BD0", // bad — brand
+                    "#FFB400", // good — warning
+                    "#00A4FA", // bad — brand
+                    "#FF3D3D", // good — danger
+                    "#9D4EDD", // bad — brand
+                  ],
+                  correctIndices: [0, 2, 4],
+                  selectCount: 3,
+                  ruleLabel: "semantic states",
+                  prompt: "Pick the three colors that carry universal meaning.",
+                },
+              },
+            ],
+          },
+        ],
+      },
+    ],
+  },
   {
     id: "typography",
     title: "Typography",
@@ -1757,411 +2162,6 @@ export const COURSES: Course[] = [
 
   // ===========================================================================
   // COURSE 6: COLOR THEORY (NEW)
-  // 4 modules of color fundamentals taught through interactive games:
-  // tap-the-target swatches, live WCAG contrast tuners, and harmony builders.
-  // ===========================================================================
-  {
-    id: "color-theory",
-    title: "Color Theory",
-    icon: "color-palette-outline",
-    description: "Learn color by actually picking, mixing, and tuning it.",
-    color: "#7B5CFF",
-    nodes: [
-      // ========== MODULE 1: COLOR FOUNDATIONS ==========
-      {
-        id: "ct-basics",
-        courseId: "color-theory",
-        title: "Color Foundations",
-        icon: "water-outline",
-        description: "Hue, saturation, lightness — the building blocks.",
-        prerequisites: [],
-        lessons: [
-          {
-            id: "ct-basics-1",
-            title: "Hue, Saturation, Lightness",
-            description: "Three dials describe every color you'll ever use.",
-            xpReward: 25,
-            coinReward: 8,
-            intro: {
-              headline: "Every color is three dials.",
-              body: "Hue is the family (red, blue, green). Saturation is how vivid. Lightness is how bright. Master the three and you can tune any color on demand.",
-            },
-            questions: [
-              {
-                id: "ct-b1-q1",
-                type: "multiple_choice",
-                question: "Which property describes whether a color is red, blue, or green?",
-                options: ["Saturation", "Hue", "Lightness", "Opacity"],
-                correctIndex: 1,
-                explanation: "Hue is the color family — its position on the color wheel. Saturation and lightness modify it.",
-                difficulty: 1,
-              },
-              {
-                id: "ct-b1-q2",
-                type: "color_match",
-                question: "Tap the most saturated swatch.",
-                explanation: "Saturation = how vivid the color is. The pure pink pops because it has no grey mixed in.",
-                difficulty: 2,
-                scene: {
-                  kind: "color_match",
-                  targetHex: "#FF7BD0",
-                  targetLabel: "MOST SATURATED",
-                  choices: ["#C49AB6", "#FF7BD0", "#7B6571", "#A87BA1"],
-                  correctIndex: 1,
-                  prompt: "Three are muted versions of one base. Pick the original.",
-                },
-              },
-              {
-                id: "ct-b1-q3",
-                type: "true_false",
-                question: "Lowering a color's saturation moves it toward grey.",
-                correctBool: true,
-                explanation: "Saturation is the dial between full color and pure grey. Drop it all the way and any hue becomes grey.",
-                difficulty: 1,
-              },
-            ],
-          },
-          {
-            id: "ct-basics-2",
-            title: "Warm vs Cool",
-            description: "Half the wheel feels hot. The other half feels calm.",
-            xpReward: 25,
-            coinReward: 8,
-            intro: {
-              headline: "Color has temperature.",
-              body: "Reds, oranges and yellows feel warm and energetic. Blues, greens and purples feel cool and calm. Designers use this to set mood before words ever land.",
-            },
-            questions: [
-              {
-                id: "ct-b2-q1",
-                type: "color_match",
-                question: "Tap the coolest swatch.",
-                explanation: "Cool colors live on the blue/green/purple side of the wheel. The teal sits squarely there.",
-                difficulty: 1,
-                scene: {
-                  kind: "color_match",
-                  targetHex: "#21263F",
-                  targetLabel: "COOLEST",
-                  choices: ["#FFB400", "#E07A5F", "#00A4FA", "#FF7BD0"],
-                  correctIndex: 2,
-                  prompt: "Which swatch feels coldest to the eye?",
-                },
-              },
-              {
-                id: "ct-b2-q2",
-                type: "multiple_choice",
-                question: "Why do designers often pick a warm accent on a cool background?",
-                options: [
-                  "Warm colors are always brighter",
-                  "It's a brand convention required by Apple",
-                  "Temperature contrast makes the accent pop without needing huge saturation",
-                  "Cool backgrounds are easier to print",
-                ],
-                correctIndex: 2,
-                explanation: "Temperature contrast is one of the strongest ways to make an element jump forward — it works even when saturation is restrained.",
-                difficulty: 2,
-              },
-            ],
-          },
-        ],
-      },
-
-      // ========== MODULE 2: COLOR WHEEL & HARMONY ==========
-      {
-        id: "ct-wheel",
-        courseId: "color-theory",
-        title: "Color Wheel & Harmony",
-        icon: "sync-outline",
-        description: "Use the wheel to build palettes that just work.",
-        prerequisites: ["ct-basics"],
-        lessons: [
-          {
-            id: "ct-wheel-1",
-            title: "Complementary Colors",
-            description: "Opposite sides of the wheel. Maximum punch.",
-            xpReward: 30,
-            coinReward: 10,
-            intro: {
-              headline: "Opposites attract — loudly.",
-              body: "Complementary colors sit across from each other on the wheel. They create the strongest possible vibration. Use sparingly — they fight if both go full strength.",
-            },
-            questions: [
-              {
-                id: "ct-w1-q1",
-                type: "color_match",
-                question: "Tap the complement of this orange.",
-                explanation: "Orange's complement is blue. They sit directly opposite on the wheel and create the strongest contrast.",
-                difficulty: 2,
-                scene: {
-                  kind: "color_match",
-                  targetHex: "#FF8A3D",
-                  targetLabel: "COMPLEMENT OF",
-                  choices: ["#FFB400", "#7DD181", "#3D8AFF", "#FF3D8A"],
-                  correctIndex: 2,
-                  prompt: "Which swatch sits directly opposite the target on the wheel?",
-                },
-              },
-              {
-                id: "ct-w1-q2",
-                type: "true_false",
-                question: "Pairing two complementary colors at 100% saturation usually feels comfortable to read.",
-                correctBool: false,
-                explanation: "Two full-saturation complements vibrate hard and cause eye strain. Pros pull one color's saturation down so the other can lead.",
-                difficulty: 2,
-              },
-            ],
-          },
-          {
-            id: "ct-wheel-2",
-            title: "Analogous Harmony",
-            description: "Three neighbours on the wheel. Calm, cohesive.",
-            xpReward: 30,
-            coinReward: 10,
-            intro: {
-              headline: "Neighbours sing together.",
-              body: "Analogous palettes pick three colors that sit next to each other on the wheel. They feel calm and unified — perfect for backgrounds, gradients, and moods.",
-            },
-            questions: [
-              {
-                id: "ct-w2-q1",
-                type: "palette_build",
-                question: "Pick the two analogous neighbours of this teal.",
-                explanation: "Analogous colors live next to each other on the wheel. The blue and the green are the teal's wheel neighbours; the pink and yellow are far away.",
-                difficulty: 3,
-                scene: {
-                  kind: "palette_build",
-                  baseHex: "#00C2A8",
-                  baseLabel: "BASE TEAL",
-                  choices: [
-                    "#00A4FA", // good — adjacent blue
-                    "#FF7BD0", // bad — opposite side
-                    "#7DD181", // good — adjacent green
-                    "#FFB400", // bad — far away
-                    "#9D4EDD", // bad — far away
-                    "#FF3D3D", // bad — opposite side
-                  ],
-                  correctIndices: [0, 2],
-                  selectCount: 2,
-                  ruleLabel: "analogous harmony",
-                  prompt: "Build an analogous trio with this teal.",
-                },
-              },
-              {
-                id: "ct-w2-q2",
-                type: "multiple_choice",
-                question: "Which palette type uses three colors evenly spaced around the wheel?",
-                options: ["Analogous", "Complementary", "Triadic", "Monochromatic"],
-                correctIndex: 2,
-                explanation: "Triadic palettes pick three colors equally spaced (120° apart). They feel vibrant and balanced — think red/yellow/blue.",
-                difficulty: 2,
-              },
-            ],
-          },
-        ],
-      },
-
-      // ========== MODULE 3: CONTRAST & ACCESSIBILITY ==========
-      {
-        id: "ct-contrast",
-        courseId: "color-theory",
-        title: "Contrast & Accessibility",
-        icon: "contrast-outline",
-        description: "Color choices that real users can actually read.",
-        prerequisites: ["ct-basics"],
-        lessons: [
-          {
-            id: "ct-contrast-1",
-            title: "WCAG in Plain English",
-            description: "The rules every product designer should know cold.",
-            xpReward: 25,
-            coinReward: 8,
-            intro: {
-              headline: "Pretty doesn't ship. Readable does.",
-              body: "WCAG is the worldwide standard for color contrast. Body text needs at least 4.5:1. Big headlines can get away with 3:1. Anything below fails real users.",
-            },
-            questions: [
-              {
-                id: "ct-c1-q1",
-                type: "multiple_choice",
-                question: "What's the minimum WCAG AA contrast ratio for body text?",
-                options: ["2:1", "3:1", "4.5:1", "7:1"],
-                correctIndex: 2,
-                explanation: "4.5:1 is the AA bar for body text. Large text (18pt+) can drop to 3:1. AAA bumps body text to 7:1.",
-                difficulty: 2,
-              },
-              {
-                id: "ct-c1-q2",
-                type: "contrast_check",
-                question: "Tune this CTA text until it passes WCAG AA.",
-                explanation: "White on hot pink looks good — but it's only ~2.3:1. To clear 4.5:1, the text actually has to go darker. Some bg colors just can't take white.",
-                difficulty: 2,
-                scene: {
-                  kind: "contrast_check",
-                  bgHex: "#FF7BD0",
-                  startTextHex: "#FFFFFF",
-                  sampleHeading: "Get started",
-                  sampleBody: "Free for the first 14 days",
-                  targetMinRatio: 4.5,
-                  prompt: "Looks fine, right? It isn't — white on this pink fails WCAG. Push the text darker until it passes.",
-                },
-              },
-            ],
-          },
-          {
-            id: "ct-contrast-2",
-            title: "Hands-on Contrast",
-            description: "Tune two real cards until they ship-ready.",
-            xpReward: 30,
-            coinReward: 10,
-            intro: {
-              headline: "Designers fix contrast every day.",
-              body: "This is the most common edit you'll make in real product work. Train the muscle now.",
-            },
-            questions: [
-              {
-                id: "ct-c2-q1",
-                type: "contrast_check",
-                question: "Push this body copy until it passes on a dark background.",
-                explanation: "On dark backgrounds you usually need to lighten the text — pure white isn't always required, but you need to clear 4.5:1.",
-                difficulty: 2,
-                scene: {
-                  kind: "contrast_check",
-                  bgHex: "#21263F",
-                  startTextHex: "#5B6285",
-                  sampleHeading: "Welcome back",
-                  sampleBody: "Pick up where you left off — your draft is saved.",
-                  targetMinRatio: 4.5,
-                  prompt: "The body text is too dim against the navy. Lighten it.",
-                },
-              },
-              {
-                id: "ct-c2-q2",
-                type: "contrast_check",
-                question: "Tune the header until it clears the AA-large bar (3:1).",
-                explanation: "Large headline text only needs 3:1 to pass AA. The bar is lower because big shapes are easier to read.",
-                difficulty: 1,
-                scene: {
-                  kind: "contrast_check",
-                  bgHex: "#F5F6FA",
-                  startTextHex: "#C8CCDD",
-                  sampleHeading: "Big numbers, easy reads",
-                  sampleBody: "Trends at a glance.",
-                  targetMinRatio: 3.0,
-                  prompt: "Push the headline darker until it passes the large-text bar.",
-                },
-              },
-            ],
-          },
-        ],
-      },
-
-      // ========== MODULE 4: BRAND COLOR SYSTEMS ==========
-      {
-        id: "ct-systems",
-        courseId: "color-theory",
-        title: "Brand Color Systems",
-        icon: "layers-outline",
-        description: "Turn one brand color into a working palette.",
-        prerequisites: ["ct-wheel"],
-        lessons: [
-          {
-            id: "ct-systems-1",
-            title: "The 60-30-10 Rule",
-            description: "A simple recipe for balanced color.",
-            xpReward: 30,
-            coinReward: 10,
-            intro: {
-              headline: "60% calm. 30% support. 10% punch.",
-              body: "Most great interfaces follow the 60-30-10 rule: a dominant neutral, a secondary tone, and a tiny dose of brand accent. The accent only works because the rest is restrained.",
-            },
-            questions: [
-              {
-                id: "ct-s1-q1",
-                type: "multiple_choice",
-                question: "In the 60-30-10 rule, what should the 10% color be used for?",
-                options: [
-                  "Backgrounds and large surfaces",
-                  "Body text and section dividers",
-                  "Primary actions and accents that need attention",
-                  "Borders around every component",
-                ],
-                correctIndex: 2,
-                explanation: "The 10% is your loudest color — reserved for the action you want users to take. Spread it everywhere and it loses meaning.",
-                difficulty: 2,
-              },
-              {
-                id: "ct-s1-q2",
-                type: "color_match",
-                question: "Pick the swatch that should be the 10% accent.",
-                explanation: "Neutrals make up the 60% and 30%. The saturated brand pink is the 10% — used only for the primary action.",
-                difficulty: 2,
-                scene: {
-                  kind: "color_match",
-                  targetHex: "#FF7BD0",
-                  targetLabel: "10% ACCENT ROLE",
-                  choices: ["#F5F6FA", "#646A88", "#FF7BD0", "#21263F"],
-                  correctIndex: 2,
-                  prompt: "Three are neutrals. One is the accent. Tap the accent.",
-                },
-              },
-            ],
-          },
-          {
-            id: "ct-systems-2",
-            title: "Semantic Colors",
-            description: "Colors that mean something — across every product.",
-            xpReward: 30,
-            coinReward: 10,
-            intro: {
-              headline: "Some colors come with meaning attached.",
-              body: "Red means stop or destroy. Green means go or success. Yellow means caution. Use them on purpose — and never use red for a non-destructive button.",
-            },
-            questions: [
-              {
-                id: "ct-s2-q1",
-                type: "color_match",
-                question: "Tap the swatch you'd use for a 'Delete' button.",
-                explanation: "Red signals destruction across cultures and platforms. Use it for delete, archive, and similar irreversible actions.",
-                difficulty: 1,
-                scene: {
-                  kind: "color_match",
-                  targetHex: "#21263F",
-                  targetLabel: "DESTRUCTIVE ACTION",
-                  choices: ["#7DD181", "#FFB400", "#FF3D3D", "#00A4FA"],
-                  correctIndex: 2,
-                  prompt: "Which color sends 'this is irreversible — be sure'?",
-                },
-              },
-              {
-                id: "ct-s2-q2",
-                type: "palette_build",
-                question: "Build a semantic set: success, warning, and danger.",
-                explanation: "Green = success, yellow/amber = warning, red = danger. The blues and pinks are brand colors, not semantic ones.",
-                difficulty: 3,
-                scene: {
-                  kind: "palette_build",
-                  baseHex: "#21263F",
-                  baseLabel: "PRODUCT NAVY",
-                  choices: [
-                    "#7DD181", // good — success
-                    "#FF7BD0", // bad — brand
-                    "#FFB400", // good — warning
-                    "#00A4FA", // bad — brand
-                    "#FF3D3D", // good — danger
-                    "#9D4EDD", // bad — brand
-                  ],
-                  correctIndices: [0, 2, 4],
-                  selectCount: 3,
-                  ruleLabel: "semantic states",
-                  prompt: "Pick the three colors that carry universal meaning.",
-                },
-              },
-            ],
-          },
-        ],
-      },
-    ],
-  },
 ];
 
 export const PLACEMENT_QUESTIONS: Question[] = [
