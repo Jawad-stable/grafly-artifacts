@@ -95,7 +95,10 @@ export default function SettingsScreen() {
           }}
         >
           <PressScale
-            onPress={() => router.back()}
+            onPress={() => {
+              if (router.canGoBack()) router.back();
+              else router.replace("/(tabs)");
+            }}
             style={{
               width: 44,
               height: 44,
@@ -295,7 +298,10 @@ export default function SettingsScreen() {
                     <Text
                       style={{
                         fontSize: 14,
-                        lineHeight: 18,
+                        lineHeight: 26,
+                        textAlign: "center",
+                        textAlignVertical: "center",
+                        includeFontPadding: false,
                         fontFamily: "Nunito_800ExtraBold",
                         color: active ? colors.primaryForeground : colors.primary,
                         writingDirection: l.id === "ar" ? "rtl" : "ltr",
