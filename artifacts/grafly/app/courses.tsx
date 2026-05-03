@@ -11,23 +11,25 @@ import { router } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useColors } from "@/hooks/useColors";
 import { useGame } from "@/context/GameContext";
-import { COURSES as RAW_COURSES } from "@/constants/lessons";
 import { localizeCourse } from "@/lib/lessonsAr";
 import { GraflyMascot } from "@/components/GraflyMascot";
 import { PressScale } from "@/components/PressScale";
 import { CourseCardMotion } from "@/components/CourseCardMotion";
+import { Skeleton } from "@/components/Skeleton";
 import { onBrand } from "@/constants/contrast";
 import { useT } from "@/hooks/useT";
+import { useRemoteCourses } from "@/hooks/useRemoteCourses";
 
 export default function CoursesScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
   const { state } = useGame();
   const { t, isRTL, lang } = useT();
+  const { courses: RAW_COURSES, loading: coursesLoading } = useRemoteCourses();
   // Localise lesson/module/course strings for Arabic mode. English short-circuits.
   const COURSES = React.useMemo(
     () => (lang === "en" ? RAW_COURSES : RAW_COURSES.map((c) => localizeCourse(c, lang))),
-    [lang],
+    [lang, RAW_COURSES],
   );
 
   const paddingTop = insets.top + (Platform.OS === "web" ? 67 : 0);
@@ -74,6 +76,13 @@ export default function CoursesScreen() {
         </Text>
       </Animated.View>
 
+      {coursesLoading ? (
+        <View style={{ paddingHorizontal: 24, gap: 16 }}>
+          {[0, 1, 2, 3].map((i) => (
+            <Skeleton key={i} width="100%" height={200} radius={24} />
+          ))}
+        </View>
+      ) : (
       <FlatList
         data={COURSES}
         keyExtractor={(c) => c.id}
@@ -207,6 +216,7 @@ export default function CoursesScreen() {
           );
         }}
       />
+      )}
     </View>
   );
 }
