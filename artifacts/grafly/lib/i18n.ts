@@ -222,6 +222,10 @@ const dict = {
   "settings.open": { en: "Open settings", ar: "افتح الإعدادات" },
   "settings.language": { en: "Language", ar: "اللغة" },
   "settings.language.sub": { en: "App display language", ar: "لغة التطبيق" },
+  "settings.language.hint": {
+    en: "Switching to Arabic flips the app to right-to-left and reloads.",
+    ar: "لمّا تختار العربي بنقلب التطبيق من اليمين للشمال وبيعيد تحميل.",
+  },
   "settings.theme": { en: "Theme", ar: "المظهر" },
   "settings.theme.sub": { en: "Light or dark appearance", ar: "فاتح أو داكن" },
   "settings.voice": { en: "Voice feedback", ar: "النقد الصوتي" },

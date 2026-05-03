@@ -48,18 +48,25 @@ export default function SettingsScreen() {
   const iconBg = mix(colors.primary, bg, 0.14);
   const switchOnTrack = mix(colors.primary, bg, 0.4);
 
-  // Mini mockup preview palette for the theme tiles
+  // Mini mockup preview palettes for the theme tiles. These mirror the
+  // *actual* light/dark palettes from constants/colors.ts (BRAND.offWhite
+  // and BRAND.navy) so the tile preview reads as a true sample of what
+  // the user will get — not a generic black/white swatch.
   const lightPreview = {
-    bg: "#FFFFFF",
-    surface: "#F4F2EE",
+    bg: BRAND.offWhite,
+    surface: "#FFFFFF",
     text: BRAND.navy,
-    accent: colors.primary,
+    muted: "#646A88",
+    accent: BRAND.cyan,
+    pop: BRAND.lime,
   };
   const darkPreview = {
-    bg: "#0E0F12",
-    surface: "#1A1C20",
-    text: "#F4F2EE",
-    accent: colors.primary,
+    bg: BRAND.navy,
+    surface: "#2D3355",
+    text: "#DEE0ED",
+    muted: "#969CBC",
+    accent: BRAND.cyan,
+    pop: BRAND.lime,
   };
 
   return (
@@ -240,43 +247,57 @@ export default function SettingsScreen() {
             </View>
           </View>
 
-          <View style={{ flexDirection: isRTL ? "row-reverse" : "row", gap: 12 }}>
+          {/* Segmented pill — both languages live inside one rounded
+              container, the active option is a filled cyan capsule that
+              animates in. Reads as a single control rather than two
+              competing tiles. */}
+          <View
+            style={{
+              flexDirection: "row",
+              backgroundColor: mix(colors.foreground, bg, 0.04),
+              borderRadius: 999,
+              padding: 4,
+              borderWidth: 1,
+              borderColor: tileBorder,
+            }}
+          >
             {LANGUAGES.map((l) => {
               const active = profileState.language === l.id;
-              const sample = l.id === "ar" ? "أب" : "Aa";
+              const sample = l.id === "ar" ? "أ" : "A";
               return (
                 <PressScale
                   key={l.id}
                   onPress={() => setLanguage(l.id)}
                   style={{
                     flex: 1,
-                    paddingVertical: 18,
-                    paddingHorizontal: 12,
-                    borderRadius: 18,
+                    flexDirection: "row",
                     alignItems: "center",
                     justifyContent: "center",
-                    backgroundColor: active ? tileActiveBg : tileIdle,
-                    borderWidth: active ? 2 : 1,
-                    borderColor: active ? tileActiveBorder : tileBorder,
-                    minHeight: 110,
+                    gap: 10,
+                    paddingVertical: 12,
+                    paddingHorizontal: 14,
+                    borderRadius: 999,
+                    backgroundColor: active ? colors.primary : "transparent",
                   }}
                 >
                   <View
                     style={{
-                      width: 52,
-                      height: 52,
-                      borderRadius: 26,
-                      backgroundColor: active ? colors.primary : iconBg,
+                      width: 26,
+                      height: 26,
+                      borderRadius: 13,
                       alignItems: "center",
                       justifyContent: "center",
-                      marginBottom: 10,
+                      backgroundColor: active
+                        ? mix(colors.background, colors.primary, 0.22)
+                        : iconBg,
                     }}
                   >
                     <Text
                       style={{
-                        fontSize: 22,
+                        fontSize: 14,
+                        lineHeight: 18,
                         fontFamily: "Nunito_800ExtraBold",
-                        color: active ? colors.background : colors.primary,
+                        color: active ? colors.primaryForeground : colors.primary,
                         writingDirection: l.id === "ar" ? "rtl" : "ltr",
                       }}
                     >
@@ -285,34 +306,42 @@ export default function SettingsScreen() {
                   </View>
                   <Text
                     style={{
-                      fontSize: 14,
+                      fontSize: 15,
                       fontFamily: "Nunito_800ExtraBold",
-                      color: colors.foreground,
+                      color: active ? colors.primaryForeground : colors.foreground,
                       writingDirection: l.id === "ar" ? "rtl" : "ltr",
                     }}
                   >
                     {l.native}
                   </Text>
-                  {active && (
-                    <View
-                      style={{
-                        position: "absolute",
-                        top: 10,
-                        [isRTL ? "left" : "right"]: 10,
-                        width: 20,
-                        height: 20,
-                        borderRadius: 10,
-                        backgroundColor: colors.primary,
-                        alignItems: "center",
-                        justifyContent: "center",
-                      }}
-                    >
-                      <Icon name="checkmark" size={12} color={colors.background} />
-                    </View>
-                  )}
                 </PressScale>
               );
             })}
+          </View>
+
+          {/* Helper hint under the pill — clarifies that switching to
+              Arabic flips the layout direction (RTL) and reloads. */}
+          <View
+            style={{
+              flexDirection: isRTL ? "row-reverse" : "row",
+              alignItems: "center",
+              gap: 6,
+              marginTop: 12,
+            }}
+          >
+            <Icon name="information-circle-outline" size={14} color={colors.mutedForeground} />
+            <Text
+              style={{
+                flex: 1,
+                fontSize: 12,
+                lineHeight: 17,
+                fontFamily: "Nunito_600SemiBold",
+                color: colors.mutedForeground,
+                ...dir,
+              }}
+            >
+              {t("settings.language.hint")}
+            </Text>
           </View>
         </Animated.View>
 
@@ -388,86 +417,144 @@ export default function SettingsScreen() {
                   onPress={() => setTheme(m)}
                   style={{
                     flex: 1,
-                    borderRadius: 18,
+                    borderRadius: 20,
                     backgroundColor: active ? tileActiveBg : tileIdle,
                     borderWidth: active ? 2 : 1,
                     borderColor: active ? tileActiveBorder : tileBorder,
-                    padding: 10,
+                    padding: 12,
                     alignItems: "center",
                   }}
                 >
-                  {/* Mini mockup preview */}
+                  {/* Mini mockup preview — a tiny home-screen sample using
+                      the *real* light/dark palette so the user immediately
+                      sees what the chosen theme will look like.            */}
                   <View
                     style={{
                       width: "100%",
-                      aspectRatio: 1.1,
-                      borderRadius: 12,
+                      aspectRatio: 1,
+                      borderRadius: 14,
                       backgroundColor: p.bg,
                       padding: 10,
                       overflow: "hidden",
                       borderWidth: 1,
-                      borderColor: mix(p.text, p.bg, 0.1),
+                      borderColor: mix(p.text, p.bg, 0.12),
                     }}
                   >
+                    {/* Status / eyebrow row */}
                     <View
                       style={{
-                        height: 6,
-                        width: "55%",
-                        borderRadius: 3,
-                        backgroundColor: p.text,
-                        opacity: 0.85,
-                        marginBottom: 6,
-                      }}
-                    />
-                    <View
-                      style={{
-                        height: 4,
-                        width: "75%",
-                        borderRadius: 2,
-                        backgroundColor: p.text,
-                        opacity: 0.4,
-                        marginBottom: 10,
-                      }}
-                    />
-                    <View
-                      style={{
-                        flex: 1,
-                        borderRadius: 8,
-                        backgroundColor: p.surface,
-                        padding: 6,
                         flexDirection: "row",
                         alignItems: "center",
-                        gap: 6,
+                        gap: 4,
+                        marginBottom: 8,
                       }}
                     >
                       <View
                         style={{
-                          width: 16,
-                          height: 16,
-                          borderRadius: 8,
+                          width: 5,
+                          height: 5,
+                          borderRadius: 2.5,
                           backgroundColor: p.accent,
                         }}
                       />
-                      <View style={{ flex: 1 }}>
+                      <View
+                        style={{
+                          height: 4,
+                          width: 36,
+                          borderRadius: 2,
+                          backgroundColor: p.muted,
+                          opacity: 0.7,
+                        }}
+                      />
+                    </View>
+
+                    {/* Big headline + subline (the editorial title) */}
+                    <View
+                      style={{
+                        height: 8,
+                        width: "78%",
+                        borderRadius: 3,
+                        backgroundColor: p.text,
+                        opacity: 0.95,
+                        marginBottom: 5,
+                      }}
+                    />
+                    <View
+                      style={{
+                        height: 5,
+                        width: "55%",
+                        borderRadius: 2,
+                        backgroundColor: p.text,
+                        opacity: 0.45,
+                        marginBottom: 10,
+                      }}
+                    />
+
+                    {/* Hero card with brand cyan square + two text lines */}
+                    <View
+                      style={{
+                        borderRadius: 9,
+                        backgroundColor: p.surface,
+                        padding: 7,
+                        flexDirection: "row",
+                        alignItems: "center",
+                        gap: 7,
+                        marginBottom: 6,
+                      }}
+                    >
+                      <View
+                        style={{
+                          width: 22,
+                          height: 22,
+                          borderRadius: 7,
+                          backgroundColor: p.accent,
+                        }}
+                      />
+                      <View style={{ flex: 1, gap: 3 }}>
+                        <View
+                          style={{
+                            height: 5,
+                            borderRadius: 2,
+                            backgroundColor: p.text,
+                            opacity: 0.85,
+                          }}
+                        />
                         <View
                           style={{
                             height: 4,
+                            width: "65%",
                             borderRadius: 2,
                             backgroundColor: p.text,
-                            opacity: 0.7,
-                            marginBottom: 3,
-                          }}
-                        />
-                        <View
-                          style={{
-                            height: 3,
-                            width: "70%",
-                            borderRadius: 2,
-                            backgroundColor: p.text,
-                            opacity: 0.35,
+                            opacity: 0.4,
                           }}
                         />
                       </View>
+                      {/* Lime XP pill */}
+                      <View
+                        style={{
+                          height: 12,
+                          paddingHorizontal: 5,
+                          borderRadius: 6,
+                          backgroundColor: p.pop,
+                          alignItems: "center",
+                          justifyContent: "center",
+                        }}
+                      >
+                        <View style={{ width: 10, height: 3, borderRadius: 1.5, backgroundColor: BRAND.navy }} />
+                      </View>
+                    </View>
+
+                    {/* CTA button row */}
+                    <View
+                      style={{
+                        height: 16,
+                        borderRadius: 8,
+                        backgroundColor: p.accent,
+                        alignItems: "center",
+                        justifyContent: "center",
+                      }}
+                    >
+                      <View style={{ width: 28, height: 4, borderRadius: 2, backgroundColor: BRAND.navy, opacity: 0.85 }} />
                     </View>
                   </View>
 
@@ -509,7 +596,7 @@ export default function SettingsScreen() {
                         justifyContent: "center",
                       }}
                     >
-                      <Icon name="checkmark" size={13} color={colors.background} />
+                      <Icon name="checkmark" size={13} color={colors.primaryForeground} />
                     </View>
                   )}
                 </PressScale>
