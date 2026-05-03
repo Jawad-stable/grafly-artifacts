@@ -497,6 +497,14 @@ const dict = {
     en: "We sent a confirmation link to {email}. Verify your email and then sign in.",
     ar: "بعتنالك رابط تأكيد لـ {email}. أكّد بريدك وبعدين سجّل دخول.",
   },
+  "auth.resend": {
+    en: "Resend confirmation email",
+    ar: "إعادة إرسال إيميل التأكيد",
+  },
+  "auth.notice.resent": {
+    en: "Confirmation email sent. Check your inbox (and spam).",
+    ar: "بعتنا الإيميل من جديد. افحص الوارد (والـSpam).",
+  },
 
   // ---------- Auth callback (reset) ----------
   "ac.expired": { en: "LINK EXPIRED", ar: "الرابط انتهى" },

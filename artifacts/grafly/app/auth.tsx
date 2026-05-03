@@ -28,7 +28,7 @@ type Mode = "signin" | "signup" | "reset";
 export default function AuthScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
-  const { signIn, signUp, signInWithGoogle, resetPassword } = useAuth();
+  const { signIn, signUp, signInWithGoogle, resetPassword, resendConfirmation } = useAuth();
   const { state: gameState } = useGame();
   const { t, isRTL } = useT();
   const canSkip = gameState.onboardingComplete;
@@ -42,11 +42,29 @@ export default function AuthScreen() {
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
   const [focused, setFocused] = useState<"email" | "password" | null>(null);
+  // When sign-in fails because the email is not yet confirmed, expose a
+  // one-tap "resend confirmation email" affordance so the user is never stuck.
+  const [needsConfirm, setNeedsConfirm] = useState(false);
+  const [resending, setResending] = useState(false);
+
+  const handleResend = async () => {
+    if (!email.trim()) return;
+    setResending(true);
+    const { error: err } = await resendConfirmation(email.trim());
+    setResending(false);
+    if (err) {
+      setError(err);
+      return;
+    }
+    setError("");
+    setNotice(t("auth.notice.resent"));
+  };
 
   const switchMode = (next: Mode) => {
     setMode(next);
     setError("");
     setNotice("");
+    setNeedsConfirm(false);
   };
 
   const handleGoogle = async () => {
@@ -94,6 +112,10 @@ export default function AuthScreen() {
       setLoading(false);
       if (err) {
         setError(err);
+        // Detect the "email not confirmed" case so we can surface the
+        // resend-confirmation button right next to the error.
+        const lower = err.toLowerCase();
+        setNeedsConfirm(lower.includes("not confirmed") || lower.includes("email_not_confirmed"));
       } else {
         router.replace("/(tabs)");
       }
@@ -108,6 +130,7 @@ export default function AuthScreen() {
           t("auth.confirmEmail.body", { email: email.trim() }),
         );
         switchMode("signin");
+        setNeedsConfirm(true);
       } else {
         router.replace("/(tabs)");
       }
@@ -402,6 +425,36 @@ export default function AuthScreen() {
                   {error}
                 </Text>
               </View>
+            ) : null}
+
+            {needsConfirm && mode !== "reset" ? (
+              <PressScale
+                onPress={handleResend}
+                disabled={resending}
+                accessibilityRole="button"
+                accessibilityLabel={t("auth.resend")}
+                style={{
+                  backgroundColor: colors.primary + "14",
+                  borderRadius: 14, paddingVertical: 14, paddingHorizontal: 16,
+                  borderWidth: 1, borderColor: colors.primary + "55",
+                  flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8,
+                  opacity: resending ? 0.7 : 1,
+                }}
+              >
+                {resending ? (
+                  <ActivityIndicator color={colors.primary} />
+                ) : (
+                  <>
+                    <Icon name="mail-unread-outline" size={16} color={colors.primary} />
+                    <Text style={{
+                      fontSize: 13, fontFamily: "Nunito_800ExtraBold",
+                      color: colors.primary, letterSpacing: -0.2,
+                    }}>
+                      {t("auth.resend")}
+                    </Text>
+                  </>
+                )}
+              </PressScale>
             ) : null}
 
             {notice ? (
