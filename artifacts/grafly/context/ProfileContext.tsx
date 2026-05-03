@@ -9,13 +9,18 @@ export type Language = "en" | "ar";
 // flag actually changed and the app needs to reload to flip layout. We never
 // reload synchronously — callers decide when to trigger DevSettings.reload().
 function syncNativeRTL(language: Language): boolean {
+  // Web handles direction via CSS (`writingDirection` / `dir`). I18nManager
+  // on web is a no-op — `forceRTL` never actually flips `isRTL`, so checking
+  // it here would always report a mismatch and trigger an infinite reload
+  // loop the moment the user picks Arabic.
+  if (Platform.OS === "web") return false;
   const shouldBeRTL = language === "ar";
   if (I18nManager.isRTL === shouldBeRTL) return false;
   try {
     I18nManager.allowRTL(shouldBeRTL);
     I18nManager.forceRTL(shouldBeRTL);
   } catch {
-    // forceRTL can throw on web; safe to ignore — web uses CSS direction.
+    // Safe to ignore — fall back to noop.
   }
   return true;
 }
