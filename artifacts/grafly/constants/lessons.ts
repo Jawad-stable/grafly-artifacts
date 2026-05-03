@@ -37,7 +37,7 @@ export type SceneBlock =
   | { kind: "image"; bg: string; height: number; emoji?: string; rounded?: number; tapId?: string }
   | { kind: "spacer"; size: number }
   | { kind: "row"; gap?: number; align?: "center" | "start" | "end" | "between"; children: SceneBlock[] }
-  | { kind: "card"; bg?: string; padding?: number; border?: string; rounded?: number; children: SceneBlock[] }
+  | { kind: "card"; bg?: string; padding?: number; border?: string; rounded?: number; tapId?: string; children: SceneBlock[] }
   | { kind: "divider"; color?: string }
   | { kind: "stat"; label: string; value: string; bg?: string; fg?: string };
 

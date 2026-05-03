@@ -204,8 +204,8 @@ function RenderBlock({
           ))}
         </View>
       );
-    case "card":
-      return (
+    case "card": {
+      const node = (
         <View
           style={{
             backgroundColor: block.bg ?? "#F5F6FA",
@@ -221,6 +221,8 @@ function RenderBlock({
           ))}
         </View>
       );
+      return <>{wrapTap(block.tapId, node)}</>;
+    }
     case "divider":
       return <View style={{ height: 1, backgroundColor: block.color ?? "#DDE1EE", marginVertical: 4 }} />;
     case "stat":
