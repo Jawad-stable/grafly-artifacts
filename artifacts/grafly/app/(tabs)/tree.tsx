@@ -14,6 +14,7 @@ import { router, useFocusEffect, useLocalSearchParams } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Svg, { Path, Defs, LinearGradient, Stop, Circle } from "react-native-svg";
 import { useColors } from "@/hooks/useColors";
+import { useT } from "@/hooks/useT";
 import { useGame } from "@/context/GameContext";
 import { COURSES, getCurrentPosition, type SkillNode, type Course } from "@/constants/lessons";
 import { PressScale } from "@/components/PressScale";
@@ -45,6 +46,7 @@ function tierColor(idx: number, fallback: string): string {
 
 function CoursesButton({ onPress }: { onPress: () => void }) {
   const colors = useColors();
+  const { t } = useT();
   return (
     <PressScale
       onPress={onPress}
@@ -76,7 +78,7 @@ function CoursesButton({ onPress }: { onPress: () => void }) {
         color: colors.foreground,
         letterSpacing: -0.3,
       }}>
-        Courses
+        {t("tree.courses")}
       </Text>
     </PressScale>
   );
@@ -96,6 +98,7 @@ function CoursePickerModal({
   completedLessons: string[];
 }) {
   const colors = useColors();
+  const { t } = useT();
   const insets = useSafeAreaInsets();
 
   return (
@@ -116,7 +119,7 @@ function CoursePickerModal({
             color: colors.mutedForeground,
             letterSpacing: 1.5,
           }}>
-            BROWSE
+            {t("tree.browse")}
           </Text>
           <PressScale
             onPress={onClose}
@@ -144,7 +147,7 @@ function CoursePickerModal({
             letterSpacing: -1.2,
             lineHeight: 48,
           }}>
-            Choose
+            {t("tree.choose")}
           </Text>
           <Text style={{
             fontSize: 44,
@@ -153,7 +156,7 @@ function CoursePickerModal({
             letterSpacing: -1.2,
             lineHeight: 48,
           }}>
-            a course.
+            {t("tree.aCourse")}
           </Text>
         </View>
 
@@ -215,7 +218,7 @@ function CoursePickerModal({
                     marginBottom: 2,
                     textTransform: "uppercase",
                   }}>
-                    {progress}% COMPLETE
+                    {t("tree.percentDone", { n: progress })}
                   </Text>
                   <Text style={{
                     fontSize: 17,
@@ -232,7 +235,7 @@ function CoursePickerModal({
                     color: isSelected ? colors.background : colors.mutedForeground,
                     opacity: isSelected ? 0.7 : 1,
                   }} numberOfLines={1}>
-                    {totalLessonsInCourse} lessons
+                    {t("tree.lessonsCount", { n: totalLessonsInCourse })}
                   </Text>
                 </View>
                 {isSelected && (
@@ -370,6 +373,7 @@ function NodeSheet({ node, course, isCompleted, isLocked, visible, onClose, comp
   completedLessons: string[];
 }) {
   const colors = useColors();
+  const { t } = useT();
   const insets = useSafeAreaInsets();
   if (!node || !course) return null;
   const totalXP = node.lessons.reduce((s, l) => s + l.xpReward, 0);
@@ -470,14 +474,16 @@ function NodeSheet({ node, course, isCompleted, isLocked, visible, onClose, comp
           </View>
           <View style={{ flex: 1 }}>
             <Text style={{ fontSize: 11, fontFamily: "Nunito_800ExtraBold", color: course.color, letterSpacing: 1.4 }}>
-              MODULE PROGRESS
+              {t("tree.moduleProgress")}
             </Text>
             <Text style={{ marginTop: 4, fontSize: 14, fontFamily: "Nunito_800ExtraBold", color: colors.foreground }}>
               {isCompleted
-                ? "Module mastered — practice anytime."
+                ? t("tree.mastered")
                 : completedInModule === 0
-                ? "Brand new module. Let's begin."
-                : `${totalInModule - completedInModule} lesson${totalInModule - completedInModule === 1 ? "" : "s"} to go.`}
+                ? t("tree.brandNew")
+                : (totalInModule - completedInModule === 1
+                    ? t("tree.toGo.one", { n: 1 })
+                    : t("tree.toGo.many", { n: totalInModule - completedInModule }))}
             </Text>
           </View>
           {isCompleted && (
@@ -490,9 +496,9 @@ function NodeSheet({ node, course, isCompleted, isLocked, visible, onClose, comp
         {/* Stats row */}
         <View style={{ flexDirection: "row", gap: 10, marginBottom: 20 }}>
           {[
-            { val: node.lessons.length, label: "LESSONS", icon: null, iconColor: null },
-            { val: totalXP, label: "XP", icon: "flash", iconColor: colors.accent },
-            { val: totalCoins, label: "COINS", icon: "coin", iconColor: colors.warning },
+            { val: node.lessons.length, label: t("tree.stat.lessons"), icon: null, iconColor: null },
+            { val: totalXP, label: t("tree.stat.xp"), icon: "flash", iconColor: colors.accent },
+            { val: totalCoins, label: t("tree.stat.coins"), icon: "coin", iconColor: colors.warning },
           ].map((s) => (
             <View key={s.label} style={{
               flex: 1,
@@ -569,7 +575,7 @@ function NodeSheet({ node, course, isCompleted, isLocked, visible, onClose, comp
               color: colors.background,
               letterSpacing: -0.3,
             }}>
-              {isCompleted ? "Practice again" : "Start lessons"}
+              {isCompleted ? t("tree.practice") : t("tree.startLessons")}
             </Text>
             <Icon name="arrow-forward" size={18} color={colors.background} />
           </PressScale>
@@ -585,7 +591,7 @@ function NodeSheet({ node, course, isCompleted, isLocked, visible, onClose, comp
           }}>
             <Icon name="lock-closed" size={18} color={colors.mutedForeground} />
             <Text style={{ fontSize: 15, fontFamily: "Nunito_800ExtraBold", color: colors.mutedForeground, letterSpacing: -0.2 }}>
-              Complete previous lessons
+              {t("tree.completePrev")}
             </Text>
           </View>
         )}
@@ -596,6 +602,7 @@ function NodeSheet({ node, course, isCompleted, isLocked, visible, onClose, comp
 
 export default function TreeScreen() {
   const colors = useColors();
+  const { t } = useT();
   const insets = useSafeAreaInsets();
   const { state } = useGame();
   const params = useLocalSearchParams<{ courseId?: string; nodeId?: string }>();
@@ -792,7 +799,7 @@ export default function TreeScreen() {
             letterSpacing: 1.5,
             marginBottom: 6,
           }}>
-            YOUR JOURNEY
+            {t("tree.yourJourney")}
           </Text>
           <Text style={{
             fontSize: 38,
@@ -801,7 +808,7 @@ export default function TreeScreen() {
             letterSpacing: -1,
             lineHeight: 42,
           }}>
-            Skill tree
+            {t("tree.skillTree")}
           </Text>
         </View>
         <View style={{ paddingTop: 18 }}>
@@ -869,10 +876,10 @@ export default function TreeScreen() {
             </View>
             <View style={{ flex: 1 }}>
               <Text style={{ fontSize: 11, fontFamily: "Nunito_800ExtraBold", color: onCourse + "CC", letterSpacing: 1.4, marginBottom: 3 }}>
-                NEW · COURSE WELCOME
+                {t("tree.newWelcome")}
               </Text>
               <Text style={{ fontSize: 18, fontFamily: "Nunito_800ExtraBold", color: onCourse, letterSpacing: -0.3, lineHeight: 22 }}>
-                See what you'll learn
+                {t("tree.seeLearn")}
               </Text>
             </View>
             <View
@@ -946,7 +953,7 @@ export default function TreeScreen() {
                   marginBottom: 3,
                   textTransform: "uppercase",
                 }}>
-                  Course
+                  {t("tree.courseEyebrow")}
                 </Text>
                 <Text style={{
                   fontSize: 20,
@@ -1004,7 +1011,7 @@ export default function TreeScreen() {
                 color: onCourse + "CC",
                 letterSpacing: 1.2,
               }}>
-                {completedInCourse} OF {totalInCourse} LESSONS
+                {t("tree.ofLessons", { n: completedInCourse, total: totalInCourse })}
               </Text>
               <View style={{ flexDirection: "row", alignItems: "center", gap: 4 }}>
                 <Icon name="flame" size={14} color={onCourse} />
@@ -1014,7 +1021,7 @@ export default function TreeScreen() {
                   color: onCourse,
                   letterSpacing: 0.4,
                 }}>
-                  KEEP GOING
+                  {t("tree.keepGoing")}
                 </Text>
               </View>
             </View>
@@ -1030,7 +1037,7 @@ export default function TreeScreen() {
                 fontSize: 11, fontFamily: "Nunito_800ExtraBold",
                 color: course.color, letterSpacing: 1.4,
               }}>
-                THE PATH
+                {t("tree.thePath")}
               </Text>
             </View>
             <View style={{ flex: 1, height: 1, backgroundColor: colors.border }} />
@@ -1038,7 +1045,7 @@ export default function TreeScreen() {
               fontSize: 11, fontFamily: "Nunito_800ExtraBold",
               color: colors.mutedForeground, letterSpacing: 1.2,
             }}>
-              {nodes.length} STAGES
+              {t("tree.stages", { n: nodes.length })}
             </Text>
           </View>
 
@@ -1068,7 +1075,7 @@ export default function TreeScreen() {
                   fontSize: 11, fontFamily: "Nunito_800ExtraBold",
                   color: onCourse, letterSpacing: 1.4,
                 }}>
-                  START
+                  {t("tree.startBadge")}
                 </Text>
               </View>
             </View>
@@ -1159,7 +1166,7 @@ export default function TreeScreen() {
                   fontSize: 11, fontFamily: "Nunito_800ExtraBold",
                   color: courseProgress === 100 ? "#FFFFFF" : colors.background, letterSpacing: 1.4,
                 }}>
-                  FINISH
+                  {t("tree.finishBadge")}
                 </Text>
               </View>
             </View>

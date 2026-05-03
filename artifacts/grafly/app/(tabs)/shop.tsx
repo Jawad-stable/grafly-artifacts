@@ -24,6 +24,7 @@ import { GraflyMascot } from "@/components/GraflyMascot";
 import { BrandSquiggle } from "@/components/BrandSquiggle";
 import { LinearGradient } from "expo-linear-gradient";
 import { onBrand } from "@/constants/contrast";
+import { useT } from "@/hooks/useT";
 
 const { width: SCREEN_W, height: SCREEN_H } = Dimensions.get("window");
 
@@ -56,6 +57,7 @@ const SHOP_ITEMS: ShopItem[] = [
 function ShopCard({ item, onBuy }: { item: ShopItem; onBuy: (item: ShopItem) => void }) {
   const colors = useColors();
   const { state } = useGame();
+  const { t } = useT();
   const scale = useSharedValue(1);
   const anim = useAnimatedStyle(() => ({ transform: [{ scale: scale.value }] }));
 
@@ -176,7 +178,7 @@ function ShopCard({ item, onBuy }: { item: ShopItem; onBuy: (item: ShopItem) => 
           <>
             <Icon name="checkmark" size={15} color={fg} weight="bold" />
             <Text style={{ fontSize: 14, fontFamily: "Nunito_800ExtraBold", color: fg }}>
-              Active
+              {t("shop.active")}
             </Text>
           </>
         ) : (
@@ -253,12 +255,28 @@ function SectionHeading({ label, dotColor, mt = 0 }: { label: string; dotColor: 
   );
 }
 
+const ITEM_KEYS: Record<string, { name: string; sub: string }> = {
+  "streak-shield": { name: "shop.item.shield", sub: "shop.item.shield.sub" },
+  "energy-refill": { name: "shop.item.refill", sub: "shop.item.refill.sub" },
+  "xp-booster": { name: "shop.item.booster", sub: "shop.item.booster.sub" },
+  "avatar-blue": { name: "shop.item.blue", sub: "shop.item.blue.sub" },
+  "avatar-gold": { name: "shop.item.gold", sub: "shop.item.gold.sub" },
+  "avatar-pink": { name: "shop.item.pink", sub: "shop.item.pink.sub" },
+};
+
 export default function ShopScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
   const { state, purchaseShield, refillHearts, purchaseBooster } = useGame();
+  const { t } = useT();
   const [toast, setToast] = useState<string | null>(null);
   const [mascotState, setMascotState] = useState<"idle" | "celebrate" | "oops">("idle");
+
+  const localizedItems = SHOP_ITEMS.map((i) => ({
+    ...i,
+    name: t(ITEM_KEYS[i.id].name as any),
+    subtitle: t(ITEM_KEYS[i.id].sub as any),
+  }));
 
   const paddingTop = insets.top + (Platform.OS === "web" ? 67 : 0);
   const paddingBottom = insets.bottom + 100;
@@ -277,17 +295,17 @@ export default function ShopScreen() {
     else {
       if (state.coins >= item.cost) {
         success = true;
-        showToast(`${item.name} equipped!`);
+        showToast(t("shop.equipped", { name: item.name }));
       }
     }
 
     if (item.type !== "cosmetic") {
       if (success) {
         setMascotState("celebrate");
-        showToast(`${item.name} purchased!`);
+        showToast(t("shop.purchased", { name: item.name }));
       } else {
         setMascotState("oops");
-        showToast("Not enough coins");
+        showToast(t("shop.notEnough"));
       }
       setTimeout(() => setMascotState("idle"), 2000);
     }
@@ -320,12 +338,12 @@ export default function ShopScreen() {
         {/* Editorial header */}
         <Animated.View entering={FadeIn} style={{ marginBottom: 22 }}>
           <Text style={{ fontSize: 13, fontFamily: "Nunito_800ExtraBold", color: colors.mutedForeground, letterSpacing: 1.5, marginBottom: 4 }}>
-            POWER UP
+            {t("shop.eyebrow")}
           </Text>
           <View style={{ flexDirection: "row", alignItems: "flex-end", justifyContent: "space-between" }}>
             <View style={{ flex: 1 }}>
               <Text style={{ fontSize: 38, fontFamily: "Nunito_800ExtraBold", color: colors.foreground, letterSpacing: -1, lineHeight: 42 }}>
-                Shop
+                {t("shop.title")}
               </Text>
               {/* Coin balance pill — same brand pattern as the home
                   tab streak/coin chips: lime gradient with navy text,
@@ -352,7 +370,7 @@ export default function ShopScreen() {
               >
                 <Icon name="coin" size={14} color={colors.brand.navy} weight="fill" />
                 <Text style={{ fontSize: 14, fontFamily: "Nunito_800ExtraBold", color: colors.brand.navy }}>
-                  {state.coins} coins
+                  {t("shop.coins", { n: state.coins })}
                 </Text>
               </LinearGradient>
             </View>
@@ -362,16 +380,16 @@ export default function ShopScreen() {
 
         {/* Power-ups */}
         <Animated.View entering={FadeIn.delay(80)}>
-          <SectionHeading label="POWER UPS" dotColor={colors.brand.cyan} />
-          {SHOP_ITEMS.filter((i) => i.type !== "cosmetic").map((item) => (
+          <SectionHeading label={t("shop.section.power")} dotColor={colors.brand.cyan} />
+          {localizedItems.filter((i) => i.type !== "cosmetic").map((item) => (
             <ShopCard key={item.id} item={item} onBuy={handleBuy} />
           ))}
         </Animated.View>
 
         {/* Cosmetics */}
         <Animated.View entering={FadeIn.delay(160)}>
-          <SectionHeading label="AVATAR FRAMES" dotColor={colors.brand.pink} mt={10} />
-          {SHOP_ITEMS.filter((i) => i.type === "cosmetic").map((item) => (
+          <SectionHeading label={t("shop.section.frames")} dotColor={colors.brand.pink} mt={10} />
+          {localizedItems.filter((i) => i.type === "cosmetic").map((item) => (
             <ShopCard key={item.id} item={item} onBuy={handleBuy} />
           ))}
         </Animated.View>

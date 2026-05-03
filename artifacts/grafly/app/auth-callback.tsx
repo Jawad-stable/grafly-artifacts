@@ -18,11 +18,13 @@ import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/services/supabase";
 import { GraflyMascot } from "@/components/GraflyMascot";
 import { PressScale } from "@/components/PressScale";
+import { useT } from "@/hooks/useT";
 
 export default function AuthCallbackScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
   const { session, loading, resolvingDeepLink } = useAuth();
+  const { t, isRTL } = useT();
 
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -35,11 +37,11 @@ export default function AuthCallbackScreen() {
   const handleSubmit = async () => {
     setError("");
     if (!password || password.length < 6) {
-      setError("Password must be at least 6 characters.");
+      setError(t("auth.err.pwShort"));
       return;
     }
     if (password !== confirmPassword) {
-      setError("Passwords do not match.");
+      setError(t("ac.err.match"));
       return;
     }
     setBusy(true);
@@ -115,7 +117,7 @@ export default function AuthCallbackScreen() {
                 fontSize: 11, fontFamily: "Nunito_800ExtraBold",
                 color: colors.destructive, letterSpacing: 1.4,
               }}>
-                LINK EXPIRED
+                {t("ac.expired")}
               </Text>
             </View>
             <Text style={{
@@ -123,14 +125,14 @@ export default function AuthCallbackScreen() {
               color: colors.foreground, letterSpacing: -1,
               lineHeight: 38, textAlign: "center",
             }}>
-              This link is no longer valid
+              {t("ac.invalid")}
             </Text>
             <Text style={{
               fontSize: 15, fontFamily: "Nunito_600SemiBold",
               color: colors.mutedForeground, marginTop: 12,
               lineHeight: 22, textAlign: "center", maxWidth: 320,
             }}>
-              Reset links can only be used once and expire after a short time. Request a new one and try again.
+              {t("ac.invalid.sub")}
             </Text>
           </Animated.View>
 
@@ -149,9 +151,9 @@ export default function AuthCallbackScreen() {
               }}
             >
               <Text style={{ fontSize: 17, fontFamily: "Nunito_800ExtraBold", color: colors.background, letterSpacing: -0.2 }}>
-                Back to sign in
+                {t("auth.back.signin")}
               </Text>
-              <Icon name="arrow-forward" size={18} color={colors.background} />
+              <Icon name={isRTL ? "arrow-back" : "arrow-forward"} size={18} color={colors.background} />
             </PressScale>
           </Animated.View>
         </ScrollView>
@@ -231,7 +233,7 @@ export default function AuthCallbackScreen() {
                 fontSize: 11, fontFamily: "Nunito_800ExtraBold",
                 color: colors.success, letterSpacing: 1.4,
               }}>
-                ALMOST DONE
+                {t("ac.almostDone")}
               </Text>
             </View>
             <Text style={{
@@ -239,14 +241,14 @@ export default function AuthCallbackScreen() {
               color: colors.foreground, letterSpacing: -1.2,
               lineHeight: 42, textAlign: "center",
             }}>
-              Set a new password
+              {t("ac.setNew")}
             </Text>
             <Text style={{
               fontSize: 15, fontFamily: "Nunito_600SemiBold",
               color: colors.mutedForeground, marginTop: 12,
               lineHeight: 22, textAlign: "center", maxWidth: 320,
             }}>
-              Pick a new password for your account. We will sign you in right after.
+              {t("ac.setNew.sub")}
             </Text>
           </Animated.View>
 
@@ -260,7 +262,7 @@ export default function AuthCallbackScreen() {
                 fontSize: 11, fontFamily: "Nunito_800ExtraBold",
                 color: colors.mutedForeground, marginBottom: 8, letterSpacing: 1.4,
               }}>
-                NEW PASSWORD
+                {t("ac.newPw")}
               </Text>
               <View style={{
                 flexDirection: "row", alignItems: "center",
@@ -280,7 +282,7 @@ export default function AuthCallbackScreen() {
                   onChangeText={setPassword}
                   onFocus={() => setFocused("password")}
                   onBlur={() => setFocused(null)}
-                  placeholder="Min. 6 characters"
+                  placeholder={t("auth.password.placeholder")}
                   placeholderTextColor={colors.mutedForeground}
                   secureTextEntry={!showPassword}
                   autoCapitalize="none"
@@ -309,7 +311,7 @@ export default function AuthCallbackScreen() {
                 fontSize: 11, fontFamily: "Nunito_800ExtraBold",
                 color: colors.mutedForeground, marginBottom: 8, letterSpacing: 1.4,
               }}>
-                CONFIRM PASSWORD
+                {t("ac.confirmPw")}
               </Text>
               <View style={{
                 flexDirection: "row", alignItems: "center",
@@ -329,7 +331,7 @@ export default function AuthCallbackScreen() {
                   onChangeText={setConfirmPassword}
                   onFocus={() => setFocused("confirm")}
                   onBlur={() => setFocused(null)}
-                  placeholder="Re-enter the password"
+                  placeholder={t("ac.reenter")}
                   placeholderTextColor={colors.mutedForeground}
                   secureTextEntry={!showConfirm}
                   autoCapitalize="none"
@@ -396,9 +398,9 @@ export default function AuthCallbackScreen() {
                     fontSize: 17, fontFamily: "Nunito_800ExtraBold",
                     color: colors.background, letterSpacing: -0.2,
                   }}>
-                    Update password
+                    {t("ac.update")}
                   </Text>
-                  <Icon name="arrow-forward" size={18} color={colors.background} />
+                  <Icon name={isRTL ? "arrow-back" : "arrow-forward"} size={18} color={colors.background} />
                 </>
               )}
             </PressScale>

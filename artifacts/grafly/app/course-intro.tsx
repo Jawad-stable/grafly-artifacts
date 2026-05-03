@@ -14,6 +14,7 @@ import { GraflyMascot } from "@/components/GraflyMascot";
 import { PressScale } from "@/components/PressScale";
 import { BrandSquiggle } from "@/components/BrandSquiggle";
 import { onBrand } from "@/constants/contrast";
+import { useT } from "@/hooks/useT";
 
 interface CourseHighlight {
   icon: string;
@@ -21,25 +22,26 @@ interface CourseHighlight {
   body: string;
 }
 
-const COURSE_HIGHLIGHTS: Record<string, CourseHighlight[]> = {
-  "design-principles": [
-    { icon: "eye-outline", label: "Train your eye", body: "Real screens, not theory." },
-    { icon: "game-controller-outline", label: "Play, don't read", body: "Spot, tap, choose. Quick rounds." },
-    { icon: "ribbon-outline", label: "6 modules · 18 lessons", body: "Built in the right order." },
-  ],
-};
-
-const DEFAULT_HIGHLIGHTS: CourseHighlight[] = [
-  { icon: "eye-outline", label: "Train your eye", body: "Hands-on, not theory." },
-  { icon: "game-controller-outline", label: "Play, don't read", body: "Quick interactive rounds." },
-  { icon: "ribbon-outline", label: "Earn as you go", body: "XP, coins, and streaks." },
-];
-
 export default function CourseIntroScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
   const { state } = useGame();
+  const { t, isRTL } = useT();
   const params = useLocalSearchParams<{ courseId?: string }>();
+
+  const COURSE_HIGHLIGHTS: Record<string, CourseHighlight[]> = {
+    "design-principles": [
+      { icon: "eye-outline", label: t("ci.h.eye"), body: t("ci.h.eye.b") },
+      { icon: "game-controller-outline", label: t("ci.h.play"), body: t("ci.h.play.b") },
+      { icon: "ribbon-outline", label: t("ci.h.ribbon"), body: t("ci.h.ribbon.b") },
+    ],
+  };
+
+  const DEFAULT_HIGHLIGHTS: CourseHighlight[] = [
+    { icon: "eye-outline", label: t("ci.h.eye"), body: t("ci.h.eye.b2") },
+    { icon: "game-controller-outline", label: t("ci.h.play"), body: t("ci.h.play.b2") },
+    { icon: "ribbon-outline", label: t("ci.h.earn"), body: t("ci.h.earn.b") },
+  ];
 
   const course = useMemo(() => {
     const id = params.courseId ?? "design-principles";
@@ -98,7 +100,7 @@ export default function CourseIntroScreen() {
             letterSpacing: 1.5,
           }}
         >
-          COURSE WELCOME
+          {t("ci.eyebrow")}
         </Text>
       </View>
 
@@ -157,7 +159,7 @@ export default function CourseIntroScreen() {
                   marginBottom: 3,
                 }}
               >
-                COURSE
+                {t("ci.course")}
               </Text>
               <Text
                 style={{
@@ -198,7 +200,7 @@ export default function CourseIntroScreen() {
                 {course.nodes.length}
               </Text>
               <Text style={{ fontSize: 10, fontFamily: "Nunito_800ExtraBold", color: onCourse + "DD", letterSpacing: 1 }}>
-                MODULES
+                {t("ci.modules")}
               </Text>
             </View>
             <View
@@ -215,7 +217,7 @@ export default function CourseIntroScreen() {
                 {totalLessons}
               </Text>
               <Text style={{ fontSize: 10, fontFamily: "Nunito_800ExtraBold", color: onCourse + "DD", letterSpacing: 1 }}>
-                LESSONS
+                {t("ci.lessons")}
               </Text>
             </View>
             <View
@@ -230,7 +232,7 @@ export default function CourseIntroScreen() {
             >
               <Text style={{ fontSize: 22, fontFamily: "Nunito_900Black", color: onCourse }}>5</Text>
               <Text style={{ fontSize: 10, fontFamily: "Nunito_800ExtraBold", color: onCourse + "DD", letterSpacing: 1 }}>
-                GAMES
+                {t("ci.games")}
               </Text>
             </View>
           </View>
@@ -256,10 +258,10 @@ export default function CourseIntroScreen() {
                 lineHeight: 26,
               }}
             >
-              Ready to think like a designer?
+              {t("ci.ready")}
             </Text>
             <Text style={{ fontSize: 14, fontFamily: "Nunito_600SemiBold", color: colors.foreground, lineHeight: 20 }}>
-              Train your eye. One quick module at a time.
+              {t("ci.train")}
             </Text>
           </View>
         </Animated.View>
@@ -301,7 +303,7 @@ export default function CourseIntroScreen() {
           <View style={{ flexDirection: "row", alignItems: "center", gap: 10, marginBottom: 12 }}>
             <View style={{ paddingHorizontal: 10, paddingVertical: 5, borderRadius: 100, backgroundColor: course.color + "22" }}>
               <Text style={{ fontSize: 11, fontFamily: "Nunito_800ExtraBold", color: course.color, letterSpacing: 1.4 }}>
-                THE PATH
+                {t("ci.path")}
               </Text>
             </View>
             <View style={{ flex: 1, height: 1, backgroundColor: colors.border }} />
@@ -337,7 +339,7 @@ export default function CourseIntroScreen() {
                   </Text>
                 </View>
                 <Text style={{ fontSize: 11, fontFamily: "Nunito_800ExtraBold", color: colors.mutedForeground, letterSpacing: 0.4 }}>
-                  {node.lessons.length} LESSONS
+                  {t("ci.lessonsCount", { n: node.lessons.length })}
                 </Text>
               </View>
             ))}
@@ -360,7 +362,7 @@ export default function CourseIntroScreen() {
           >
             <Icon name="ribbon-outline" size={18} color={course.color} />
             <Text style={{ flex: 1, fontSize: 13, fontFamily: "Nunito_800ExtraBold", color: colors.foreground }}>
-              You've already completed {completedLessons} of {totalLessons} lessons.
+              {t("ci.alreadyDone", { done: completedLessons, total: totalLessons })}
             </Text>
           </Animated.View>
         )}
@@ -401,9 +403,9 @@ export default function CourseIntroScreen() {
           }}
         >
           <Text style={{ fontSize: 16, fontFamily: "Nunito_800ExtraBold", color: colors.background }}>
-            {completedLessons > 0 ? "Keep going" : "Start the course"}
+            {completedLessons > 0 ? t("ci.keepGoing") : t("ci.start")}
           </Text>
-          <Icon name="arrow-forward" size={18} color={colors.background} />
+          <Icon name={isRTL ? "arrow-back" : "arrow-forward"} size={18} color={colors.background} />
         </PressScale>
         <PressScale
           onPress={() => router.replace({ pathname: "/(tabs)/tree", params: { courseId: course.id } })}
@@ -413,7 +415,7 @@ export default function CourseIntroScreen() {
           }}
         >
           <Text style={{ fontSize: 13, fontFamily: "Nunito_800ExtraBold", color: colors.mutedForeground }}>
-            See the full skill tree
+            {t("ci.fullTree")}
           </Text>
         </PressScale>
       </View>

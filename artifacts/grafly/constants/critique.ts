@@ -3,6 +3,8 @@
 // re-used by sub-components (CritiqueOnboarding references the reward
 // numbers in its tooltip copy, etc.).
 
+import type { Language } from "@/lib/i18n";
+
 export const XP_PER_SESSION = 20;
 export const COINS_PER_SESSION = 8;
 export const MIN_USER_TURNS_FOR_REWARD = 3;
@@ -10,16 +12,13 @@ export const TYPEWRITER_SPEED_MS = 14;
 
 export const ONBOARDING_KEY = "grafly:critique_onboarding_seen_v1";
 
-// Quick start prompt chips. Shown above the composer when the user
-// has not yet typed anything, so the screen never confronts them
-// with an empty input. Tapping a chip pre-fills the composer with a
-// concrete starter so they can focus on the design instead of the
-// blank page. Labels follow the house rule: no hyphens / em dashes.
-export const QUICK_PROMPTS: Array<{
+export interface QuickPrompt {
   label: string;
   icon: string;
   prompt: string;
-}> = [
+}
+
+const QUICK_PROMPTS_EN: QuickPrompt[] = [
   { label: "First impression", icon: "flash", prompt: "First impression: " },
   {
     label: "Color & contrast",
@@ -48,14 +47,43 @@ export const QUICK_PROMPTS: Array<{
   },
 ];
 
-// Conversation openers for the critique tab. Each one leads with a real
-// design prompt — an observation to make, a question to sit with, an
-// instruction to look. NO canned greetings ("Hey!", "Oh nice!", "Love
-// this!", "Mmm…") — those felt fake and templated. Warmth comes from
-// the curiosity in the question itself, not from a sticker at the front.
-// Variety in shape matters: some lead with a question, some with an
-// invitation to notice, some with a quick framing.
-export const OPENER_TEMPLATES: Array<(title: string) => string> = [
+const QUICK_PROMPTS_AR: QuickPrompt[] = [
+  { label: "أوّل انطباع", icon: "flash", prompt: "أوّل انطباع: " },
+  {
+    label: "اللون والتباين",
+    icon: "color-filter",
+    prompt: "كيف اللون والتباين شغّالين هون؟ ",
+  },
+  {
+    label: "التسلسل",
+    icon: "layers-outline",
+    prompt: "خلّيك معي بالتسلسل البصري خطوة خطوة. ",
+  },
+  {
+    label: "الخطوط",
+    icon: "text-outline",
+    prompt: "ناقدلي خيارات الخطوط. ",
+  },
+  {
+    label: "التخطيط",
+    icon: "grid-outline",
+    prompt: "كيف التخطيط موازن بين العناصر؟ ",
+  },
+  {
+    label: "شو نطوّر",
+    icon: "pencil",
+    prompt: "لو بتقدر تغيّر شي واحد بس، شو بيكون وليش؟ ",
+  },
+];
+
+export function getQuickPrompts(lang: Language): QuickPrompt[] {
+  return lang === "ar" ? QUICK_PROMPTS_AR : QUICK_PROMPTS_EN;
+}
+
+// Backwards-compat export in case anything imports the EN list directly.
+export const QUICK_PROMPTS = QUICK_PROMPTS_EN;
+
+const OPENERS_EN: Array<(title: string) => string> = [
   (t) =>
     `Take ten seconds with "${t}" before you read anything else.\n\nWhere does your eye land first, and what do you think pulled it there?`,
   (t) =>
@@ -82,11 +110,38 @@ export const OPENER_TEMPLATES: Array<(title: string) => string> = [
     `If "${t}" landed in your feed at thumbnail size, what would still survive?\n\nThat's usually the real design — the rest is supporting cast.`,
 ];
 
+const OPENERS_AR: Array<(title: string) => string> = [
+  (t) =>
+    `خذ عشر ثواني مع "${t}" قبل ما تقرأ أي شي.\n\nوين عينك بتروح أوّل إشي، وشو اللي شدّ عينك لهناك؟`,
+  (t) =>
+    `هاد "${t}".\n\nشو الإحساس اللي بيعطيك إيّاه بأوّل ثانية — قبل ما تبلّش تحلّله؟`,
+  (t) =>
+    `ثلاث كلمات عن "${t}". أوّل اللي بتيجي ببالك، مش المنمّقة.\n\nمن هالثلاثة، أي كلمة التصميم مستحقّها أكتر حالياً؟`,
+  (t) =>
+    `طالع "${t}" وتتبّع طريق عينك: محطّة أولى، ثانية، ثالثة.\n\nشو المصمّم مستخدم ليوديك من وحدة للثانية؟`,
+  (t) =>
+    `شو المشكلة اللي "${t}" فعلاً عم يحلّها لأي حدا بيفتحه؟\n\nالتخطيط رح يقلّك، إذا انتبهت كيف عم يرتّب أولوياته.`,
+  (t) =>
+    `إشي بـ"${t}" شغّال بثقة. وإشي لسّا حاسس حالو عم يدوّر على نفسه.\n\nمن قراءتك، أيّ هاد وأيّ هاد؟`,
+  (t) =>
+    `لو "${t}" لازم يخسر عنصر واحد ليصير أنضف، شو بتشيل؟\n\nوشو الشاشة بهدوء رح تربح من غيره؟`,
+  (t) =>
+    `بـ"${t}" اللون والخطوط عم يقتسموا الشغل بطريقة معيّنة.\n\nأيّ وحدة عم تشيل الحمل الأكبر — وهاد القرار الصح؟`,
+  (t) =>
+    `من التباين، التسلسل، الإيقاع، والتوازن — أيّ وحدة الأعلى صوتاً بـ"${t}" هلأ؟\n\nورجيني وين شايفها.`,
+  (t) =>
+    `"${t}" عم يطلب من اللي شايفه يعمل شي بهدوء.\n\nشو هاد الشي، وشو اللي عم يخلّي الدعوة واضحة (أو لأ)؟`,
+  (t) =>
+    `غطّي النصف التحتاني من "${t}" بإيدك للحظة. وبعدين النصف الفوقاني.\n\nأيّ نصف بيقدر يقف لحالو، وأيّ واحد محتاج التاني؟`,
+  (t) =>
+    `لو "${t}" نزل بصورة مصغّرة على فيدك، شو اللي بيظل واصل؟\n\nهاد عادةً التصميم الحقيقي — الباقي ممثّلين مساعدين.`,
+];
+
 // Pick a random opener for the supplied design title. Pure function so
 // the screen can call it from inside loadNewDesign without pulling in
 // the openers list directly.
-export function pickOpener(title: string): string {
-  const fn =
-    OPENER_TEMPLATES[Math.floor(Math.random() * OPENER_TEMPLATES.length)];
+export function pickOpener(title: string, lang: Language = "en"): string {
+  const list = lang === "ar" ? OPENERS_AR : OPENERS_EN;
+  const fn = list[Math.floor(Math.random() * list.length)];
   return fn(title);
 }

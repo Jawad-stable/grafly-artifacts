@@ -17,6 +17,7 @@ import { useColors } from "@/hooks/useColors";
 import { useGame } from "@/context/GameContext";
 import { useProfile } from "@/context/ProfileContext";
 import { PressScale } from "@/components/PressScale";
+import { useT } from "@/hooks/useT";
 
 const GLOBAL_USERS = [
   { id: "1", name: "Aria Chen", weeklyXP: 1580, streak: 21, level: 12, division: "diamond" },
@@ -184,6 +185,7 @@ function PodiumColumn({
   highlight: boolean;
 }) {
   const colors = useColors();
+  const { t } = useT();
   if (!user) return <View style={{ flex: 1 }} />;
   const rankNumber = rank === "first" ? 1 : rank === "second" ? 2 : 3;
 
@@ -226,7 +228,7 @@ function PodiumColumn({
             marginTop: 2,
           }}
         >
-          {user.weeklyXP} XP
+          {t("lb.xp", { n: user.weeklyXP })}
         </AText>
       </View>
     </View>
@@ -238,6 +240,7 @@ export default function LeaderboardScreen() {
   const insets = useSafeAreaInsets();
   const { state } = useGame();
   const { state: profileState } = useProfile();
+  const { t, isRTL, dir } = useT();
   const [tab, setTab] = useState<"global" | "friends">("global");
 
   const paddingTop = insets.top + (Platform.OS === "web" ? 60 : 0);
@@ -286,7 +289,7 @@ export default function LeaderboardScreen() {
               justifyContent: "center",
             }}
           >
-            <Icon name="arrow-back" size={20} color={colors.foreground} />
+            <Icon name={isRTL ? "arrow-forward" : "arrow-back"} size={20} color={colors.foreground} />
           </PressScale>
           <View style={{ flex: 1, flexDirection: "row", alignItems: "center", gap: 6 }}>
             <AText
@@ -297,7 +300,7 @@ export default function LeaderboardScreen() {
                 letterSpacing: -0.5,
               }}
             >
-              Leaderboard
+              {t("lb.title")}
             </AText>
             <Icon name="flame" size={22} color={"#F26B3A"} />
           </View>
@@ -334,14 +337,14 @@ export default function LeaderboardScreen() {
             padding: 5,
           }}
         >
-          {(["global", "friends"] as const).map((t) => (
+          {(["global", "friends"] as const).map((tt) => (
             <PressScale
-              key={t}
-              onPress={() => setTab(t)}
+              key={tt}
+              onPress={() => setTab(tt)}
               scaleTo={0.98}
               style={{
                 flex: 1,
-                backgroundColor: tab === t ? colors.foreground : "transparent",
+                backgroundColor: tab === tt ? colors.foreground : "transparent",
                 borderRadius: 100,
                 paddingVertical: 10,
                 alignItems: "center",
@@ -351,11 +354,11 @@ export default function LeaderboardScreen() {
                 style={{
                   fontSize: 13,
                   fontFamily: "Nunito_800ExtraBold",
-                  color: tab === t ? colors.background : colors.mutedForeground,
+                  color: tab === tt ? colors.background : colors.mutedForeground,
                   letterSpacing: 0.3,
                 }}
               >
-                {t.charAt(0).toUpperCase() + t.slice(1)}
+                {tt === "global" ? t("lb.global") : t("lb.friends")}
               </AText>
             </PressScale>
           ))}
@@ -478,7 +481,7 @@ export default function LeaderboardScreen() {
                   }}
                 >
                   {item.name}
-                  {isMe ? " (You)" : ""}
+                  {isMe ? " " + t("lb.you") : ""}
                 </AText>
                 <AText
                   style={{
@@ -488,7 +491,7 @@ export default function LeaderboardScreen() {
                     marginTop: 1,
                   }}
                 >
-                  {item.weeklyXP} XP
+                  {t("lb.xp", { n: item.weeklyXP })}
                 </AText>
               </View>
 
@@ -578,7 +581,7 @@ export default function LeaderboardScreen() {
                   color: colors.primary,
                 }}
               >
-                {profileState.username} (You)
+                {profileState.username} {t("lb.you")}
               </AText>
               <AText
                 style={{
@@ -588,7 +591,7 @@ export default function LeaderboardScreen() {
                   marginTop: 1,
                 }}
               >
-                {state.weeklyXP} XP
+                {t("lb.xp", { n: state.weeklyXP })}
               </AText>
             </View>
             <View

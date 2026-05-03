@@ -21,6 +21,7 @@ import { useAuth } from "@/context/AuthContext";
 import { GraflyMascot } from "@/components/GraflyMascot";
 import { PressScale } from "@/components/PressScale";
 import { GoogleLogo } from "@/components/GoogleLogo";
+import { useT } from "@/hooks/useT";
 
 type Mode = "signin" | "signup" | "reset";
 
@@ -29,6 +30,7 @@ export default function AuthScreen() {
   const insets = useSafeAreaInsets();
   const { signIn, signUp, signInWithGoogle, resetPassword } = useAuth();
   const { state: gameState } = useGame();
+  const { t, isRTL } = useT();
   const canSkip = gameState.onboardingComplete;
 
   const [mode, setMode] = useState<Mode>("signin");
@@ -65,7 +67,7 @@ export default function AuthScreen() {
     setNotice("");
     if (mode === "reset") {
       if (!email.trim()) {
-        setError("Please enter your email.");
+        setError(t("auth.err.email"));
         return;
       }
       setLoading(true);
@@ -75,15 +77,15 @@ export default function AuthScreen() {
         setError(err);
         return;
       }
-      setNotice("Check your email for a reset link.");
+      setNotice(t("auth.notice.reset"));
       return;
     }
     if (!email.trim() || !password.trim()) {
-      setError("Please enter your email and password.");
+      setError(t("auth.err.both"));
       return;
     }
     if (password.length < 6) {
-      setError("Password must be at least 6 characters.");
+      setError(t("auth.err.pwShort"));
       return;
     }
     setLoading(true);
@@ -102,8 +104,8 @@ export default function AuthScreen() {
         setError(err);
       } else if (needsConfirmation) {
         Alert.alert(
-          "Check your email",
-          "We sent a confirmation link to " + email.trim() + ". Verify your email and then sign in.\n\nIf the email never arrives, ask the app admin to disable email confirmation in Supabase or set up an SMTP provider.",
+          t("auth.confirmEmail.title"),
+          t("auth.confirmEmail.body", { email: email.trim() }),
         );
         switchMode("signin");
       } else {
@@ -113,19 +115,19 @@ export default function AuthScreen() {
   };
 
   const eyebrow =
-    mode === "signin" ? "WELCOME BACK" :
-    mode === "signup" ? "JOIN GRAFLY" : "FORGOT PASSWORD";
+    mode === "signin" ? t("auth.eyebrow.welcome") :
+    mode === "signup" ? t("auth.eyebrow.join") : t("auth.forgot.eyebrow");
   const headline =
-    mode === "signin" ? "Sign in" :
-    mode === "signup" ? "Create account" : "Reset password";
+    mode === "signin" ? t("auth.headline.signin") :
+    mode === "signup" ? t("auth.headline.signup") : t("auth.headline.reset");
   const subhead =
-    mode === "signin" ? "Pick up your design journey right where you left off."
-    : mode === "signup" ? "Start learning design through bite sized daily lessons."
-    : "Enter your email and we will send you a reset link.";
+    mode === "signin" ? t("auth.sub.signin2")
+    : mode === "signup" ? t("auth.sub.signup2")
+    : t("auth.sub.reset2");
 
   const ctaLabel =
-    mode === "signin" ? "Sign in" :
-    mode === "signup" ? "Create account" : "Send reset link";
+    mode === "signin" ? t("auth.signin") :
+    mode === "signup" ? t("auth.create") : t("auth.send.reset");
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.background }}>
@@ -274,7 +276,7 @@ export default function AuthScreen() {
                 fontSize: 11, fontFamily: "Nunito_800ExtraBold",
                 color: colors.mutedForeground, marginBottom: 8, letterSpacing: 1.4,
               }}>
-                EMAIL
+                {t("auth.email")}
               </Text>
               <View style={{
                 flexDirection: "row", alignItems: "center",
@@ -294,7 +296,7 @@ export default function AuthScreen() {
                   onChangeText={setEmail}
                   onFocus={() => setFocused("email")}
                   onBlur={() => setFocused(null)}
-                  placeholder="you@example.com"
+                  placeholder={t("auth.email.placeholder")}
                   placeholderTextColor={colors.mutedForeground}
                   keyboardType="email-address"
                   autoCapitalize="none"
@@ -319,7 +321,7 @@ export default function AuthScreen() {
                   fontSize: 11, fontFamily: "Nunito_800ExtraBold",
                   color: colors.mutedForeground, marginBottom: 8, letterSpacing: 1.4,
                 }}>
-                  PASSWORD
+                  {t("auth.password")}
                 </Text>
                 <View style={{
                   flexDirection: "row", alignItems: "center",
@@ -339,7 +341,7 @@ export default function AuthScreen() {
                     onChangeText={setPassword}
                     onFocus={() => setFocused("password")}
                     onBlur={() => setFocused(null)}
-                    placeholder="Min. 6 characters"
+                    placeholder={t("auth.password.placeholder")}
                     placeholderTextColor={colors.mutedForeground}
                     secureTextEntry={!showPassword}
                     autoCapitalize="none"
@@ -380,7 +382,7 @@ export default function AuthScreen() {
                   fontSize: 13, fontFamily: "Nunito_800ExtraBold",
                   color: colors.primary, letterSpacing: -0.2,
                 }}>
-                  Forgot password?
+                  {t("auth.forgot")}
                 </Text>
               </PressScale>
             )}
@@ -450,7 +452,7 @@ export default function AuthScreen() {
                   }}>
                     {ctaLabel}
                   </Text>
-                  <Icon name="arrow-forward" size={18} color={colors.background} />
+                  <Icon name={isRTL ? "arrow-back" : "arrow-forward"} size={18} color={colors.background} />
                 </>
               )}
             </PressScale>
@@ -465,7 +467,7 @@ export default function AuthScreen() {
                   fontSize: 11, fontFamily: "Nunito_800ExtraBold",
                   color: colors.mutedForeground, letterSpacing: 1.5,
                 }}>
-                  OR CONTINUE WITH
+                  {t("auth.or.continue")}
                 </Text>
                 <View style={{ flex: 1, height: 1, backgroundColor: colors.border }} />
               </View>
@@ -497,7 +499,7 @@ export default function AuthScreen() {
                       fontSize: 15, fontFamily: "Nunito_800ExtraBold",
                       color: "#3C4043", letterSpacing: -0.2,
                     }}>
-                      Continue with Google
+                      {t("auth.google")}
                     </Text>
                   </>
                 )}
@@ -513,12 +515,12 @@ export default function AuthScreen() {
                   flexDirection: "row", justifyContent: "center", gap: 6,
                 }}
               >
-                <Icon name="arrow-back" size={16} color={colors.mutedForeground} />
+                <Icon name={isRTL ? "arrow-forward" : "arrow-back"} size={16} color={colors.mutedForeground} />
                 <Text style={{
                   fontSize: 14, fontFamily: "Nunito_800ExtraBold",
                   color: colors.mutedForeground,
                 }}>
-                  Back to sign in
+                  {t("auth.back.signin")}
                 </Text>
               </PressScale>
             ) : (
@@ -531,9 +533,9 @@ export default function AuthScreen() {
                   fontSize: 14, fontFamily: "Nunito_600SemiBold",
                   color: colors.mutedForeground,
                 }}>
-                  {mode === "signin" ? "Don't have an account? " : "Already have an account? "}
+                  {mode === "signin" ? t("auth.dont.have") : t("auth.have")}
                   <Text style={{ color: colors.primary, fontFamily: "Nunito_800ExtraBold" }}>
-                    {mode === "signin" ? "Sign up" : "Sign in"}
+                    {mode === "signin" ? t("auth.signup") : t("auth.signin")}
                   </Text>
                 </Text>
               </PressScale>

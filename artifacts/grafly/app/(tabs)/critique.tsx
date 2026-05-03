@@ -33,6 +33,7 @@ import { AiBot } from "@/components/AiBot";
 import { TypewriterText } from "@/components/TypewriterText";
 import { CritiqueOnboarding } from "@/components/CritiqueOnboarding";
 import { useColors } from "@/hooks/useColors";
+import { useT } from "@/hooks/useT";
 import { useGame } from "@/context/GameContext";
 import {
   sendCritiqueMessage,
@@ -48,7 +49,7 @@ import {
   COINS_PER_SESSION,
   MIN_USER_TURNS_FOR_REWARD,
   ONBOARDING_KEY,
-  QUICK_PROMPTS,
+  getQuickPrompts,
   XP_PER_SESSION,
   pickOpener,
 } from "@/constants/critique";
@@ -59,6 +60,8 @@ const { width: SCREEN_W, height: SCREEN_H } = Dimensions.get("window");
 
 export default function CritiqueScreen() {
   const colors = useColors();
+  const { t, lang } = useT();
+  const QUICK_PROMPTS = getQuickPrompts(lang);
   const insets = useSafeAreaInsets();
   const { state, addXP, addCoins, dispatch } = useGame();
   // Live viewport width — drives the composer pill width so it
@@ -186,7 +189,7 @@ export default function CritiqueScreen() {
     setAnimateIndex(-1);
     const d = pickRandomLocalDesign();
     setDesign(d);
-    setMessages([{ role: "assistant", content: pickOpener(d.title) }]);
+    setMessages([{ role: "assistant", content: pickOpener(d.title, lang) }]);
     setLoadingDesign(false);
   }
 
@@ -251,12 +254,12 @@ export default function CritiqueScreen() {
       }
     } catch (err: any) {
       if (myToken !== requestToken.current) return; // shuffled away
-      const msg = err?.message ?? "Could not reach the AI mentor.";
+      const msg = err?.message ?? t("crit.couldNotReach");
       const updated: ChatMessage[] = [
         ...next,
         {
           role: "assistant",
-          content: `Hmm, I had trouble responding. ${msg}`,
+          content: t("crit.troubleReply", { msg }),
         },
       ];
       setMessages(updated);
@@ -387,7 +390,7 @@ export default function CritiqueScreen() {
                   letterSpacing: 1.4,
                 }}
               >
-                AI MENTOR
+                {t("crit.aiMentor")}
               </Text>
             </View>
             <Text
@@ -400,7 +403,7 @@ export default function CritiqueScreen() {
                 marginTop: 4,
               }}
             >
-              Critique
+              {t("crit.critique")}
             </Text>
           </View>
 
@@ -444,7 +447,7 @@ export default function CritiqueScreen() {
                 letterSpacing: -0.2,
               }}
             >
-              {state.isPro ? "Unlimited" : `${sessionsLeft} left`}
+              {state.isPro ? t("crit.unlimited") : t("crit.left", { n: sessionsLeft })}
             </Text>
           </LinearGradient>
 
@@ -504,7 +507,7 @@ export default function CritiqueScreen() {
                     marginBottom: 2,
                   }}
                 >
-                  TODAY'S DESIGN
+                  {t("crit.todayDesign")}
                 </Text>
                 <Text
                   numberOfLines={1}
@@ -603,7 +606,7 @@ export default function CritiqueScreen() {
                       letterSpacing: 1.4,
                     }}
                   >
-                    TODAY'S DESIGN
+                    {t("crit.todayDesign")}
                   </Text>
                 </View>
                 <View
@@ -630,7 +633,7 @@ export default function CritiqueScreen() {
                       letterSpacing: 1.2,
                     }}
                   >
-                    TAP TO STUDY
+                    {t("crit.tapToStudy")}
                   </Text>
                 </View>
               </Animated.View>
@@ -835,7 +838,7 @@ export default function CritiqueScreen() {
                         letterSpacing: 1.2,
                       }}
                     >
-                      DESIGN MENTOR
+                      {t("crit.designMentor")}
                     </Text>
                     <View
                       style={{
@@ -853,7 +856,7 @@ export default function CritiqueScreen() {
                         letterSpacing: 1.2,
                       }}
                     >
-                      ONLINE
+                      {t("crit.online")}
                     </Text>
                   </View>
                 </View>
@@ -979,7 +982,7 @@ export default function CritiqueScreen() {
                     letterSpacing: 0.3,
                   }}
                 >
-                  Grafly is Graflying ...
+                  {t("crit.thinking")}
                 </Text>
               </View>
             </View>
@@ -1022,7 +1025,7 @@ export default function CritiqueScreen() {
                     letterSpacing: 0.3,
                   }}
                 >
-                  +{XP_PER_SESSION} XP earned ✨
+                  {t("crit.xpEarned", { n: XP_PER_SESSION })}
                 </Text>
               </LinearGradient>
             </Animated.View>
@@ -1066,7 +1069,7 @@ export default function CritiqueScreen() {
                     letterSpacing: 1.4,
                   }}
                 >
-                  QUICK START
+                  {t("crit.quickStart")}
                 </Text>
                 <View
                   style={{
@@ -1084,7 +1087,7 @@ export default function CritiqueScreen() {
                     letterSpacing: 1.2,
                   }}
                 >
-                  TAP TO PREFILL
+                  {t("crit.tapPrefill")}
                 </Text>
               </View>
               <ScrollView
@@ -1162,7 +1165,7 @@ export default function CritiqueScreen() {
                   color: colors.background,
                 }}
               >
-                Unlock Pro for unlimited sessions
+                {t("crit.unlockPro")}
               </Text>
             </PressScale>
           </View>
@@ -1203,7 +1206,7 @@ export default function CritiqueScreen() {
                 ref={inputRef}
                 value={input}
                 onChangeText={setInput}
-                placeholder="Share your first thought..."
+                placeholder={t("crit.sharePlaceholder")}
                 placeholderTextColor={colors.mutedForeground}
                 multiline
                 textAlignVertical="center"

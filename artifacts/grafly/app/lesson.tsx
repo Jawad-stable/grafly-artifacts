@@ -22,6 +22,7 @@ import { router, useLocalSearchParams } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import * as Haptics from "expo-haptics";
 import { useColors } from "@/hooks/useColors";
+import { useT } from "@/hooks/useT";
 import { useGame } from "@/context/GameContext";
 import { voiceService } from "@/services/voiceService";
 import { COURSES, findNodeById, type Question, type Lesson } from "@/constants/lessons";
@@ -89,6 +90,7 @@ function TrueFalse({
   answered: boolean; selectedBool: boolean | null;
 }) {
   const colors = useColors();
+  const { t } = useT();
   return (
     <View style={{
       flexDirection: "row",
@@ -135,7 +137,7 @@ function TrueFalse({
               <Icon name={isCorrectAnswer ? "checkmark-circle" : "close-circle"} size={30} color={textColor} />
             ) : null}
             <Text style={{ fontSize: 22, fontFamily: "Nunito_800ExtraBold", color: textColor, letterSpacing: 0.3 }}>
-              {val ? "True" : "False"}
+              {val ? t("lesson.true") : t("lesson.false")}
             </Text>
           </TouchableOpacity>
         );
@@ -151,11 +153,12 @@ function SpotTheDifference({
   answered: boolean; selectedIndex: number | null;
 }) {
   const colors = useColors();
+  const { t } = useT();
   if (!question.options) return null;
   return (
     <View style={{ gap: 12 }}>
       <Text style={{ fontSize: 13, fontFamily: "Nunito_600SemiBold", color: colors.mutedForeground, textAlign: "center", marginBottom: 4 }}>
-        Tap the odd one out
+        {t("lesson.tapOdd")}
       </Text>
       <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 10, justifyContent: "center" }}>
         {question.options.map((opt, i) => {
@@ -190,6 +193,7 @@ function ArrangeInOrder({
   answered: boolean;
 }) {
   const colors = useColors();
+  const { t } = useT();
   const items = question.options ?? [];
   const [order, setOrder] = useState<number[]>(items.map((_, i) => i));
   const [submitted, setSubmitted] = useState(false);
@@ -217,7 +221,7 @@ function ArrangeInOrder({
   return (
     <View style={{ gap: 10 }}>
       <Text style={{ fontSize: 13, fontFamily: "Nunito_600SemiBold", color: colors.mutedForeground, textAlign: "center", marginBottom: 4 }}>
-        Arrange in the correct order
+        {t("lesson.arrange")}
       </Text>
       {order.map((itemIdx, pos) => (
         <View key={itemIdx} style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
@@ -241,7 +245,7 @@ function ArrangeInOrder({
           activeOpacity={0.88}
         >
           <Text style={{ fontSize: 16, fontFamily: "Nunito_800ExtraBold", color: colors.background }}>
-            Submit order
+            {t("lesson.submitOrder")}
           </Text>
           <Icon name="arrow-forward" size={18} color={colors.background} />
         </TouchableOpacity>
@@ -257,6 +261,7 @@ function DragToMatch({
   answered: boolean;
 }) {
   const colors = useColors();
+  const { t } = useT();
   const pairs = question.pairs ?? [];
   const [selected, setSelected] = useState<number | null>(null);
   const [matched, setMatched] = useState<Record<number, number>>({});
@@ -284,7 +289,7 @@ function DragToMatch({
   return (
     <View style={{ gap: 12 }}>
       <Text style={{ fontSize: 13, fontFamily: "Nunito_600SemiBold", color: colors.mutedForeground, textAlign: "center", marginBottom: 4 }}>
-        Tap left then right to match pairs
+        {t("lesson.tapMatch")}
       </Text>
       <View style={{ flexDirection: "row", gap: 12 }}>
         <View style={{ flex: 1, gap: 10 }}>
@@ -329,7 +334,7 @@ function DragToMatch({
           onPress={submit}
           activeOpacity={0.88}
         >
-          <Text style={{ fontSize: 16, fontFamily: "Nunito_800ExtraBold", color: colors.background }}>Check matches</Text>
+          <Text style={{ fontSize: 16, fontFamily: "Nunito_800ExtraBold", color: colors.background }}>{t("lesson.checkMatches")}</Text>
           <Icon name="arrow-forward" size={18} color={colors.background} />
         </TouchableOpacity>
       )}
@@ -344,6 +349,7 @@ function FillInBlank({
   answered: boolean;
 }) {
   const colors = useColors();
+  const { t } = useT();
   const [value, setValue] = useState("");
   const [submitted, setSubmitted] = useState(false);
 
@@ -364,12 +370,12 @@ function FillInBlank({
   return (
     <View style={{ gap: 12 }}>
       <Text style={{ fontSize: 15, fontFamily: "Nunito_600SemiBold", color: colors.mutedForeground, textAlign: "center", lineHeight: 22 }}>
-        {question.template ?? "Fill in the blank:"}
+        {question.template ?? t("lesson.fillBlank")}
       </Text>
       <TextInput
         value={value}
         onChangeText={setValue}
-        placeholder="Type your answer..."
+        placeholder={t("lesson.typeAnswer")}
         placeholderTextColor={colors.mutedForeground}
         editable={!submitted}
         style={{
@@ -388,7 +394,7 @@ function FillInBlank({
       />
       {submitted && !isCorrect && (
         <Text style={{ fontSize: 13, fontFamily: "Nunito_600SemiBold", color: colors.mutedForeground, textAlign: "center" }}>
-          Correct answer: {question.blanks?.[0] ?? question.acceptedAnswers?.[0]}
+          {t("lesson.correctAnswer")}: {question.blanks?.[0] ?? question.acceptedAnswers?.[0]}
         </Text>
       )}
       {!submitted && (
@@ -399,7 +405,7 @@ function FillInBlank({
           activeOpacity={0.88}
         >
           <Text style={{ fontSize: 16, fontFamily: "Nunito_800ExtraBold", color: value.trim() ? colors.background : colors.mutedForeground }}>
-            Submit answer
+            {t("lesson.submitAnswer")}
           </Text>
           {value.trim() ? <Icon name="arrow-forward" size={18} color={colors.background} /> : null}
         </TouchableOpacity>
@@ -415,11 +421,12 @@ function TapElement({
   answered: boolean; selectedIndex: number | null;
 }) {
   const colors = useColors();
+  const { t } = useT();
   if (!question.options) return null;
   return (
     <View style={{ gap: 12 }}>
       <Text style={{ fontSize: 13, fontFamily: "Nunito_600SemiBold", color: colors.mutedForeground, textAlign: "center" }}>
-        Tap the correct element
+        {t("lesson.tapCorrect")}
       </Text>
       <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 10, justifyContent: "center" }}>
         {question.options.map((opt, i) => {
@@ -485,6 +492,7 @@ function QuestionRenderer({
 
 export default function LessonScreen() {
   const colors = useColors();
+  const { t } = useT();
   const insets = useSafeAreaInsets();
   const { nodeId } = useLocalSearchParams<{ nodeId: string }>();
   const { state, loseHeart, completeLesson, dispatch } = useGame();
@@ -572,21 +580,21 @@ export default function LessonScreen() {
     if (Platform.OS === "web") {
       const ok =
         typeof window !== "undefined"
-          ? window.confirm("Exit lesson? Your progress for this lesson will be lost.")
+          ? window.confirm(`${t("lesson.exit")} ${t("lesson.exitConfirmBody")}`)
           : true;
       if (ok) exitNow();
       return;
     }
     Alert.alert(
-      "Exit lesson?",
-      "Your progress for this lesson will be lost.",
+      t("lesson.exit"),
+      t("lesson.exitConfirmBody"),
       [
-        { text: "Keep going", style: "cancel" },
-        { text: "Exit", style: "destructive", onPress: exitNow },
+        { text: t("lesson.keepGoing"), style: "cancel" },
+        { text: t("lesson.exitBtn"), style: "destructive", onPress: exitNow },
       ],
       { cancelable: true },
     );
-  }, [showSummary, currentLesson, introDismissed, questionIdx, outOfHearts]);
+  }, [showSummary, currentLesson, introDismissed, questionIdx, outOfHearts, t]);
 
   // Intercept Android hardware back so it can't silently nuke lesson
   // progress. iOS uses the swipe gesture, which is opt-in and feels
@@ -605,7 +613,7 @@ export default function LessonScreen() {
       <View style={{ flex: 1, backgroundColor: colors.background, alignItems: "center", justifyContent: "center" }}>
         <GraflyMascot state="oops" size={120} />
         <Text style={{ fontSize: 18, fontFamily: "Nunito_800ExtraBold", color: colors.foreground, marginTop: 20 }}>
-          Lesson not found
+          {t("lesson.notFound")}
         </Text>
         <TouchableOpacity
           onPress={() => {
@@ -614,7 +622,7 @@ export default function LessonScreen() {
           }}
           style={{ marginTop: 20 }}
         >
-          <Text style={{ fontSize: 16, fontFamily: "Nunito_600SemiBold", color: colors.primary }}>Go Back</Text>
+          <Text style={{ fontSize: 16, fontFamily: "Nunito_600SemiBold", color: colors.primary }}>{t("lesson.goBack")}</Text>
         </TouchableOpacity>
       </View>
     );
@@ -735,8 +743,8 @@ export default function LessonScreen() {
     const perfect = heartsLost === 0;
     const moduleJustCompleted = allDone; // last lesson of this node finished
     const moduleCelebrationMsg = perfect
-      ? `Flawless run through the ${node.title} module — you've earned this one.`
-      : `You wrapped the entire ${node.title} module. The patterns are starting to click.`;
+      ? t("lesson.flawless", { m: node.title })
+      : t("lesson.wrapped", { m: node.title });
     return (
       <View style={{ flex: 1, backgroundColor: colors.background }}>
         <ScrollView
@@ -746,7 +754,7 @@ export default function LessonScreen() {
           <Animated.View entering={FadeIn} style={{ alignItems: "center", marginBottom: 32 }}>
             <GraflyMascot state={perfect ? "celebrate" : "correct"} size={140} float={perfect} />
             <Text style={{ fontSize: 28, fontFamily: "Nunito_800ExtraBold", color: colors.foreground, marginTop: 20, marginBottom: 8, textAlign: "center" }}>
-              {perfect ? "Perfect lesson!" : "Lesson complete!"}
+              {perfect ? t("lesson.perfect") : t("lesson.lessonComplete")}
             </Text>
             <Text style={{ fontSize: 15, fontFamily: "Nunito_600SemiBold", color: colors.mutedForeground, textAlign: "center" }}>
               {currentLesson.title}
@@ -769,7 +777,7 @@ export default function LessonScreen() {
                 +{xpEarned}
               </Text>
               <Text style={{ fontSize: 11, fontFamily: "Nunito_600SemiBold", color: colors.mutedForeground }}>
-                XP EARNED
+                {t("lesson.xpEarned")}
               </Text>
             </View>
             <View style={{ flex: 1, backgroundColor: colors.card, borderRadius: colors.radius.md, padding: 20, alignItems: "center", gap: 8 }}>
@@ -778,7 +786,7 @@ export default function LessonScreen() {
                 +{coinsEarned}
               </Text>
               <Text style={{ fontSize: 11, fontFamily: "Nunito_600SemiBold", color: colors.mutedForeground }}>
-                COINS
+                {t("lesson.coinsLabel")}
               </Text>
             </View>
             <View style={{ flex: 1, backgroundColor: colors.card, borderRadius: colors.radius.md, padding: 20, alignItems: "center", gap: 8 }}>
@@ -787,7 +795,7 @@ export default function LessonScreen() {
                 {state.hearts}
               </Text>
               <Text style={{ fontSize: 11, fontFamily: "Nunito_600SemiBold", color: colors.mutedForeground }}>
-                HEARTS LEFT
+                {t("lesson.heartsLeftLabel")}
               </Text>
             </View>
           </Animated.View>
@@ -797,7 +805,7 @@ export default function LessonScreen() {
             <Animated.View entering={FadeIn.delay(300)} style={{ backgroundColor: colors.accent + "20", borderRadius: colors.radius.md, padding: 16, marginBottom: 20, flexDirection: "row", alignItems: "center", gap: 12 }}>
               <Icon name="star" size={22} color={colors.accent} />
               <Text style={{ flex: 1, fontSize: 14, fontFamily: "Nunito_800ExtraBold", color: colors.foreground }}>
-                Perfect! +10 bonus XP for no mistakes
+                {t("lesson.perfectBonus")}
               </Text>
             </Animated.View>
           )}
@@ -809,7 +817,7 @@ export default function LessonScreen() {
                 onPress={handleNextLesson}
               >
                 <Text style={{ fontSize: 17, fontFamily: "Nunito_800ExtraBold", color: colors.background }}>
-                  Next lesson
+                  {t("lesson.nextLesson")}
                 </Text>
                 <Icon name="arrow-forward" size={18} color={colors.background} />
               </PressScale>
@@ -819,7 +827,7 @@ export default function LessonScreen() {
               onPress={() => router.replace("/(tabs)")}
             >
               <Text style={{ fontSize: 17, fontFamily: "Nunito_800ExtraBold", color: allDone ? colors.background : colors.foreground }}>
-                {allDone ? "Back to home" : "Return home"}
+                {allDone ? t("lesson.backHome") : t("lesson.returnHome")}
               </Text>
             </PressScale>
           </Animated.View>
@@ -829,18 +837,18 @@ export default function LessonScreen() {
   }
 
   const QUESTION_TYPE_LABELS: Record<string, string> = {
-    multiple_choice: "Choose the best answer",
-    true_false: "True or false?",
-    spot_the_difference: "Spot the odd one out",
-    tap_the_element: "Tap the correct element",
-    arrange_in_order: "Arrange in order",
-    drag_to_match: "Match the pairs",
-    fill_in_blank: "Fill in the blank",
-    spot_bad_design: "Spot the bad design",
-    choose_better_design: "Pick the better design",
-    drag_drop_layout: "Stack the layout",
-    five_second_test: "5-second test",
-    find_the_cta: "Find the primary CTA",
+    multiple_choice: t("lesson.q.mc"),
+    true_false: t("lesson.q.tf"),
+    spot_the_difference: t("lesson.q.spot"),
+    tap_the_element: t("lesson.q.tap"),
+    arrange_in_order: t("lesson.q.arrange"),
+    drag_to_match: t("lesson.q.match"),
+    fill_in_blank: t("lesson.q.fill"),
+    spot_bad_design: t("lesson.q.bad"),
+    choose_better_design: t("lesson.q.better"),
+    drag_drop_layout: t("lesson.q.stack"),
+    five_second_test: t("lesson.q.fivesec"),
+    find_the_cta: t("lesson.q.cta"),
   };
 
   // Lesson intro card — shown once before the very first question
@@ -920,7 +928,7 @@ export default function LessonScreen() {
             <View style={{ flex: 1 }}>
               <View style={{ backgroundColor: colors.card, borderRadius: 100, paddingHorizontal: 12, paddingVertical: 5, alignSelf: "flex-start", marginBottom: 6 }}>
                 <Text style={{ fontSize: 10, fontFamily: "Nunito_800ExtraBold", color: colors.mutedForeground, letterSpacing: 1 }}>
-                  {(QUESTION_TYPE_LABELS[currentQ.type] ?? "Question").toUpperCase()}
+                  {(QUESTION_TYPE_LABELS[currentQ.type] ?? t("lesson.q.fallback")).toUpperCase()}
                 </Text>
               </View>
               <Text style={{ fontSize: 11, fontFamily: "Nunito_600SemiBold", color: colors.mutedForeground }}>
@@ -975,7 +983,7 @@ export default function LessonScreen() {
               color={colors.destructiveForeground}
             />
             <Text style={{ fontSize: 16, fontFamily: "Nunito_800ExtraBold", color: colors.destructiveForeground }}>
-              {isCorrect ? "Correct!" : "Not quite"}
+              {isCorrect ? t("lesson.correctTag") : t("lesson.notQuite")}
             </Text>
           </View>
 
@@ -1015,7 +1023,7 @@ export default function LessonScreen() {
                 letterSpacing: 0.4,
               }}
             >
-              {questionIdx + 1 >= totalQuestions ? "Finish" : "Continue"}
+              {questionIdx + 1 >= totalQuestions ? t("lesson.finishBtn") : t("lesson.continueBtn")}
             </Text>
             <Icon
               name="arrow-forward"
@@ -1064,7 +1072,7 @@ export default function LessonScreen() {
               letterSpacing: -0.5,
               textAlign: "center",
             }}>
-              Out of hearts
+              {t("lesson.outOfHeartsTitle")}
             </Text>
             <Text style={{
               fontSize: 14,
@@ -1073,7 +1081,7 @@ export default function LessonScreen() {
               textAlign: "center",
               lineHeight: 20,
             }}>
-              Take a breather while we line up your options.
+              {t("lesson.breatherSub")}
             </Text>
           </View>
         </Animated.View>

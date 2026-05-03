@@ -15,6 +15,7 @@ import { Icon } from "@/components/Icon";
 import { PressScale } from "@/components/PressScale";
 import { useColors } from "@/hooks/useColors";
 import { COINS_PER_SESSION, XP_PER_SESSION } from "@/constants/critique";
+import { useT } from "@/hooks/useT";
 
 const { width: SCREEN_W, height: SCREEN_H } = Dimensions.get("window");
 
@@ -45,6 +46,7 @@ export function CritiqueOnboarding({
   cardRect: { left: number; top: number; width: number; height: number };
 }) {
   const colors = useColors();
+  const { t } = useT();
   const [step, setStep] = useState(0);
 
   const pulse = useSharedValue(0);
@@ -74,13 +76,13 @@ export function CritiqueOnboarding({
 
   const STEPS: OnboardStep[] = [
     {
-      title: "Welcome to Critique",
-      body: "Get personalized design feedback from Grafly. Here are a few quick tips to get you started.",
+      title: t("critOb.s1.t"),
+      body: t("critOb.s1.b"),
       tooltip: { top: SCREEN_H * 0.32 },
     },
     {
-      title: "Tap shuffle for a fresh design",
-      body: "The shuffle button at the top right loads a brand new design any time you want something new to critique.",
+      title: t("critOb.s2.t"),
+      body: t("critOb.s2.b"),
       ring: {
         left: SCREEN_W - 60,
         top: headerTop + 18,
@@ -91,8 +93,8 @@ export function CritiqueOnboarding({
       tooltip: { top: headerTop + 90 },
     },
     {
-      title: "Tap the photo to expand",
-      body: "Tap any design image to open it full-screen and study every pixel up close.",
+      title: t("critOb.s3.t"),
+      body: t("critOb.s3.b"),
       ring: {
         left: cardRect.left,
         top: cardRect.top,
@@ -103,8 +105,8 @@ export function CritiqueOnboarding({
       tooltip: { top: cardTooltipTop },
     },
     {
-      title: "Chat to earn XP",
-      body: `Type your observations in the message box. Three thoughtful exchanges earn you +${XP_PER_SESSION} XP and ${COINS_PER_SESSION} coins.`,
+      title: t("critOb.s4.t"),
+      body: t("critOb.s4.b", { xp: XP_PER_SESSION, coins: COINS_PER_SESSION }),
       ring: { left: 16, top: composerY, w: SCREEN_W - 32, h: 64, radius: 28 },
       tooltip: { bottom: tabBarHeight + 120 },
     },
@@ -199,7 +201,7 @@ export function CritiqueOnboarding({
               letterSpacing: 1.4,
             }}
           >
-            {step + 1} OF {STEPS.length}
+            {t("critOb.step", { n: step + 1, total: STEPS.length })}
           </Text>
         </View>
       </Animated.View>
@@ -310,7 +312,7 @@ export function CritiqueOnboarding({
                   letterSpacing: 0.3,
                 }}
               >
-                Skip
+                {t("critOb.skip")}
               </Text>
             </Pressable>
           )}
@@ -335,7 +337,7 @@ export function CritiqueOnboarding({
                 letterSpacing: 0.2,
               }}
             >
-              {isLast ? "Got it, let's go" : "Next"}
+              {isLast ? t("critOb.gotIt") : t("critOb.next")}
             </Text>
             <Icon
               name={isLast ? "checkmark" : "arrow-forward"}

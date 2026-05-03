@@ -34,18 +34,12 @@ import { AText } from "@/components/AText";
 import { PressScale } from "@/components/PressScale";
 import { LinearGradient } from "expo-linear-gradient";
 import { getContrastOn } from "@/constants/contrast";
-
-function getGreeting(name: string): string {
-  const hour = new Date().getHours();
-  const first = name.split(" ")[0] || name;
-  if (hour < 12) return `Good morning, ${first}`;
-  if (hour < 17) return `Good afternoon, ${first}`;
-  return `Good evening, ${first}`;
-}
+import { useT } from "@/hooks/useT";
 
 function XPPopup() {
   const { state, dispatch } = useGame();
   const colors = useColors();
+  const { t } = useT();
   const scale = useSharedValue(0.6);
   const translateY = useSharedValue(0);
   const opacity = useSharedValue(0);
@@ -78,7 +72,7 @@ function XPPopup() {
     }, animStyle]}>
       <Icon name="flash" size={18} color={colors.accentForeground} />
       <Text style={{ fontSize: 18, fontFamily: "Nunito_800ExtraBold", color: colors.accentForeground }}>
-        +{state.xpPopupAmount} XP
+        {t("home.xpGain", { n: state.xpPopupAmount })}
       </Text>
     </Animated.View>
   );
@@ -87,6 +81,7 @@ function XPPopup() {
 function LevelUpOverlay() {
   const { state, dispatch } = useGame();
   const colors = useColors();
+  const { t } = useT();
   const scale = useSharedValue(0.6);
   const opacity = useSharedValue(0);
 
@@ -122,13 +117,13 @@ function LevelUpOverlay() {
           <Icon name="trophy" size={48} color={colors.accent} />
         </View>
         <Text style={{ fontSize: 13, fontFamily: "Nunito_600SemiBold", color: colors.accent, marginBottom: 8, letterSpacing: 2 }}>
-          LEVEL UP
+          {t("home.levelup")}
         </Text>
         <Text style={{ fontSize: 52, fontFamily: "Nunito_800ExtraBold", color: colors.foreground, marginBottom: 8 }}>
           {state.newLevel}
         </Text>
         <Text style={{ fontSize: 15, fontFamily: "Nunito_600SemiBold", color: colors.mutedForeground, textAlign: "center", marginBottom: 28 }}>
-          You are becoming a real designer.
+          {t("home.levelup.sub")}
         </Text>
         <TouchableOpacity
           style={{ backgroundColor: colors.primary, borderRadius: colors.radius.lg, paddingVertical: 16, paddingHorizontal: 40 }}
@@ -136,7 +131,7 @@ function LevelUpOverlay() {
           activeOpacity={0.85}
         >
           <Text style={{ fontSize: 16, fontFamily: "Nunito_800ExtraBold", color: colors.primaryForeground }}>
-            Keep Going
+            {t("home.levelup.cta")}
           </Text>
         </TouchableOpacity>
       </Animated.View>
@@ -149,6 +144,14 @@ export default function HomeScreen() {
   const insets = useSafeAreaInsets();
   const { state } = useGame();
   const { state: profileState, dispatch: profileDispatch } = useProfile();
+  const { t, isRTL } = useT();
+
+  const greetingPrefix = (() => {
+    const hour = new Date().getHours();
+    if (hour < 12) return t("home.greeting.morning");
+    if (hour < 17) return t("home.greeting.afternoon");
+    return t("home.greeting.evening");
+  })();
 
   // Onboarding redirects are handled declaratively by AuthGate in _layout.tsx
 
@@ -256,7 +259,7 @@ export default function HomeScreen() {
             fontSize: 44, fontFamily: "Nunito_800ExtraBold",
             color: colors.foreground, lineHeight: 48, letterSpacing: -1.2,
           }}>
-            {getGreeting(profileState.username).split(",")[0]},
+            {greetingPrefix},
           </AText>
           <AText style={{
             fontSize: 44, fontFamily: "Nunito_800ExtraBold",
@@ -266,8 +269,8 @@ export default function HomeScreen() {
           </AText>
           <Text style={{ fontSize: 15, fontFamily: "Nunito_600SemiBold", color: colors.mutedForeground, lineHeight: 22 }}>
             {state.streak > 0
-              ? `You are on a ${state.streak} day streak. Keep the spark alive.`
-              : "Pick a lesson and start your streak today."}
+              ? t("home.streak.on", { n: state.streak })
+              : t("home.streak.start")}
           </Text>
         </Animated.View>
 
@@ -297,10 +300,10 @@ export default function HomeScreen() {
                 </View>
                 <View style={{ flex: 1 }}>
                   <Text style={{ fontSize: 14, fontFamily: "Nunito_800ExtraBold", color: colors.foreground }}>
-                    Upgrade Pro
+                    {t("home.upgrade.title")}
                   </Text>
                   <Text style={{ fontSize: 11, fontFamily: "Nunito_600SemiBold", color: colors.mutedForeground }}>
-                    Unlimited critique, no ads, all courses
+                    {t("home.upgrade.sub")}
                   </Text>
                 </View>
                 <View style={{
@@ -308,7 +311,7 @@ export default function HomeScreen() {
                   paddingHorizontal: 14, paddingVertical: 7,
                 }}>
                   <Text style={{ fontSize: 12, fontFamily: "Nunito_800ExtraBold", color: colors.background }}>
-                    Upgrade
+                    {t("home.upgrade.cta")}
                   </Text>
                 </View>
               </PressScale>
@@ -341,7 +344,7 @@ export default function HomeScreen() {
         {nextLesson && nextCourse && (
           <Animated.View entering={FadeIn.delay(170)} style={{ paddingHorizontal: 24, marginTop: 28 }}>
             <Text style={{ fontSize: 22, fontFamily: "Nunito_800ExtraBold", color: colors.foreground, letterSpacing: -0.4, marginBottom: 14 }}>
-              Pick up where you left off
+              {t("home.continue.title")}
             </Text>
             <PressScale
               onPress={() => router.push({ pathname: "/lesson", params: { nodeId: nextNode?.id ?? "" } })}
@@ -356,7 +359,7 @@ export default function HomeScreen() {
                 alignSelf: "flex-start", marginBottom: 14,
               }}>
                 <Text style={{ fontSize: 10, fontFamily: "Nunito_800ExtraBold", color: colors.accentForeground, letterSpacing: 1.2 }}>
-                  CONTINUE LESSON
+                  {t("home.continue.label")}
                 </Text>
               </View>
               <Text style={{ fontSize: 24, fontFamily: "Nunito_800ExtraBold", color: colors.background, marginBottom: 4, lineHeight: 28, letterSpacing: -0.5 }}>
@@ -386,7 +389,7 @@ export default function HomeScreen() {
                   backgroundColor: colors.accent,
                   alignItems: "center", justifyContent: "center",
                 }}>
-                  <Icon name="arrow-forward" size={20} color={colors.accentForeground} />
+                  <Icon name={isRTL ? "arrow-back" : "arrow-forward"} size={20} color={colors.accentForeground} />
                 </View>
               </View>
             </PressScale>
@@ -425,7 +428,7 @@ export default function HomeScreen() {
                 color: colors.foreground,
                 letterSpacing: -0.3,
               }}>
-                Continue Progress
+                {t("home.continue.progress")}
               </Text>
               <View style={{
                 width: 26,
@@ -435,7 +438,7 @@ export default function HomeScreen() {
                 alignItems: "center",
                 justifyContent: "center",
               }}>
-                <Icon name="arrow-forward" size={14} color={colors.background} />
+                <Icon name={isRTL ? "arrow-back" : "arrow-forward"} size={14} color={colors.background} />
               </View>
             </PressScale>
           </Animated.View>
@@ -446,11 +449,11 @@ export default function HomeScreen() {
         <Animated.View entering={FadeIn.delay(240)} style={{ marginTop: 28 }}>
           <View style={{ paddingHorizontal: 24, flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
             <Text style={{ fontSize: 22, fontFamily: "Nunito_800ExtraBold", color: colors.foreground, letterSpacing: -0.4 }}>
-              Popular courses
+              {t("home.popular")}
             </Text>
             <TouchableOpacity onPress={() => router.push("/courses" as any)} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
               <Text style={{ fontSize: 13, fontFamily: "Nunito_800ExtraBold", color: colors.mutedForeground }}>
-                See all
+                {t("home.seeAll")}
               </Text>
             </TouchableOpacity>
           </View>
@@ -778,7 +781,7 @@ export default function HomeScreen() {
                 fontFamily: "Nunito_600SemiBold",
                 color: colors.mutedForeground,
               }}>
-                {todayLessons >= dailyGoal ? "Complete!" : `${dailyGoal - todayLessons} to go`}
+                {todayLessons >= dailyGoal ? t("home.complete") : t("home.toGo", { n: dailyGoal - todayLessons })}
               </Text>
             </View>
           </View>

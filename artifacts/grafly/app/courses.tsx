@@ -16,11 +16,13 @@ import { GraflyMascot } from "@/components/GraflyMascot";
 import { PressScale } from "@/components/PressScale";
 import { CourseCardMotion } from "@/components/CourseCardMotion";
 import { onBrand } from "@/constants/contrast";
+import { useT } from "@/hooks/useT";
 
 export default function CoursesScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
   const { state } = useGame();
+  const { t, isRTL } = useT();
 
   const paddingTop = insets.top + (Platform.OS === "web" ? 67 : 0);
   const paddingBottom = insets.bottom + (Platform.OS === "web" ? 34 : 24);
@@ -49,20 +51,20 @@ export default function CoursesScreen() {
             hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
             style={{ width: 40, height: 40, borderRadius: 100, backgroundColor: colors.card, alignItems: "center", justifyContent: "center" }}
           >
-            <Icon name="arrow-back" size={20} color={colors.foreground} />
+            <Icon name={isRTL ? "arrow-forward" : "arrow-back"} size={20} color={colors.foreground} />
           </PressScale>
           <View style={{ flex: 1 }}>
             <Text style={{ fontSize: 13, fontFamily: "Nunito_800ExtraBold", color: colors.mutedForeground, letterSpacing: 1.5 }}>
-              EXPLORE
+              {t("courses.eyebrow")}
             </Text>
             <Text style={{ fontSize: 38, fontFamily: "Nunito_800ExtraBold", color: colors.foreground, letterSpacing: -1, lineHeight: 42 }}>
-              Courses
+              {t("courses.title")}
             </Text>
           </View>
         </View>
 
         <Text style={{ fontSize: 14, fontFamily: "Nunito_600SemiBold", color: colors.mutedForeground }}>
-          {completedAll} of {totalLessonsAll} lessons complete across {COURSES.length} courses
+          {t("courses.summary", { done: completedAll, total: totalLessonsAll, n: COURSES.length })}
         </Text>
       </Animated.View>
 
@@ -113,7 +115,7 @@ export default function CoursesScreen() {
                         fontSize: 10, fontFamily: "Nunito_800ExtraBold",
                         color: onCard + "DD", letterSpacing: 1.2,
                       }}>
-                        COURSE
+                        {t("ci.course")}
                       </Text>
                     </View>
 
@@ -155,7 +157,7 @@ export default function CoursesScreen() {
                 }}>
                   <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
                     <Text style={{ fontSize: 11, fontFamily: "Nunito_800ExtraBold", color: onCard }}>
-                      {course.nodes.length} modules · {completedCount}/{totalLessons} lessons
+                      {t("courses.modulesLessons", { m: course.nodes.length, d: completedCount, t: totalLessons })}
                     </Text>
                     <Text style={{ fontSize: 11, fontFamily: "Nunito_800ExtraBold", color: onCard }}>
                       {progress}%

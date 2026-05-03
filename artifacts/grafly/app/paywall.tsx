@@ -14,49 +14,51 @@ import { useColors } from "@/hooks/useColors";
 import { useGame } from "@/context/GameContext";
 import { PressScale } from "@/components/PressScale";
 import { GraflyMascot } from "@/components/GraflyMascot";
-
-const BENEFITS = [
-  { icon: "infinite", title: "Unlimited AI critiques", subtitle: "No daily caps on feedback" },
-  { icon: "shield-checkmark", title: "Streak shields", subtitle: "5 freezes per month" },
-  { icon: "flash", title: "Bonus XP challenges", subtitle: "Exclusive Pro only quests" },
-  { icon: "lock-open", title: "Early access", subtitle: "New courses before anyone else" },
-  { icon: "star", title: "Pro badge", subtitle: "Show it off on your profile" },
-  { icon: "headset", title: "Priority support", subtitle: "Direct line to the team" },
-];
+import { useT } from "@/hooks/useT";
 
 type PlanId = "monthly" | "annual";
-
-const PLANS: {
-  id: PlanId;
-  label: string;
-  price: string;
-  period: string;
-  caption: string;
-  badge?: string;
-}[] = [
-  {
-    id: "annual",
-    label: "Annual",
-    price: "$39.99",
-    period: "per year",
-    caption: "$3.33 per month, billed yearly",
-    badge: "SAVE 33%",
-  },
-  {
-    id: "monthly",
-    label: "Monthly",
-    price: "$4.99",
-    period: "per month",
-    caption: "Cancel anytime",
-  },
-];
 
 export default function PaywallScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
   const { dispatch } = useGame();
+  const { t, isRTL } = useT();
   const [selectedPlan, setSelectedPlan] = useState<PlanId>("annual");
   const [purchasing, setPurchasing] = useState(false);
+
+  const BENEFITS = [
+    { icon: "infinite", title: t("pay.b1.title"), subtitle: t("pay.b1.sub") },
+    { icon: "shield-checkmark", title: t("pay.b2.title"), subtitle: t("pay.b2.sub") },
+    { icon: "flash", title: t("pay.b3.title"), subtitle: t("pay.b3.sub") },
+    { icon: "lock-open", title: t("pay.b4.title"), subtitle: t("pay.b4.sub") },
+    { icon: "star", title: t("pay.b5.title"), subtitle: t("pay.b5.sub") },
+    { icon: "headset", title: t("pay.b6.title"), subtitle: t("pay.b6.sub") },
+  ];
+
+  const PLANS: {
+    id: PlanId;
+    label: string;
+    price: string;
+    period: string;
+    caption: string;
+    badge?: string;
+  }[] = [
+    {
+      id: "annual",
+      label: t("pay.annual"),
+      price: "$39.99",
+      period: t("pay.perYear"),
+      caption: t("pay.annual.cap"),
+      badge: t("pay.save"),
+    },
+    {
+      id: "monthly",
+      label: t("pay.monthly"),
+      price: "$4.99",
+      period: t("pay.perMonth"),
+      caption: t("pay.monthly.cap"),
+    },
+  ];
 
   const paddingTop = insets.top + (Platform.OS === "web" ? 67 : 0);
   const paddingBottom = insets.bottom + (Platform.OS === "web" ? 34 : 24);
@@ -99,7 +101,7 @@ export default function PaywallScreen() {
               letterSpacing: 1.5,
             }}
           >
-            GRAFLY PRO
+            {t("pay.brand")}
           </Text>
           <TouchableOpacity
             onPress={() => {
@@ -132,7 +134,7 @@ export default function PaywallScreen() {
               marginBottom: 12,
             }}
           >
-            Become{"\n"}limitless.
+            {t("pay.headline")}
           </Text>
           <Text
             style={{
@@ -142,7 +144,7 @@ export default function PaywallScreen() {
               lineHeight: 24,
             }}
           >
-            Your full design education. No daily caps, no locked lessons, no excuses.
+            {t("pay.sub")}
           </Text>
         </Animated.View>
 
@@ -178,7 +180,7 @@ export default function PaywallScreen() {
                   letterSpacing: 1.4,
                 }}
               >
-                JOIN 12,000 PRO DESIGNERS
+                {t("pay.join")}
               </Text>
             </View>
             <Text
@@ -190,7 +192,7 @@ export default function PaywallScreen() {
                 lineHeight: 26,
               }}
             >
-              7 day free trial. Cancel anytime.
+              {t("pay.trial")}
             </Text>
           </View>
           <View
@@ -216,7 +218,7 @@ export default function PaywallScreen() {
               marginBottom: 6,
             }}
           >
-            WHAT YOU GET
+            {t("pay.what")}
           </Text>
           <Text
             style={{
@@ -227,7 +229,7 @@ export default function PaywallScreen() {
               marginBottom: 14,
             }}
           >
-            Everything, unlocked
+            {t("pay.everything")}
           </Text>
           <View
             style={{
@@ -298,7 +300,7 @@ export default function PaywallScreen() {
               marginBottom: 6,
             }}
           >
-            CHOOSE YOUR PLAN
+            {t("pay.choose")}
           </Text>
           <Text
             style={{
@@ -309,7 +311,7 @@ export default function PaywallScreen() {
               marginBottom: 14,
             }}
           >
-            Pick what fits
+            {t("pay.pickFits")}
           </Text>
           <View style={{ gap: 12 }}>
             {PLANS.map((plan) => {
@@ -461,10 +463,12 @@ export default function PaywallScreen() {
               color: colors.background,
             }}
           >
-            {purchasing ? "Processing" : `Start with ${activePlan.label} · ${activePlan.price}`}
+            {purchasing
+              ? t("pay.processing")
+              : t("pay.startWith", { plan: activePlan.label, price: activePlan.price })}
           </Text>
           {!purchasing && (
-            <Icon name="arrow-forward" size={18} color={colors.background} />
+            <Icon name={isRTL ? "arrow-back" : "arrow-forward"} size={18} color={colors.background} />
           )}
         </PressScale>
         <Text
@@ -477,7 +481,7 @@ export default function PaywallScreen() {
             lineHeight: 16,
           }}
         >
-          Cancel anytime. Billed through the App Store. Subscriptions auto renew until cancelled.
+          {t("pay.legal")}
         </Text>
       </View>
     </View>
