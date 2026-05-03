@@ -968,6 +968,474 @@ export function FindTheCTARenderer({ question, answered, onAnswer }: MiniGamePro
 }
 
 // ---------------------------------------------------------------------------
+// Color math helpers — used by the Color Theory mini-games. All math is
+// self-contained so the games work offline / without any extra deps.
+// ---------------------------------------------------------------------------
+
+function hexToRgb(hex: string): { r: number; g: number; b: number } {
+  const h = hex.replace("#", "");
+  const safe = h.length === 3 ? h.split("").map((c) => c + c).join("") : h;
+  return {
+    r: parseInt(safe.slice(0, 2), 16),
+    g: parseInt(safe.slice(2, 4), 16),
+    b: parseInt(safe.slice(4, 6), 16),
+  };
+}
+function rgbToHex(r: number, g: number, b: number): string {
+  const toHex = (v: number) =>
+    Math.max(0, Math.min(255, Math.round(v))).toString(16).padStart(2, "0").toUpperCase();
+  return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
+}
+function relLum({ r, g, b }: { r: number; g: number; b: number }): number {
+  const ch = (c: number) => {
+    const s = c / 255;
+    return s <= 0.03928 ? s / 12.92 : Math.pow((s + 0.055) / 1.055, 2.4);
+  };
+  return 0.2126 * ch(r) + 0.7152 * ch(g) + 0.0722 * ch(b);
+}
+function contrastRatio(a: string, b: string): number {
+  const la = relLum(hexToRgb(a));
+  const lb = relLum(hexToRgb(b));
+  const [hi, lo] = la > lb ? [la, lb] : [lb, la];
+  return (hi + 0.05) / (lo + 0.05);
+}
+// step in [-100, 100]: negative mixes toward black, positive toward white.
+function shiftLightness(hex: string, step: number): string {
+  const { r, g, b } = hexToRgb(hex);
+  const t = Math.abs(step) / 100;
+  if (step >= 0) return rgbToHex(r + (255 - r) * t, g + (255 - g) * t, b + (255 - b) * t);
+  return rgbToHex(r * (1 - t), g * (1 - t), b * (1 - t));
+}
+
+// ---------------------------------------------------------------------------
+// Color Match — tap the swatch that satisfies a color rule (matches a target
+// hue, the complement of a base, the warmest of a set, etc.).
+// ---------------------------------------------------------------------------
+
+export function ColorMatchRenderer({ question, answered, onAnswer }: MiniGameProps) {
+  const colors = useColors();
+  const { t } = useT();
+  const [picked, setPicked] = useState<number | null>(null);
+  if (!question.scene || question.scene.kind !== "color_match") return null;
+  const { targetHex, targetLabel, choices, correctIndex, prompt } = question.scene;
+
+  function pick(i: number) {
+    if (answered) return;
+    setPicked(i);
+    onAnswer(i === correctIndex);
+  }
+
+  return (
+    <Animated.View entering={FadeInDown.duration(420)}>
+      {prompt ? (
+        <Text style={{ fontSize: 13, fontFamily: "Nunito_600SemiBold", color: colors.mutedForeground, marginBottom: 12 }}>
+          {prompt}
+        </Text>
+      ) : null}
+
+      {/* Target swatch — large, labeled, with hex */}
+      <View style={{ alignItems: "center", marginBottom: 18 }}>
+        <Text style={{ fontSize: 10, fontFamily: "Nunito_800ExtraBold", color: colors.mutedForeground, letterSpacing: 1.5, marginBottom: 8 }}>
+          {targetLabel ?? t("scenes.target")}
+        </Text>
+        <View
+          style={{
+            width: 120,
+            height: 120,
+            borderRadius: 24,
+            backgroundColor: targetHex,
+            borderWidth: 2,
+            borderColor: colors.border,
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          <Text style={{ fontSize: 12, fontFamily: "Nunito_800ExtraBold", color: contrastRatio(targetHex, "#FFFFFF") >= 3 ? "#FFFFFF" : "#21263F", letterSpacing: 1 }}>
+            {targetHex.toUpperCase()}
+          </Text>
+        </View>
+      </View>
+
+      {/* Choices — 2 columns */}
+      <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 12, justifyContent: "space-between" }}>
+        {choices.map((hex, i) => {
+          const isPicked = picked === i;
+          const isCorrect = answered && i === correctIndex;
+          const isWrong = answered && isPicked && i !== correctIndex;
+          const ringColor = isCorrect
+            ? colors.success
+            : isWrong
+            ? colors.destructive
+            : isPicked
+            ? colors.primary
+            : "transparent";
+          return (
+            <PressScale
+              key={i}
+              onPress={() => pick(i)}
+              disabled={answered}
+              style={{ width: "47%" }}
+            >
+              <View
+                style={{
+                  borderWidth: 3,
+                  borderColor: ringColor,
+                  borderRadius: 18,
+                  padding: 4,
+                }}
+              >
+                <View
+                  style={{
+                    height: 100,
+                    borderRadius: 14,
+                    backgroundColor: hex,
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                >
+                  <Text style={{ fontSize: 11, fontFamily: "Nunito_800ExtraBold", color: contrastRatio(hex, "#FFFFFF") >= 3 ? "#FFFFFF" : "#21263F", letterSpacing: 1 }}>
+                    {hex.toUpperCase()}
+                  </Text>
+                </View>
+              </View>
+              {isCorrect && (
+                <View style={{ position: "absolute", top: -8, right: -8, backgroundColor: colors.success, borderRadius: 14, padding: 2 }}>
+                  <Icon name="checkmark-circle" size={22} color={colors.background} weight="fill" />
+                </View>
+              )}
+              {isWrong && (
+                <View style={{ position: "absolute", top: -8, right: -8, backgroundColor: colors.destructive, borderRadius: 14, padding: 2 }}>
+                  <Icon name="close-circle" size={22} color={colors.background} weight="fill" />
+                </View>
+              )}
+            </PressScale>
+          );
+        })}
+      </View>
+
+      {!answered && (
+        <Text style={{ marginTop: 14, fontSize: 12, fontFamily: "Nunito_600SemiBold", color: colors.mutedForeground, textAlign: "center" }}>
+          {t("scenes.tapMatchingSwatch")}
+        </Text>
+      )}
+    </Animated.View>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Contrast Check — live WCAG ratio computation. Player adjusts text lightness
+// with -/+ steppers and sees the ratio update in real time. Lock-in is
+// gated by the target ratio.
+// ---------------------------------------------------------------------------
+
+export function ContrastCheckRenderer({ question, answered, onAnswer }: MiniGameProps) {
+  const colors = useColors();
+  const { t } = useT();
+  const [step, setStep] = useState(0);
+  const [lockedStep, setLockedStep] = useState<number | null>(null);
+  if (!question.scene || question.scene.kind !== "contrast_check") return null;
+  const { bgHex, startTextHex, sampleHeading, sampleBody, targetMinRatio, prompt } =
+    question.scene;
+
+  const currentTextHex = useMemo(
+    () => shiftLightness(startTextHex, lockedStep ?? step),
+    [startTextHex, step, lockedStep],
+  );
+  const ratio = useMemo(() => contrastRatio(currentTextHex, bgHex), [currentTextHex, bgHex]);
+  const passes = ratio >= targetMinRatio;
+
+  function nudge(delta: number) {
+    if (answered) return;
+    setStep((s) => Math.max(-100, Math.min(100, s + delta)));
+  }
+
+  function lockIn() {
+    if (answered) return;
+    setLockedStep(step);
+    onAnswer(passes);
+  }
+
+  return (
+    <Animated.View entering={FadeInDown.duration(420)}>
+      {prompt ? (
+        <Text style={{ fontSize: 13, fontFamily: "Nunito_600SemiBold", color: colors.mutedForeground, marginBottom: 12 }}>
+          {prompt}
+        </Text>
+      ) : null}
+
+      {/* Live preview card — text recolors as you nudge */}
+      <View
+        style={{
+          backgroundColor: bgHex,
+          borderRadius: 18,
+          padding: 22,
+          gap: 8,
+          borderWidth: 1,
+          borderColor: colors.border,
+          marginBottom: 14,
+        }}
+      >
+        <Text style={{ fontSize: 22, fontFamily: "Nunito_800ExtraBold", color: currentTextHex, lineHeight: 28 }}>
+          {sampleHeading}
+        </Text>
+        <Text style={{ fontSize: 14, fontFamily: "Nunito_600SemiBold", color: currentTextHex, lineHeight: 20 }}>
+          {sampleBody}
+        </Text>
+      </View>
+
+      {/* Ratio readout + pass badge */}
+      <View
+        style={{
+          flexDirection: "row",
+          alignItems: "center",
+          justifyContent: "space-between",
+          backgroundColor: colors.card,
+          borderRadius: 14,
+          paddingVertical: 12,
+          paddingHorizontal: 16,
+          marginBottom: 12,
+        }}
+      >
+        <View>
+          <Text style={{ fontSize: 11, fontFamily: "Nunito_800ExtraBold", color: colors.mutedForeground, letterSpacing: 1 }}>
+            {t("scenes.contrastRatio").toUpperCase()}
+          </Text>
+          <Text style={{ fontSize: 24, fontFamily: "Nunito_900Black", color: colors.foreground, marginTop: 2 }}>
+            {ratio.toFixed(2)}:1
+          </Text>
+          <Text style={{ fontSize: 11, fontFamily: "Nunito_600SemiBold", color: colors.mutedForeground, marginTop: 2 }}>
+            {t("scenes.contrastTarget", { ratio: targetMinRatio.toFixed(1) })}
+          </Text>
+        </View>
+        <View
+          style={{
+            paddingHorizontal: 12,
+            paddingVertical: 8,
+            borderRadius: 100,
+            backgroundColor: passes ? colors.success + "22" : colors.destructive + "22",
+            borderWidth: 1.5,
+            borderColor: passes ? colors.success : colors.destructive,
+          }}
+        >
+          <Text style={{ fontSize: 11, fontFamily: "Nunito_800ExtraBold", color: passes ? colors.success : colors.destructive, letterSpacing: 1 }}>
+            {passes ? t("scenes.contrastPass") : t("scenes.contrastFail")}
+          </Text>
+        </View>
+      </View>
+
+      {/* +/- steppers */}
+      <View style={{ flexDirection: "row", gap: 12, marginBottom: 14 }}>
+        <PressScale
+          onPress={() => nudge(-10)}
+          disabled={answered}
+          style={{
+            flex: 1,
+            backgroundColor: colors.card,
+            borderRadius: 14,
+            paddingVertical: 16,
+            flexDirection: "row",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: 8,
+            borderWidth: 1,
+            borderColor: colors.border,
+            opacity: answered ? 0.6 : 1,
+          }}
+        >
+          <Icon name="remove" size={18} color={colors.foreground} />
+          <Text style={{ fontSize: 14, fontFamily: "Nunito_800ExtraBold", color: colors.foreground }}>
+            {t("scenes.contrastDarker")}
+          </Text>
+        </PressScale>
+        <PressScale
+          onPress={() => nudge(10)}
+          disabled={answered}
+          style={{
+            flex: 1,
+            backgroundColor: colors.card,
+            borderRadius: 14,
+            paddingVertical: 16,
+            flexDirection: "row",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: 8,
+            borderWidth: 1,
+            borderColor: colors.border,
+            opacity: answered ? 0.6 : 1,
+          }}
+        >
+          <Icon name="add" size={18} color={colors.foreground} />
+          <Text style={{ fontSize: 14, fontFamily: "Nunito_800ExtraBold", color: colors.foreground }}>
+            {t("scenes.contrastLighter")}
+          </Text>
+        </PressScale>
+      </View>
+
+      {!answered && (
+        <PressScale
+          onPress={lockIn}
+          disabled={!passes}
+          style={{
+            backgroundColor: passes ? colors.foreground : colors.muted,
+            borderRadius: 100,
+            paddingVertical: 16,
+            alignItems: "center",
+          }}
+        >
+          <Text style={{ fontSize: 15, fontFamily: "Nunito_800ExtraBold", color: passes ? colors.background : colors.mutedForeground }}>
+            {passes ? t("scenes.contrastLockIn") : t("scenes.contrastNeedsMore")}
+          </Text>
+        </PressScale>
+      )}
+    </Animated.View>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Palette Build — multi-select N swatches that complete a harmony rule
+// from a base color. Lock-in checks the selected set against the answer.
+// ---------------------------------------------------------------------------
+
+export function PaletteBuildRenderer({ question, answered, onAnswer }: MiniGameProps) {
+  const colors = useColors();
+  const { t } = useT();
+  const [selected, setSelected] = useState<number[]>([]);
+  if (!question.scene || question.scene.kind !== "palette_build") return null;
+  const { baseHex, baseLabel, choices, correctIndices, selectCount, ruleLabel, prompt } =
+    question.scene;
+
+  function toggle(i: number) {
+    if (answered) return;
+    setSelected((cur) => {
+      if (cur.includes(i)) return cur.filter((x) => x !== i);
+      if (cur.length >= selectCount) return cur;
+      return [...cur, i];
+    });
+  }
+
+  function lockIn() {
+    if (answered) return;
+    const correctSet = new Set(correctIndices);
+    const selSet = new Set(selected);
+    const ok =
+      correctSet.size === selSet.size &&
+      [...correctSet].every((i) => selSet.has(i));
+    onAnswer(ok);
+  }
+
+  const ready = selected.length === selectCount;
+
+  return (
+    <Animated.View entering={FadeInDown.duration(420)}>
+      {prompt ? (
+        <Text style={{ fontSize: 13, fontFamily: "Nunito_600SemiBold", color: colors.mutedForeground, marginBottom: 12 }}>
+          {prompt}
+        </Text>
+      ) : null}
+
+      {/* Base swatch */}
+      <View style={{ flexDirection: "row", alignItems: "center", gap: 14, marginBottom: 16, backgroundColor: colors.card, borderRadius: 14, padding: 12 }}>
+        <View
+          style={{
+            width: 56,
+            height: 56,
+            borderRadius: 14,
+            backgroundColor: baseHex,
+            borderWidth: 1,
+            borderColor: colors.border,
+          }}
+        />
+        <View style={{ flex: 1 }}>
+          <Text style={{ fontSize: 10, fontFamily: "Nunito_800ExtraBold", color: colors.mutedForeground, letterSpacing: 1.5 }}>
+            {baseLabel ?? t("scenes.paletteBase")}
+          </Text>
+          <Text style={{ fontSize: 16, fontFamily: "Nunito_800ExtraBold", color: colors.foreground, marginTop: 2 }}>
+            {baseHex.toUpperCase()}
+          </Text>
+        </View>
+      </View>
+
+      <Text style={{ fontSize: 13, fontFamily: "Nunito_600SemiBold", color: colors.mutedForeground, marginBottom: 10, textAlign: "center" }}>
+        {t("scenes.palettePickN", { n: selectCount, rule: ruleLabel })}
+      </Text>
+
+      {/* Choices grid */}
+      <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 10, marginBottom: 14 }}>
+        {choices.map((hex, i) => {
+          const isSel = selected.includes(i);
+          const isCorrect = answered && correctIndices.includes(i);
+          const isWrongSel = answered && isSel && !correctIndices.includes(i);
+          const ringColor = isCorrect
+            ? colors.success
+            : isWrongSel
+            ? colors.destructive
+            : isSel
+            ? colors.primary
+            : "transparent";
+          return (
+            <PressScale
+              key={i}
+              onPress={() => toggle(i)}
+              disabled={answered}
+              style={{ width: "30.5%" }}
+            >
+              <View
+                style={{
+                  borderWidth: 3,
+                  borderColor: ringColor,
+                  borderRadius: 14,
+                  padding: 3,
+                }}
+              >
+                <View
+                  style={{
+                    height: 70,
+                    borderRadius: 10,
+                    backgroundColor: hex,
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                >
+                  {isSel && !answered && (
+                    <View style={{ width: 22, height: 22, borderRadius: 11, backgroundColor: colors.background, alignItems: "center", justifyContent: "center" }}>
+                      <Icon name="checkmark" size={14} color={colors.primary} />
+                    </View>
+                  )}
+                  {isCorrect && (
+                    <Icon name="checkmark-circle" size={22} color="#FFFFFF" weight="fill" />
+                  )}
+                </View>
+              </View>
+            </PressScale>
+          );
+        })}
+      </View>
+
+      <Text style={{ fontSize: 12, fontFamily: "Nunito_600SemiBold", color: colors.mutedForeground, textAlign: "center", marginBottom: 12 }}>
+        {t("scenes.paletteSelected", { n: selected.length, total: selectCount })}
+      </Text>
+
+      {!answered && (
+        <PressScale
+          onPress={lockIn}
+          disabled={!ready}
+          style={{
+            backgroundColor: ready ? colors.foreground : colors.muted,
+            borderRadius: 100,
+            paddingVertical: 16,
+            alignItems: "center",
+          }}
+        >
+          <Text style={{ fontSize: 15, fontFamily: "Nunito_800ExtraBold", color: ready ? colors.background : colors.mutedForeground }}>
+            {t("scenes.paletteLockIn")}
+          </Text>
+        </PressScale>
+      )}
+    </Animated.View>
+  );
+}
+
+// ---------------------------------------------------------------------------
 // Module-complete celebration overlay (shown on the lesson summary screen
 // when finishing the LAST lesson of a module)
 // ---------------------------------------------------------------------------

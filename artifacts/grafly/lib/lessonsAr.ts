@@ -147,6 +147,289 @@ const EN_AR: Record<string, string> = {
   "Understand brand identity beyond just a logo.":
     "افهم الهويّة أبعد من مجرد لوغو.",
 
+  // ===== Course 6: Color Theory (NEW) =====
+  "Color Theory": "نظرية الألوان",
+  "Learn color by actually picking, mixing, and tuning it.":
+    "تعلّم الألوان من خلال إنك تختار وتمزج وتظبّط فعلاً.",
+  "Color Foundations": "أساسيات اللون",
+  "Hue, saturation, lightness — the building blocks.":
+    "اللون، التشبّع، السطوع — اللبنات الأساسية.",
+  "Hue, Saturation, Lightness": "اللون والتشبّع والسطوع",
+  "Three dials describe every color you'll ever use.":
+    "تلت أزرار بتوصف أي لون رح تستعمله بحياتك.",
+  "Warm vs Cool": "دافئ مقابل بارد",
+  "Half the wheel feels hot. The other half feels calm.":
+    "نص العجلة بيحسّ سخن. والنص التاني بيحسّ هادي.",
+  "Color Wheel & Harmony": "عجلة الألوان والتناسق",
+  "Use the wheel to build palettes that just work.":
+    "استعمل العجلة علشان تبني باليتات بتشتغل لحالها.",
+  "Complementary Colors": "الألوان المكمّلة",
+  "Opposite sides of the wheel. Maximum punch.":
+    "الجهتين المقابلتين بالعجلة. أقصى قوّة.",
+  "Analogous Harmony": "التناسق المتجاور",
+  "Three neighbours on the wheel. Calm, cohesive.":
+    "تلت جيران بالعجلة. هادي ومتماسك.",
+  "Contrast & Accessibility": "التباين وسهولة الوصول",
+  "Color choices that real users can actually read.":
+    "خيارات ألوان المستخدمين الحقيقيين بقدروا يقروها فعلاً.",
+  "WCAG in Plain English": "WCAG بلغة مفهومة",
+  "The rules every product designer should know cold.":
+    "القواعد اللي كل مصمّم منتجات لازم يحفظها غيب.",
+  "Hands-on Contrast": "تباين عملي",
+  "Tune two real cards until they ship-ready.":
+    "ظبّط كرتين حقيقيتين لحدّ ما يكونوا جاهزين للنشر.",
+  "Brand Color Systems": "أنظمة ألوان البراند",
+  "Turn one brand color into a working palette.":
+    "حوّل لون براند واحد لباليت متكامل بيشتغل.",
+  "The 60-30-10 Rule": "قاعدة ٦٠-٣٠-١٠",
+  "A simple recipe for balanced color.":
+    "وصفة بسيطة لتوازن الألوان.",
+  "Semantic Colors": "الألوان الدلالية",
+  "Colors that mean something — across every product.":
+    "ألوان إلها معنى — بكل المنتجات.",
+
+  // Course 6 intros
+  "Every color is three dials.": "كل لون عبارة عن تلت أزرار.",
+  "Hue is the family (red, blue, green). Saturation is how vivid. Lightness is how bright. Master the three and you can tune any color on demand.":
+    "اللون هو العيلة (أحمر، أزرق، أخضر). التشبّع كم اللون قوي. السطوع كم بيلمع. أتقن التلاتة وبتقدر تظبّط أي لون متى ما بدّك.",
+  "Color has temperature.": "اللون إله حرارة.",
+  "Reds, oranges and yellows feel warm and energetic. Blues, greens and purples feel cool and calm. Designers use this to set mood before words ever land.":
+    "الأحمر والبرتقالي والأصفر بيحسّوا دافيين ونشيطين. الأزرق والأخضر والبنفسجي بيحسّوا باردين وهاديين. المصمّمين بيستعملوا هاد علشان يحدّدوا المزاج قبل ما الكلمات توصل.",
+  "Opposites attract — loudly.": "المتعاكسات بتنجذب — بصوت عالي.",
+  "Complementary colors sit across from each other on the wheel. They create the strongest possible vibration. Use sparingly — they fight if both go full strength.":
+    "الألوان المكمّلة بتقعد قبال بعضها بالعجلة. بتعمل أقوى اهتزاز ممكن. استعملها بحرص — بتتشاجر إذا الاتنين راحوا بكامل قوّتهن.",
+  "Neighbours sing together.": "الجيران بيغنّوا سوا.",
+  "Analogous palettes pick three colors that sit next to each other on the wheel. They feel calm and unified — perfect for backgrounds, gradients, and moods.":
+    "الباليت المتجاورة بتختار تلت ألوان جنب بعضها بالعجلة. بتحسّ هادية وموحّدة — مثالية للخلفيات والتدرّجات والمزاج.",
+  "Pretty doesn't ship. Readable does.": "الحلو ما بينشر. المقروء بينشر.",
+  "WCAG is the worldwide standard for color contrast. Body text needs at least 4.5:1. Big headlines can get away with 3:1. Anything below fails real users.":
+    "WCAG هو المعيار العالمي لتباين الألوان. نصّ المحتوى لازم على الأقل ٤٫٥:١. العناوين الكبيرة بتمشي بـ ٣:١. أقل من هيك بيفشل مع المستخدمين الحقيقيين.",
+  "Designers fix contrast every day.": "المصمّمين بيصلّحوا التباين كل يوم.",
+  "This is the most common edit you'll make in real product work. Train the muscle now.":
+    "هاد أكثر تعديل رح تعمله بشغل المنتجات الحقيقي. درّب العضلة هلّأ.",
+  "60% calm. 30% support. 10% punch.": "٦٠٪ هدوء. ٣٠٪ دعم. ١٠٪ قوّة.",
+  "Most great interfaces follow the 60-30-10 rule: a dominant neutral, a secondary tone, and a tiny dose of brand accent. The accent only works because the rest is restrained.":
+    "أغلب الواجهات الحلوة بتتبع قاعدة ٦٠-٣٠-١٠: لون حيادي مهيمن، لون ثانوي، وجرعة صغيرة من لون البراند. اللمسة المميّزة بتشتغل بس لأنه الباقي محتشم.",
+  "Some colors come with meaning attached.": "في ألوان بتجي ومعها معنى.",
+  "Red means stop or destroy. Green means go or success. Yellow means caution. Use them on purpose — and never use red for a non-destructive button.":
+    "الأحمر معناه قف أو ادمّر. الأخضر معناه امشي أو نجاح. الأصفر معناه احذر. استعملها بقصد — وما تستعمل الأحمر أبداً لزرّ غير مدمّر.",
+
+  // Course 6 prompts + questions
+  "Which property describes whether a color is red, blue, or green?":
+    "أي خاصية بتوصف إذا اللون أحمر، أزرق، أو أخضر؟",
+  "Saturation": "التشبّع",
+  "Hue": "اللون (Hue)",
+  "Lightness": "السطوع",
+  "Opacity": "الشفافية",
+  "Tap the most saturated swatch.": "اضغط على المربّع الأكثر تشبّعاً.",
+  "Three are muted versions of one base. Pick the original.":
+    "تلاتة منهن نسخ خافتة من لون واحد. اختار الأصلي.",
+  "Lowering a color's saturation moves it toward grey.":
+    "تخفيض تشبّع اللون بيقرّبه من الرمادي.",
+  "Tap the coolest swatch.": "اضغط على المربّع الأبرد.",
+  "Which swatch feels coldest to the eye?":
+    "أي مربّع بيحسّ أبرد للعين؟",
+  "Why do designers often pick a warm accent on a cool background?":
+    "ليش المصمّمين كتير بيختاروا لمسة دافية على خلفية باردة؟",
+  "Warm colors are always brighter": "الألوان الدافية دايماً أبرق",
+  "It's a brand convention required by Apple": "تقليد براند مطلوب من Apple",
+  "Temperature contrast makes the accent pop without needing huge saturation":
+    "تباين الحرارة بيخلّي اللمسة تطلّ بدون الحاجة لتشبّع عالي",
+  "Cool backgrounds are easier to print": "الخلفيات الباردة أسهل للطباعة",
+  "Tap the complement of this orange.":
+    "اضغط على المكمّل لهاد البرتقالي.",
+  "Which swatch sits directly opposite the target on the wheel?":
+    "أي مربّع بيقعد قبال الهدف مباشرةً بالعجلة؟",
+  "Pairing two complementary colors at 100% saturation usually feels comfortable to read.":
+    "جمع لونين مكمّلين بتشبّع ١٠٠٪ عادةً بيحسّ مريح للقراية.",
+  "Pick the two analogous neighbours of this teal.":
+    "اختار الجيرانين المتجاورين لهاد التركواز.",
+  "Build an analogous trio with this teal.":
+    "ابني ثلاثي متجاور مع هاد التركواز.",
+  "Which palette type uses three colors evenly spaced around the wheel?":
+    "أي نوع باليت بيستعمل تلت ألوان بمسافات متساوية حول العجلة؟",
+  "Analogous": "متجاورة",
+  "Complementary": "مكمّلة",
+  "Triadic": "ثلاثية",
+  "Monochromatic": "أحادية اللون",
+  "What's the minimum WCAG AA contrast ratio for body text?":
+    "شو أقل نسبة تباين بـ WCAG AA لنصّ المحتوى؟",
+  "Tune this CTA text until it passes WCAG AA.":
+    "ظبّط نصّ زرّ الأكشن لحدّ ما يعدّي WCAG AA.",
+  "The label is too pale on the pink. Push it lighter until it passes.":
+    "الليبل باهت على الزهر. خلّيه أفتح لحدّ ما يعدّي.",
+  "Push this body copy until it passes on a dark background.":
+    "ادفع نصّ المحتوى لحدّ ما يعدّي على خلفية غامقة.",
+  "The body text is too dim against the navy. Lighten it.":
+    "نصّ المحتوى خافت قبال الأزرق الغامق. خفّفه.",
+  "Tune the header until it clears the AA-large bar (3:1).":
+    "ظبّط العنوان لحدّ ما يعدّي حدّ النصوص الكبيرة AA (٣:١).",
+  "Push the headline darker until it passes the large-text bar.":
+    "خلّي العنوان أغمق لحدّ ما يعدّي حدّ النصوص الكبيرة.",
+  "In the 60-30-10 rule, what should the 10% color be used for?":
+    "بقاعدة ٦٠-٣٠-١٠، شو لازم يستعمل لون الـ ١٠٪؟",
+  "Backgrounds and large surfaces": "الخلفيات والأسطح الكبيرة",
+  "Body text and section dividers": "نصوص المحتوى وفواصل الأقسام",
+  "Primary actions and accents that need attention":
+    "الأكشن الأساسي واللمسات اللي بدها انتباه",
+  "Borders around every component": "إطارات حوالين كل عنصر",
+  "Pick the swatch that should be the 10% accent.":
+    "اختار المربّع اللي لازم يكون لمسة الـ ١٠٪.",
+  "Three are neutrals. One is the accent. Tap the accent.":
+    "تلاتة حياديين. وحد لمسة مميّزة. اضغط على اللمسة.",
+  "Tap the swatch you'd use for a 'Delete' button.":
+    "اضغط على المربّع اللي بتستعمله لزرّ «احذف».",
+  "Which color sends 'this is irreversible — be sure'?":
+    "أي لون بيوصل «هاد ما بيرجع — تأكّد»؟",
+  "Build a semantic set: success, warning, and danger.":
+    "ابني مجموعة دلالية: نجاح، تحذير، وخطر.",
+  "Pick the three colors that carry universal meaning.":
+    "اختار التلت ألوان اللي بتحمل معنى عالمي.",
+
+  // Labels used in Color Theory scenes (also referenced by other new scenes)
+  "TARGET": "الهدف",
+  "MOST SATURATED": "الأكثر تشبّعاً",
+  "COOLEST": "الأبرد",
+  "WARMEST OF THE SET": "الأدفأ بالمجموعة",
+  "COMPLEMENT OF": "المكمّل لـ",
+  "BASE TEAL": "تركواز أساسي",
+  "BRAND COLOR": "لون البراند",
+  "PRODUCT NAVY": "أزرق المنتج",
+  "10% ACCENT ROLE": "دور الـ ١٠٪",
+  "DESTRUCTIVE ACTION": "أكشن مدمّر",
+  "neutral support": "دعم حيادي",
+  "analogous harmony": "تناسق متجاور",
+  "semantic states": "حالات دلالية",
+  "Find the exact target hue.": "لاقي اللون المطلوب بالضبط.",
+  "Which one feels the warmest to the eye?":
+    "أي وحدة بتحسّ أدفأ للعين؟",
+  "Brand color set. Which two neutrals support it without fighting it?":
+    "لون البراند جاهز. أي حياديين بدعموه بدون ما يتشاجروا معاه؟",
+
+  // Design Principles new lessons
+  "Tune Until It Passes": "ظبّط لحدّ ما يعدّي",
+  "Adjust the text until WCAG accepts it.":
+    "ظبّط النصّ لحدّ ما يقبله WCAG.",
+  "Don't guess — measure.": "ما تخمّن — قِس.",
+  "Pros don't eyeball contrast. They measure it. Nudge the text until the ratio crosses 4.5:1.":
+    "المحترفين ما بيقدّروا التباين بالنظر. بيقيسوه. حرّك النصّ لحدّ ما النسبة تعدّي ٤٫٥:١.",
+  "Push the body text until it passes WCAG AA.":
+    "ادفع نصّ المحتوى لحدّ ما يعدّي WCAG AA.",
+  "The body text is too pale. Make it darker until WCAG accepts it.":
+    "نصّ المحتوى باهت. خلّيه أغمق لحدّ ما يقبله WCAG.",
+  "Spot the Brand Color": "لاقي لون البراند",
+  "Learn to recognize a hue at a glance.":
+    "تعلّم تعرف اللون بنظرة سريعة.",
+  "Designers see hue, not just 'blue.'": "المصمّمين بيشوفوا اللون، مش بس «أزرق».",
+  "Two blues can feel completely different. Train your eye to find the exact one.":
+    "في أزرقين بيقدروا يحسّوا مختلفين كلياً. درّب عينك علشان تلاقي بالضبط اللي بدّك إيّاه.",
+  "Tap the swatch that matches the target.":
+    "اضغط على المربّع اللي بيطابق الهدف.",
+  "Pick the warmest swatch.": "اختار المربّع الأدفأ.",
+  "Build the Palette": "ابني الباليت",
+  "Pick the supporting colors that work with the brand.":
+    "اختار الألوان الداعمة اللي بتشتغل مع البراند.",
+  "Color systems beat color picks.": "أنظمة الألوان بتتفوّق على اختيارات الألوان.",
+  "A brand is a system, not a single color. Pick the two supporting tones that hold the brand together.":
+    "البراند نظام، مش لون واحد. اختار اللونين الداعمين اللي بمسكوا البراند سوا.",
+  "Pick the two neutrals that complete this brand system.":
+    "اختار الحياديين اللي بكمّلوا نظام البراند.",
+
+  // Typography intros + new lesson
+  "Two families, two voices.": "عيلتين، صوتين.",
+  "Serifs whisper editorial trust. Sans-serifs speak modern clarity. The right choice sets the tone before a single word is read.":
+    "خطوط Serif بتهمس بثقة تحريرية. Sans-serif بتحكي بوضوح حديث. الاختيار الصح بيحدّد المزاج قبل ما تنقرا كلمة وحدة.",
+  "Pairs aren't twins.": "الأزواج مش توأم.",
+  "Two fonts on a page should feel like a duet — different enough to give each a job, similar enough to belong together.":
+    "خطّين بنفس الصفحة لازم يحسّوا زي ثنائي — مختلفين كفاية علشان كل واحد يكون عنده شغلة، ومتشابهين كفاية علشان ينتموا لبعض.",
+  "Pick the Stronger Headline": "اختار العنوان الأقوى",
+  "Spot the pairing that earns its hierarchy.":
+    "لاقي التوليفة اللي بتستحقّ تسلسلها.",
+  "Hierarchy is a duet.": "التسلسل ثنائي.",
+  "Headline + body is the most-used pair on the planet. Pick the take that uses contrast on purpose.":
+    "العنوان + النصّ هو الزوج الأكثر استعمالاً بالعالم. اختار النسخة اللي بتستعمل التباين بقصد.",
+  "Which headline pair carries more confidence?":
+    "أي توليفة عناوين بتحمل ثقة أكبر؟",
+  "Same words, two pairings. Pick the one with intentional contrast.":
+    "نفس الكلمات، توليفتين. اختار اللي تباينه مقصود.",
+  "Drag tasks across days. We'll keep your weekend free.":
+    "اسحب المهام بين الأيام. منخلّي عطلتك فاضية.",
+  "Pick up where you left off — your draft is saved.":
+    "كمّل من وين وقفت — مسوّدتك محفوظة.",
+  "Free for the first 14 days": "مجاني أوّل ١٤ يوم",
+  "Big numbers, easy reads": "أرقام كبيرة، قراية سهلة",
+  "Trends at a glance.": "الاتجاهات بنظرة سريعة.",
+
+  // Course 6 explanations
+  "Hue is the color family — its position on the color wheel. Saturation and lightness modify it.":
+    "اللون (Hue) هو عيلة اللون — موقعه على عجلة الألوان. التشبّع والسطوع بيعدّلوا عليه.",
+  "Saturation = how vivid the color is. The pure pink pops because it has no grey mixed in.":
+    "التشبّع = كم اللون قوي. الزهر الصافي بيلفت النظر لأنه ما فيه رمادي مخلوط معه.",
+  "Saturation is the dial between full color and pure grey. Drop it all the way and any hue becomes grey.":
+    "التشبّع هو الزرّ بين اللون الكامل والرمادي الصافي. نزّله للآخر وأي لون بيصير رمادي.",
+  "Cool colors live on the blue/green/purple side of the wheel. The teal sits squarely there.":
+    "الألوان الباردة بتسكن جهة الأزرق/الأخضر/البنفسجي بالعجلة. التركواز موجود هناك بالضبط.",
+  "Temperature contrast is one of the strongest ways to make an element jump forward — it works even when saturation is restrained.":
+    "تباين الحرارة من أقوى الطرق لتقفّز عنصر للأمام — بيشتغل حتى لو التشبّع محتشم.",
+  "Orange's complement is blue. They sit directly opposite on the wheel and create the strongest contrast.":
+    "مكمّل البرتقالي هو الأزرق. بيقعدوا قبال بعضهم مباشرةً بالعجلة وبعملوا أقوى تباين.",
+  "Two full-saturation complements vibrate hard and cause eye strain. Pros pull one color's saturation down so the other can lead.":
+    "لونين مكمّلين بتشبّع كامل بيهتزّوا بقوّة وبيتعبوا العين. المحترفين بيخفّضوا تشبّع لون علشان التاني يقود.",
+  "Analogous colors live next to each other on the wheel. The blue and the green are the teal's wheel neighbours; the pink and yellow are far away.":
+    "الألوان المتجاورة بتسكن جنب بعضها بالعجلة. الأزرق والأخضر هنّي جيران التركواز؛ الزهر والأصفر بعاد عنه.",
+  "Triadic palettes pick three colors equally spaced (120° apart). They feel vibrant and balanced — think red/yellow/blue.":
+    "الباليت الثلاثية بتختار تلت ألوان بمسافات متساوية (١٢٠° بين كل اتنين). بتحسّ نابضة ومتوازنة — فكّر بأحمر/أصفر/أزرق.",
+  "4.5:1 is the AA bar for body text. Large text (18pt+) can drop to 3:1. AAA bumps body text to 7:1.":
+    "٤٫٥:١ هو حدّ AA لنصّ المحتوى. النصوص الكبيرة (١٨pt+) ممكن تنزل لـ ٣:١. AAA بيرفع نصّ المحتوى لـ ٧:١.",
+  "White on hot pink looks good — but it's only ~2.3:1. To clear 4.5:1, the text actually has to go darker. Some bg colors just can't take white.":
+    "الأبيض على الزهر الفاقع منظره حلو — بس النسبة بس ~٢٫٣:١. علشان تعدّي ٤٫٥:١، النصّ لازم يصير أغمق. في خلفيات ما بتحتمل الأبيض.",
+  "On dark backgrounds you usually need to lighten the text — pure white isn't always required, but you need to clear 4.5:1.":
+    "على الخلفيات الغامقة عادةً لازم تفتّح النصّ — الأبيض الصافي مش دايماً مطلوب، بس لازم تعدّي ٤٫٥:١.",
+  "Large headline text only needs 3:1 to pass AA. The bar is lower because big shapes are easier to read.":
+    "نصّ العنوان الكبير بس بدّه ٣:١ علشان يعدّي AA. الحدّ أوطى لأنه الأشكال الكبيرة أسهل للقراية.",
+  "The 10% is your loudest color — reserved for the action you want users to take. Spread it everywhere and it loses meaning.":
+    "الـ ١٠٪ هو لونك الأعلى صوتاً — محفوظ للأكشن اللي بدّك المستخدمين يعملوه. وزّعه بكل مكان وبيفقد معناه.",
+  "Neutrals make up the 60% and 30%. The saturated brand pink is the 10% — used only for the primary action.":
+    "الحياديين بيشكّلوا الـ ٦٠٪ والـ ٣٠٪. زهر البراند المشبّع هو الـ ١٠٪ — مستعمَل بس للأكشن الأساسي.",
+  "Red signals destruction across cultures and platforms. Use it for delete, archive, and similar irreversible actions.":
+    "الأحمر بيشير للدمار عبر كل الثقافات والمنصّات. استعمله للحذف والأرشفة والأكشن اللي ما بترجع.",
+  "Green = success, yellow/amber = warning, red = danger. The blues and pinks are brand colors, not semantic ones.":
+    "أخضر = نجاح، أصفر/كهرماني = تحذير، أحمر = خطر. الأزرق والزهر ألوان براند، مش دلالية.",
+
+  // New Design Principles + Typography lesson explanations
+  "4.5:1 is the AA bar for body text. Below it, real users — especially in sunlight — start to lose words.":
+    "٤٫٥:١ هو حدّ AA لنصّ المحتوى. أقل منّه، المستخدمين الحقيقيين — خاصةً تحت الشمس — بيبلّشوا يضيّعوا كلمات.",
+  "Same family of blues, but only one is a true cyan. Look for the cooler, greener tilt.":
+    "نفس عيلة الأزرق، بس واحد بس هو سيان حقيقي. دوّر على الميلان الأبرد والأخضر شوي.",
+  "Reds, oranges and warm yellows feel hot. The terracotta is the warmest of these.":
+    "الأحمر والبرتقالي والأصفر الدافي بيحسّوا سخنين. الترّاكوتا هو الأدفأ بهدول.",
+  "A brand needs a near-black for text and a near-white for surfaces. Saturated greens and pinks would fight the brand color.":
+    "البراند بدّه لون قريب للأسود للنصّ وقريب للأبيض للأسطح. الأخضر والزهر المشبّعين رح يتشاجروا مع لون البراند.",
+  "B wins. A heavy headline with quiet body copy creates a clear first read. Two equal weights flatten the page.":
+    "B بيكسب. عنوان ثقيل مع نصّ هادي بيعمل قراية أولى واضحة. وزنين متساويين بيسطّحوا الصفحة.",
+
+
+  "Pros don't eyeball contrast. They measure it. The text only ships when the ratio is in the green.":
+    "المحترفين ما بيقدّروا التباين بالعين. بيقيسوه. النصّ بس بينشر لمّا النسبة تصير بالأخضر.",
+  "Hue training is muscle memory. The more you do it, the faster you spot a brand color in the wild.":
+    "تدريب اللون ذاكرة عضلية. كل ما تتمرّن أكتر، كل ما لقيت لون البراند بالشارع أسرع.",
+  "Warmth lives in the red/orange/yellow side of the wheel. The amber sits squarely there.":
+    "الدفا بيسكن جهة الأحمر/البرتقالي/الأصفر بالعجلة. الكهرماني موجود هناك بالضبط.",
+  "A brand needs supporting neutrals — not more saturated colors fighting for attention. Pick the two that calm the system.":
+    "البراند بدّه حياديين داعمين — مش ألوان مشبّعة أكتر بتتقاتل على الانتباه. اختار اللي بهدّوا النظام.",
+  "Same words, two pairings. The version with bold weight + clear size jump carries the hierarchy you want.":
+    "نفس الكلمات، توليفتين. النسخة بالخطّ العريض + قفزة الحجم الواضحة بتحمل التسلسل اللي بدّك إيّاه.",
+
+  // Module-unlock messages for Color Theory
+  "Color foundations unlocked. The dials are yours.":
+    "أساسيات الألوان فُتحت. الأزرار صارت بإيدك.",
+  "Color wheel unlocked. Harmony on demand.":
+    "عجلة الألوان فُتحت. تناسق متى ما بدّك.",
+  "Contrast unlocked. Real users can read your work.":
+    "التباين فُتح. المستخدمين الحقيقيين بقدروا يقروا شغلك.",
+  "Brand systems unlocked. One color, full palette.":
+    "أنظمة البراند فُتحت. لون واحد، باليت كامل.",
+
   // Course 5: Golden Ratio
   "The Golden Ratio": "النسبة الذهبية",
   "Unlock nature's most beautiful proportion.":
@@ -874,6 +1157,11 @@ export function localizeScene(
     "badNote",
     "leftLabel",
     "rightLabel",
+    "targetLabel",
+    "baseLabel",
+    "ruleLabel",
+    "sampleHeading",
+    "sampleBody",
   ]) {
     if (typeof s[k] === "string") s[k] = EN_AR[s[k]] ?? s[k];
   }

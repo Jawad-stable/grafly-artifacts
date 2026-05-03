@@ -38,6 +38,9 @@ import {
   DragDropLayoutRenderer,
   FiveSecondTestRenderer,
   FindTheCTARenderer,
+  ColorMatchRenderer,
+  ContrastCheckRenderer,
+  PaletteBuildRenderer,
 } from "@/components/LessonScenes";
 import type { MascotState } from "@/constants/assets";
 
@@ -486,6 +489,12 @@ function QuestionRenderer({
       return <FiveSecondTestRenderer question={question} onAnswer={(c) => onAnswer(c ? 0 : -1)} answered={answered} />;
     case "find_the_cta":
       return <FindTheCTARenderer question={question} onAnswer={(c) => onAnswer(c ? 0 : -1)} answered={answered} />;
+    case "color_match":
+      return <ColorMatchRenderer question={question} onAnswer={(c) => onAnswer(c ? 0 : -1)} answered={answered} />;
+    case "contrast_check":
+      return <ContrastCheckRenderer question={question} onAnswer={(c) => onAnswer(c ? 0 : -1)} answered={answered} />;
+    case "palette_build":
+      return <PaletteBuildRenderer question={question} onAnswer={(c) => onAnswer(c ? 0 : -1)} answered={answered} />;
     default:
       return <MultipleChoice question={question} onAnswer={onAnswer as (i: number) => void} answered={answered} selectedIndex={selectedIndex} />;
   }
@@ -650,7 +659,10 @@ export default function LessonScreen() {
       q.type === "choose_better_design" ||
       q.type === "drag_drop_layout" ||
       q.type === "five_second_test" ||
-      q.type === "find_the_cta"
+      q.type === "find_the_cta" ||
+      q.type === "color_match" ||
+      q.type === "contrast_check" ||
+      q.type === "palette_build"
     ) return (answer as number) === 0;
     return (answer as number) === q.correctIndex;
   }
@@ -864,6 +876,9 @@ export default function LessonScreen() {
     drag_drop_layout: t("lesson.q.stack"),
     five_second_test: t("lesson.q.fivesec"),
     find_the_cta: t("lesson.q.cta"),
+    color_match: t("lesson.q.colormatch"),
+    contrast_check: t("lesson.q.contrast"),
+    palette_build: t("lesson.q.palette"),
   };
 
   // Lesson intro card — shown once before the very first question

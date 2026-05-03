@@ -687,6 +687,9 @@ const dict = {
   "lesson.q.stack": { en: "Stack the layout", ar: "رتّب التخطيط" },
   "lesson.q.fivesec": { en: "5-second test", ar: "اختبار ٥ ثواني" },
   "lesson.q.cta": { en: "Find the primary CTA", ar: "حدّد الزرّ الأساسي" },
+  "lesson.q.colormatch": { en: "Tap the matching color", ar: "اضغط على اللون المطابق" },
+  "lesson.q.contrast": { en: "Tune the contrast", ar: "ظبّط التباين" },
+  "lesson.q.palette": { en: "Build the palette", ar: "ابني الباليت" },
   "lesson.q.fallback": { en: "Question", ar: "سؤال" },
 
   // ---------- In-lesson scene chrome ----------
@@ -705,6 +708,21 @@ const dict = {
   "scenes.moduleComplete":  { en: "MODULE COMPLETE · {title}", ar: "خلصت الوحدة · {title}" },
   "scenes.good":            { en: "GOOD", ar: "منيح" },
   "scenes.bad":             { en: "BAD", ar: "ضعيف" },
+  "scenes.target":          { en: "TARGET", ar: "الهدف" },
+  "scenes.tapMatchingSwatch": { en: "Tap the swatch that matches the rule", ar: "اضغط على المربّع اللي بيطابق القاعدة" },
+  "scenes.contrastRatio":   { en: "Contrast ratio", ar: "نسبة التباين" },
+  "scenes.contrastPass":    { en: "PASSES WCAG", ar: "نجح WCAG" },
+  "scenes.contrastFail":    { en: "TOO LOW", ar: "ضعيف جداً" },
+  "scenes.contrastTarget":  { en: "Target: {ratio}:1", ar: "المطلوب: {ratio}:١" },
+  "scenes.contrastDarker":  { en: "Darker", ar: "أغمق" },
+  "scenes.contrastLighter": { en: "Lighter", ar: "أفتح" },
+  "scenes.contrastLockIn":  { en: "Lock in this contrast", ar: "ثبّت هاد التباين" },
+  "scenes.contrastNeedsMore": { en: "Push further until it passes", ar: "كمّل لما يعدّي" },
+  "scenes.paletteBase":     { en: "BASE", ar: "اللون الأساسي" },
+  "scenes.palettePickN":    { en: "Pick {n} swatches that complete the {rule}", ar: "اختار {n} ألوان لتكمّل {rule}" },
+  "scenes.paletteSelected": { en: "{n} of {total} selected", ar: "محدّد {n} من {total}" },
+  "scenes.paletteLockIn":   { en: "Lock in this palette", ar: "ثبّت هاد الباليت" },
+  "scenes.paletteWrong":    { en: "Not quite — the matching swatches are highlighted in green.", ar: "مش مظبوط — الألوان الصح مظلّلة بالأخضر." },
 
   // ---------- Error fallback ----------
   "err.something": { en: "Something went wrong", ar: "صار خطأ ما" },
