@@ -98,6 +98,7 @@ export default function RootLayout() {
     // that hardcodes `fontFamily: "Nunito_..."` automatically renders Teshrin.
     Nunito_600SemiBold: require("../assets/fonts/Teshrin_Medium.ttf"),
     Nunito_800ExtraBold: require("../assets/fonts/Teshrin_Bold.ttf"),
+    Nunito_900Black: require("../assets/fonts/Teshrin_Black.ttf"),
     ...TESHRIN_FONTS,
     ...Feather.font,
   });
