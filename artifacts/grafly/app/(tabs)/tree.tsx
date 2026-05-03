@@ -1,4 +1,4 @@
-import React, { useCallback, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
   View,
   Text,
@@ -8,7 +8,18 @@ import {
   Platform,
   TouchableOpacity,
 } from "react-native";
-import Animated, { FadeIn, FadeInDown } from "react-native-reanimated";
+import Animated, {
+  Extrapolation,
+  FadeIn,
+  FadeInDown,
+  interpolate,
+  runOnJS,
+  useAnimatedStyle,
+  useSharedValue,
+  withSpring,
+  withTiming,
+} from "react-native-reanimated";
+import { Gesture, GestureDetector } from "react-native-gesture-handler";
 import { Icon } from "@/components/Icon";
 import { router, useFocusEffect, useLocalSearchParams } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -394,6 +405,54 @@ function NodeSheet({ node, course, isCompleted, isLocked, visible, onClose, comp
   const colors = useColors();
   const { t } = useT();
   const insets = useSafeAreaInsets();
+
+  // ===== Swipe-down-to-dismiss =====
+  // Mirrors the affordance in app/course-intro.tsx: drag the sheet down past
+  // a threshold (or fling it) to close. Below threshold it springs back.
+  const SCREEN_H = Dimensions.get("window").height;
+  const DISMISS_THRESHOLD = 120;
+  const translateY = useSharedValue(0);
+
+  // Reset position whenever the sheet re-opens so a previous downward drag
+  // doesn't leave it offset on the next show.
+  useEffect(() => {
+    if (visible) translateY.value = 0;
+  }, [visible, translateY]);
+
+  const dismissPan = Gesture.Pan()
+    .activeOffsetY(8)
+    .failOffsetY(-12)
+    .onUpdate((e) => {
+      translateY.value = Math.max(0, e.translationY);
+    })
+    .onEnd((e) => {
+      if (e.translationY > DISMISS_THRESHOLD || e.velocityY > 900) {
+        translateY.value = withTiming(SCREEN_H, { duration: 220 }, () => {
+          runOnJS(onClose)();
+        });
+      } else {
+        translateY.value = withSpring(0, { damping: 18, stiffness: 220 });
+      }
+    });
+
+  const sheetStyle = useAnimatedStyle(() => ({
+    transform: [{ translateY: translateY.value }],
+  }));
+  const scrimStyle = useAnimatedStyle(() => ({
+    opacity: interpolate(
+      translateY.value,
+      [0, DISMISS_THRESHOLD * 1.6],
+      [0.4, 0],
+      Extrapolation.CLAMP,
+    ),
+  }));
+  const handleStyle = useAnimatedStyle(() => ({
+    opacity: interpolate(translateY.value, [0, 60], [0.7, 1], Extrapolation.CLAMP),
+    transform: [
+      { scaleX: interpolate(translateY.value, [0, 80], [1, 1.4], Extrapolation.CLAMP) },
+    ],
+  }));
+
   if (!node || !course) return null;
   const totalXP = node.lessons.reduce((s, l) => s + l.xpReward, 0);
   const totalCoins = node.lessons.reduce((s, l) => s + l.coinReward, 0);
@@ -407,15 +466,30 @@ function NodeSheet({ node, course, isCompleted, isLocked, visible, onClose, comp
 
   return (
     <Modal visible={visible} animationType="slide" transparent onRequestClose={onClose}>
-      <TouchableOpacity style={{ flex: 1, backgroundColor: "rgba(0,0,0,0.4)" }} activeOpacity={1} onPress={onClose} />
-      <View style={{
-        backgroundColor: colors.card,
-        borderTopLeftRadius: 32, borderTopRightRadius: 32,
-        paddingHorizontal: 24,
-        paddingTop: 16,
-        paddingBottom: insets.bottom + 24,
-      }}>
-        <View style={{ width: 44, height: 4, backgroundColor: colors.border, borderRadius: 2, alignSelf: "center", marginBottom: 24 }} />
+      <Animated.View
+        pointerEvents="none"
+        style={[
+          { position: "absolute", left: 0, right: 0, top: 0, bottom: 0, backgroundColor: "#000" },
+          scrimStyle,
+        ]}
+      />
+      <TouchableOpacity style={{ flex: 1 }} activeOpacity={1} onPress={onClose} />
+      <GestureDetector gesture={dismissPan}>
+        <Animated.View style={[{
+          backgroundColor: colors.card,
+          borderTopLeftRadius: 32, borderTopRightRadius: 32,
+          paddingHorizontal: 24,
+          paddingTop: 12,
+          paddingBottom: insets.bottom + 24,
+        }, sheetStyle]}>
+          <View style={{ paddingTop: 4, paddingBottom: 16, alignItems: "center" }}>
+            <Animated.View
+              style={[
+                { width: 44, height: 5, backgroundColor: colors.mutedForeground, borderRadius: 100 },
+                handleStyle,
+              ]}
+            />
+          </View>
 
         {/* Editorial eyebrow + headline */}
         <Text style={{
@@ -614,7 +688,8 @@ function NodeSheet({ node, course, isCompleted, isLocked, visible, onClose, comp
             </Text>
           </View>
         )}
-      </View>
+        </Animated.View>
+      </GestureDetector>
     </Modal>
   );
 }
