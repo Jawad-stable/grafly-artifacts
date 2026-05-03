@@ -32,7 +32,7 @@ export const LOCAL_DESIGNS: LocalDesign[] = [
     description:
       "A 4:5 Instagram product post for a running sneaker launch. Bold black sans-serif headline 'AIR FLOW 24' on the left, a coral 'NEW DROP' chip, a hero product photo of the shoe with a soft cast shadow on the right, and a price tag in the bottom corner. Lots of negative space, premium athletic brand feel.",
     difficulty: "intermediate",
-    source: require("../assets/designs/social_sneaker.png"),
+    source: require("../assets/designs/social_sneaker.webp"),
     remoteFilename: "social_sneaker.png",
   },
   {
@@ -41,7 +41,7 @@ export const LOCAL_DESIGNS: LocalDesign[] = [
     description:
       "A 4:5 Instagram lifestyle post for a specialty coffee brand. Top-down photo of a latte with rosetta art on a marble table, layered with a large cream serif headline 'BREW DAILY', a handwritten subtitle 'crafted in small batches', and a small wordmark 'KIN COFFEE EST. 2018' anchored at the bottom. Warm, cozy, premium.",
     difficulty: "beginner",
-    source: require("../assets/designs/social_coffee.png"),
+    source: require("../assets/designs/social_coffee.webp"),
     remoteFilename: "social_coffee.png",
   },
   {
@@ -50,7 +50,7 @@ export const LOCAL_DESIGNS: LocalDesign[] = [
     description:
       "A 4:5 Instagram quote post on a deep ink-blue gradient. Bold cream serif type reading 'STAY CURIOUS.' centered as the focal headline, a thin gold divider beneath, and a tracked uppercase attribution 'JANE GOODALL' below. Minimal logo mark in the bottom right. Pure typography, no photo.",
     difficulty: "beginner",
-    source: require("../assets/designs/social_quote.png"),
+    source: require("../assets/designs/social_quote.webp"),
     remoteFilename: "social_quote.png",
   },
   {
@@ -59,7 +59,7 @@ export const LOCAL_DESIGNS: LocalDesign[] = [
     description:
       "A 4:5 Instagram travel post for a Lisbon weekend guide. A vibrant photo of pastel Lisbon buildings with the iconic yellow tram framed inside an arched window, surrounded by a terracotta block. Bold curved sans-serif headline 'LISBON' wraps the top, a 'WEEKEND GUIDE' label sits below, and a sun-yellow '12 SPOTS' badge anchors the side.",
     difficulty: "advanced",
-    source: require("../assets/designs/social_travel.png"),
+    source: require("../assets/designs/social_travel.webp"),
     remoteFilename: "social_travel.png",
   },
 ];
