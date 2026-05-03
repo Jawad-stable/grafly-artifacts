@@ -6,7 +6,6 @@ import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
-  ActivityIndicator,
 } from "react-native";
 import Animated, { FadeInDown, Easing } from "react-native-reanimated";
 import { LinearGradient } from "expo-linear-gradient";
@@ -18,6 +17,7 @@ import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/services/supabase";
 import { GraflyMascot } from "@/components/GraflyMascot";
 import { PressScale } from "@/components/PressScale";
+import { Skeleton, LoadingDots } from "@/components/Skeleton";
 import { useT } from "@/hooks/useT";
 
 export default function AuthCallbackScreen() {
@@ -56,8 +56,15 @@ export default function AuthCallbackScreen() {
 
   if (loading || resolvingDeepLink) {
     return (
-      <View style={{ flex: 1, backgroundColor: colors.background, alignItems: "center", justifyContent: "center" }}>
-        <ActivityIndicator color={colors.foreground} />
+      <View style={{ flex: 1, backgroundColor: colors.background, paddingHorizontal: 24, paddingTop: insets.top + 80, gap: 16 }}>
+        <Skeleton width={140} height={14} />
+        <Skeleton width="80%" height={36} radius={10} />
+        <Skeleton width="60%" height={36} radius={10} />
+        <View style={{ height: 24 }} />
+        <Skeleton width="100%" height={56} radius={14} />
+        <Skeleton width="100%" height={56} radius={14} />
+        <View style={{ height: 12 }} />
+        <Skeleton width="100%" height={56} radius={100} />
       </View>
     );
   }
@@ -391,7 +398,7 @@ export default function AuthCallbackScreen() {
               }}
             >
               {busy ? (
-                <ActivityIndicator color={colors.background} />
+                <LoadingDots color={colors.background} />
               ) : (
                 <>
                   <Text style={{

@@ -1,6 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
-  ActivityIndicator,
   Dimensions,
   Image,
   Modal,
@@ -32,6 +31,7 @@ import { BrandSquiggle } from "@/components/BrandSquiggle";
 import { AiBot } from "@/components/AiBot";
 import { TypewriterText } from "@/components/TypewriterText";
 import { CritiqueOnboarding } from "@/components/CritiqueOnboarding";
+import { Skeleton } from "@/components/Skeleton";
 import { useColors } from "@/hooks/useColors";
 import { useT } from "@/hooks/useT";
 import { useGame } from "@/context/GameContext";
@@ -552,8 +552,11 @@ export default function CritiqueScreen() {
           keyboardShouldPersistTaps="handled"
         >
           {loadingDesign && (
-            <View style={{ alignItems: "center", paddingVertical: 40 }}>
-              <ActivityIndicator color={colors.primary} />
+            <View style={{ paddingVertical: 24, gap: 12 }}>
+              <Skeleton width="100%" height={220} radius={20} />
+              <Skeleton width="40%" height={14} />
+              <Skeleton width="85%" height={14} />
+              <Skeleton width="70%" height={14} />
             </View>
           )}
 

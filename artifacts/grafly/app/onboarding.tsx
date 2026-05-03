@@ -5,7 +5,6 @@ import {
   ScrollView,
   Platform,
   Image,
-  ActivityIndicator,
   TextInput,
   KeyboardAvoidingView,
 } from "react-native";
@@ -32,6 +31,7 @@ import { LOGO } from "@/constants/assets";
 import type { MascotState } from "@/constants/assets";
 import { AText } from "@/components/AText";
 import { PressScale } from "@/components/PressScale";
+import { LoadingDots } from "@/components/Skeleton";
 import { useT } from "@/hooks/useT";
 import { LANGUAGES, type Language } from "@/lib/i18n";
 
@@ -1485,7 +1485,7 @@ export default function OnboardingScreen() {
                   }}
                 >
                   {authBusy ? (
-                    <ActivityIndicator size="small" color={colors.background} />
+                    <LoadingDots color={colors.background} />
                   ) : (
                     <>
                       <Text style={{ fontSize: 16, fontFamily: "Nunito_800ExtraBold", color: colors.background }}>
@@ -1534,7 +1534,7 @@ export default function OnboardingScreen() {
                       }}
                     >
                       {googleBusy ? (
-                        <ActivityIndicator size="small" color={colors.foreground} />
+                        <LoadingDots color={colors.foreground} />
                       ) : (
                         <>
                           <Icon name="logo-google" size={20} color={colors.foreground} />

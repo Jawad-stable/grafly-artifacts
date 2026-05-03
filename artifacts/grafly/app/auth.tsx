@@ -5,7 +5,6 @@ import {
   TextInput,
   KeyboardAvoidingView,
   Platform,
-  ActivityIndicator,
   ScrollView,
   Alert,
   Pressable,
@@ -21,6 +20,7 @@ import { useAuth } from "@/context/AuthContext";
 import { GraflyMascot } from "@/components/GraflyMascot";
 import { PressScale } from "@/components/PressScale";
 import { GoogleLogo } from "@/components/GoogleLogo";
+import { LoadingDots } from "@/components/Skeleton";
 import { useT } from "@/hooks/useT";
 
 type Mode = "signin" | "signup" | "reset";
@@ -442,7 +442,7 @@ export default function AuthScreen() {
                 }}
               >
                 {resending ? (
-                  <ActivityIndicator color={colors.primary} />
+                  <LoadingDots color={colors.primary} />
                 ) : (
                   <>
                     <Icon name="mail-unread-outline" size={16} color={colors.primary} />
@@ -496,7 +496,7 @@ export default function AuthScreen() {
               }}
             >
               {loading ? (
-                <ActivityIndicator color={colors.background} />
+                <LoadingDots color={colors.background} />
               ) : (
                 <>
                   <Text style={{
@@ -544,7 +544,7 @@ export default function AuthScreen() {
                 }}
               >
                 {googleLoading ? (
-                  <ActivityIndicator color="#3C4043" />
+                  <LoadingDots color="#3C4043" />
                 ) : (
                   <>
                     <GoogleLogo size={20} />
