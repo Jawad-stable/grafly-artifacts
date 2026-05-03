@@ -411,8 +411,10 @@ const EN_AR: Record<string, string> = {
     "الباليت الثلاثية بتختار تلت ألوان بمسافات متساوية (١٢٠° بين كل اتنين). بتحسّ نابضة ومتوازنة — فكّر بأحمر/أصفر/أزرق.",
   "4.5:1 is the AA bar for body text. Large text (18pt+) can drop to 3:1. AAA bumps body text to 7:1.":
     "٤٫٥:١ هو حدّ AA لنصّ المحتوى. النصوص الكبيرة (١٨pt+) ممكن تنزل لـ ٣:١. AAA بيرفع نصّ المحتوى لـ ٧:١.",
-  "White on hot pink looks good — but it's only ~2.3:1. To clear 4.5:1, the text actually has to go darker. Some bg colors just can't take white.":
-    "الأبيض على الزهر الفاقع منظره حلو — بس النسبة بس ~٢٫٣:١. علشان تعدّي ٤٫٥:١، النصّ لازم يصير أغمق. في خلفيات ما بتحتمل الأبيض.",
+  "When text sits in the same brightness range as its background, contrast collapses. Pushing the label darker pulls it away from the pink's luminance until it clears 4.5:1.":
+    "لمّا النصّ يكون بنفس مدى سطوع الخلفية، التباين بينهار. خلّي الليبل أغمق علشان يبتعد عن سطوع الزهر لحدّ ما يعدّي ٤٫٥:١.",
+  "This label is barely readable on the pink. Push it darker until it clears WCAG AA.":
+    "الليبل بالكاد ينقرى على الزهر. خلّيه أغمق لحدّ ما يعدّي WCAG AA.",
   "On dark backgrounds you usually need to lighten the text — pure white isn't always required, but you need to clear 4.5:1.":
     "على الخلفيات الغامقة عادةً لازم تفتّح النصّ — الأبيض الصافي مش دايماً مطلوب، بس لازم تعدّي ٤٫٥:١.",
   "Large headline text only needs 3:1 to pass AA. The bar is lower because big shapes are easier to read.":
