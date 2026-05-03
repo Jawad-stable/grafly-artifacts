@@ -1025,96 +1025,244 @@ export function ColorMatchRenderer({ question, answered, onAnswer }: MiniGamePro
     onAnswer(i === correctIndex);
   }
 
+  // Hex text contrasts against the swatch color itself
+  const onTarget = contrastRatio(targetHex, "#FFFFFF") >= 3 ? "#FFFFFF" : "#1A1F33";
+  // Eyebrow chip color picks readable text on its own backdrop
+  const chipBg = targetHex + "1F";
+
   return (
     <Animated.View entering={FadeInDown.duration(420)}>
       {prompt ? (
-        <Text style={{ fontSize: 13, fontFamily: "Nunito_600SemiBold", color: colors.mutedForeground, marginBottom: 12 }}>
+        <Text
+          style={{
+            fontSize: 14,
+            fontFamily: "Nunito_600SemiBold",
+            color: colors.mutedForeground,
+            marginBottom: 16,
+            lineHeight: 20,
+            textAlign: "center",
+          }}
+        >
           {prompt}
         </Text>
       ) : null}
 
-      {/* Target swatch — large, labeled, with hex */}
-      <View style={{ alignItems: "center", marginBottom: 18 }}>
-        <Text style={{ fontSize: 10, fontFamily: "Nunito_800ExtraBold", color: colors.mutedForeground, letterSpacing: 1.5, marginBottom: 8 }}>
-          {targetLabel ?? t("scenes.target")}
-        </Text>
+      {/* ============================================================
+          TARGET HERO — a "polaroid" frame so the swatch is always
+          visible even when its color is close to the page background.
+          ============================================================ */}
+      <View style={{ alignItems: "center", marginBottom: 24 }}>
         <View
           style={{
-            width: 120,
-            height: 120,
-            borderRadius: 24,
-            backgroundColor: targetHex,
-            borderWidth: 2,
-            borderColor: colors.border,
-            alignItems: "center",
-            justifyContent: "center",
+            backgroundColor: chipBg,
+            paddingHorizontal: 14,
+            paddingVertical: 6,
+            borderRadius: 100,
+            marginBottom: 12,
           }}
         >
-          <Text style={{ fontSize: 12, fontFamily: "Nunito_800ExtraBold", color: contrastRatio(targetHex, "#FFFFFF") >= 3 ? "#FFFFFF" : "#21263F", letterSpacing: 1 }}>
-            {targetHex.toUpperCase()}
+          <Text
+            style={{
+              fontSize: 11,
+              fontFamily: "Nunito_800ExtraBold",
+              color: targetHex,
+              letterSpacing: 1.6,
+            }}
+          >
+            {(targetLabel ?? t("scenes.target")).toUpperCase()}
           </Text>
+        </View>
+
+        {/* Outer polaroid frame — uses card surface so the swatch reads on any bg */}
+        <View
+          style={{
+            backgroundColor: colors.card,
+            borderRadius: 28,
+            padding: 14,
+            borderWidth: 1,
+            borderColor: colors.border,
+            shadowColor: targetHex,
+            shadowOffset: { width: 0, height: 8 },
+            shadowOpacity: 0.25,
+            shadowRadius: 18,
+            elevation: 6,
+          }}
+        >
+          <View
+            style={{
+              width: 168,
+              height: 168,
+              borderRadius: 20,
+              backgroundColor: targetHex,
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            <Text
+              style={{
+                fontSize: 18,
+                fontFamily: "Nunito_900Black",
+                color: onTarget,
+                letterSpacing: 2,
+              }}
+            >
+              {targetHex.toUpperCase()}
+            </Text>
+          </View>
         </View>
       </View>
 
-      {/* Choices — 2 columns */}
-      <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 12, justifyContent: "space-between" }}>
-        {choices.map((hex, i) => {
-          const isPicked = picked === i;
-          const isCorrect = answered && i === correctIndex;
-          const isWrong = answered && isPicked && i !== correctIndex;
-          const ringColor = isCorrect
-            ? colors.success
-            : isWrong
-            ? colors.destructive
-            : isPicked
-            ? colors.primary
-            : "transparent";
-          return (
-            <PressScale
-              key={i}
-              onPress={() => pick(i)}
-              disabled={answered}
-              style={{ width: "47%" }}
-            >
-              <View
-                style={{
-                  borderWidth: 3,
-                  borderColor: ringColor,
-                  borderRadius: 18,
-                  padding: 4,
-                }}
-              >
-                <View
-                  style={{
-                    height: 100,
-                    borderRadius: 14,
-                    backgroundColor: hex,
-                    alignItems: "center",
-                    justifyContent: "center",
-                  }}
-                >
-                  <Text style={{ fontSize: 11, fontFamily: "Nunito_800ExtraBold", color: contrastRatio(hex, "#FFFFFF") >= 3 ? "#FFFFFF" : "#21263F", letterSpacing: 1 }}>
-                    {hex.toUpperCase()}
-                  </Text>
+      {/* ============================================================
+          CHOICES — a real 2×2 grid using row pairs (no flexWrap edge
+          cases, no RTL surprises). Hex labels live UNDER each swatch
+          so they never get clipped.
+          ============================================================ */}
+      <View style={{ gap: 14 }}>
+        {[0, 2].map((rowStart) => (
+          <View key={rowStart} style={{ flexDirection: "row", gap: 14 }}>
+            {choices.slice(rowStart, rowStart + 2).map((hex, j) => {
+              const i = rowStart + j;
+              const isPicked = picked === i;
+              const isCorrect = answered && i === correctIndex;
+              const isWrong = answered && isPicked && i !== correctIndex;
+              const ringColor = isCorrect
+                ? colors.success
+                : isWrong
+                ? colors.destructive
+                : isPicked
+                ? colors.primary
+                : "transparent";
+              const onSwatch = contrastRatio(hex, "#FFFFFF") >= 3 ? "#FFFFFF" : "#1A1F33";
+              return (
+                <View key={i} style={{ flex: 1 }}>
+                  <PressScale onPress={() => pick(i)} disabled={answered}>
+                    <View
+                      style={{
+                        borderWidth: 3,
+                        borderColor: ringColor,
+                        borderRadius: 22,
+                        padding: 4,
+                        backgroundColor:
+                          isCorrect || isWrong ? ringColor + "12" : "transparent",
+                      }}
+                    >
+                      <View
+                        style={{
+                          aspectRatio: 1,
+                          borderRadius: 16,
+                          backgroundColor: hex,
+                          alignItems: "center",
+                          justifyContent: "center",
+                          shadowColor: hex,
+                          shadowOffset: { width: 0, height: 4 },
+                          shadowOpacity: 0.35,
+                          shadowRadius: 10,
+                          elevation: 4,
+                        }}
+                      >
+                        {/* Numbered tap-target makes it feel game-like */}
+                        <View
+                          style={{
+                            position: "absolute",
+                            top: 8,
+                            left: 8,
+                            width: 22,
+                            height: 22,
+                            borderRadius: 11,
+                            backgroundColor: onSwatch + "26",
+                            alignItems: "center",
+                            justifyContent: "center",
+                          }}
+                        >
+                          <Text
+                            style={{
+                              fontSize: 11,
+                              fontFamily: "Nunito_900Black",
+                              color: onSwatch,
+                            }}
+                          >
+                            {i + 1}
+                          </Text>
+                        </View>
+                      </View>
+                    </View>
+
+                    {/* Hex label — placed below so it can never get clipped */}
+                    <Text
+                      style={{
+                        marginTop: 8,
+                        fontSize: 12,
+                        fontFamily: "Nunito_800ExtraBold",
+                        color: colors.mutedForeground,
+                        letterSpacing: 1.2,
+                        textAlign: "center",
+                      }}
+                      numberOfLines={1}
+                    >
+                      {hex.toUpperCase()}
+                    </Text>
+
+                    {isCorrect && (
+                      <View
+                        style={{
+                          position: "absolute",
+                          top: -10,
+                          right: -10,
+                          backgroundColor: colors.success,
+                          borderRadius: 16,
+                          padding: 3,
+                          borderWidth: 3,
+                          borderColor: colors.background,
+                        }}
+                      >
+                        <Icon
+                          name="checkmark-circle"
+                          size={22}
+                          color={colors.background}
+                          weight="fill"
+                        />
+                      </View>
+                    )}
+                    {isWrong && (
+                      <View
+                        style={{
+                          position: "absolute",
+                          top: -10,
+                          right: -10,
+                          backgroundColor: colors.destructive,
+                          borderRadius: 16,
+                          padding: 3,
+                          borderWidth: 3,
+                          borderColor: colors.background,
+                        }}
+                      >
+                        <Icon
+                          name="close-circle"
+                          size={22}
+                          color={colors.background}
+                          weight="fill"
+                        />
+                      </View>
+                    )}
+                  </PressScale>
                 </View>
-              </View>
-              {isCorrect && (
-                <View style={{ position: "absolute", top: -8, right: -8, backgroundColor: colors.success, borderRadius: 14, padding: 2 }}>
-                  <Icon name="checkmark-circle" size={22} color={colors.background} weight="fill" />
-                </View>
-              )}
-              {isWrong && (
-                <View style={{ position: "absolute", top: -8, right: -8, backgroundColor: colors.destructive, borderRadius: 14, padding: 2 }}>
-                  <Icon name="close-circle" size={22} color={colors.background} weight="fill" />
-                </View>
-              )}
-            </PressScale>
-          );
-        })}
+              );
+            })}
+          </View>
+        ))}
       </View>
 
       {!answered && (
-        <Text style={{ marginTop: 14, fontSize: 12, fontFamily: "Nunito_600SemiBold", color: colors.mutedForeground, textAlign: "center" }}>
+        <Text
+          style={{
+            marginTop: 18,
+            fontSize: 12,
+            fontFamily: "Nunito_600SemiBold",
+            color: colors.mutedForeground,
+            textAlign: "center",
+            letterSpacing: 0.3,
+          }}
+        >
           {t("scenes.tapMatchingSwatch")}
         </Text>
       )}
