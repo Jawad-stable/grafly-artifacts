@@ -49,6 +49,10 @@ localPort = 8086
 externalPort = 5000
 
 [[ports]]
+localPort = 19394
+externalPort = 8081
+
+[[ports]]
 localPort = 20938
 externalPort = 8008
 
@@ -76,3 +80,4 @@ channel = "stable-25_05"
 [userenv.shared]
 EXPO_PUBLIC_SUPABASE_URL = "https://ylvkpbfzyyruacabgfhc.supabase.co"
 EXPO_PUBLIC_SUPABASE_ANON_KEY = "sb_publishable_wVXN3lDty7PhvFerX3Immg_yRoi-rvi"
+ADMIN_PASSWORD = "u4vE-gdS7cdB3YVM"

@@ -1,0 +1,31 @@
+kind = "web"
+previewPath = "/admin/"
+title = "Grafly Admin"
+version = "1.0.0"
+id = "artifacts/grafly-admin"
+router = "path"
+
+[[integratedSkills]]
+name = "react-vite"
+version = "1.0.0"
+
+[[services]]
+name = "web"
+paths = [ "/admin/" ]
+localPort = 19394
+
+[services.development]
+run = "pnpm --filter @workspace/grafly-admin run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/grafly-admin", "run", "build" ]
+publicDir = "artifacts/grafly-admin/dist/public"
+serve = "static"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "19394"
+BASE_PATH = "/admin/"
