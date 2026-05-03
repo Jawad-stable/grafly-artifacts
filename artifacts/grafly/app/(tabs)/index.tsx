@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useMemo } from "react";
 import {
   View,
   Text,
@@ -24,7 +24,8 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useColors } from "@/hooks/useColors";
 import { useGame, getXPProgress } from "@/context/GameContext";
 import { useProfile } from "@/context/ProfileContext";
-import { COURSES, getAllLessons, getCurrentPosition } from "@/constants/lessons";
+import { COURSES as RAW_COURSES, getAllLessons as getRawAllLessons, getCurrentPosition } from "@/constants/lessons";
+import { localizeCourse, localizeLesson } from "@/lib/lessonsAr";
 import { LOGO } from "@/constants/assets";
 import { GraflyMascot } from "@/components/GraflyMascot";
 import { HomeBackdrop } from "@/components/HomeBackdrop";
@@ -144,7 +145,17 @@ export default function HomeScreen() {
   const insets = useSafeAreaInsets();
   const { state } = useGame();
   const { state: profileState, dispatch: profileDispatch } = useProfile();
-  const { t, isRTL } = useT();
+  const { t, isRTL, lang } = useT();
+  const COURSES = useMemo(
+    () => (lang === "en" ? RAW_COURSES : RAW_COURSES.map((c) => localizeCourse(c, lang))),
+    [lang],
+  );
+  const getAllLessons = useMemo(
+    () => () => (lang === "en"
+      ? getRawAllLessons()
+      : getRawAllLessons().map((l) => localizeLesson(l, lang))),
+    [lang],
+  );
 
   const greetingPrefix = (() => {
     const hour = new Date().getHours();

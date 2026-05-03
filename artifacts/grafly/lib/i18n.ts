@@ -685,6 +685,23 @@ const dict = {
   "lesson.q.cta": { en: "Find the primary CTA", ar: "حدّد الزرّ الأساسي" },
   "lesson.q.fallback": { en: "Question", ar: "سؤال" },
 
+  // ---------- In-lesson scene chrome ----------
+  "scenes.lessonEyebrow":   { en: "LESSON · {title}", ar: "درس · {title}" },
+  "scenes.letsGo":          { en: "Let's go", ar: "يلا نبدأ" },
+  "scenes.tapAnyElement":   { en: "Tap any element to lock in your guess", ar: "اضغط على أي عنصر علشان تثبّت تخمينك" },
+  "scenes.wrongSpot":       { en: "You tapped the wrong spot — the correct one is highlighted in green.", ar: "ضغطت على المكان الغلط — الصحّ مظلّل بالأخضر." },
+  "scenes.optionA":         { en: "Option A", ar: "الخيار أ" },
+  "scenes.optionB":         { en: "Option B", ar: "الخيار ب" },
+  "scenes.lockInOrder":     { en: "Lock in this order", ar: "ثبّت هاد الترتيب" },
+  "scenes.glance":          { en: "GLANCE — DON'T MEMORIZE", ar: "نظرة سريعة — بلا حفظ" },
+  "scenes.skipAhead":       { en: "Skip ahead", ar: "تخطّى للأمام" },
+  "scenes.showAgain":       { en: "Show me the screen again", ar: "ورجيني الشاشة مرّة ثانية" },
+  "scenes.tapPrimaryFirst": { en: "Tap the element you'd press first", ar: "اضغط على العنصر يلي رح تضغطه أوّل شي" },
+  "scenes.notQuiteCTA":     { en: "Not quite — the primary CTA is highlighted in green.", ar: "مش مظبوط — الزرّ الأساسي مظلّل بالأخضر." },
+  "scenes.moduleComplete":  { en: "MODULE COMPLETE · {title}", ar: "خلصت الوحدة · {title}" },
+  "scenes.good":            { en: "GOOD", ar: "منيح" },
+  "scenes.bad":             { en: "BAD", ar: "ضعيف" },
+
   // ---------- Error fallback ----------
   "err.something": { en: "Something went wrong", ar: "صار خطأ ما" },
   "err.reload": { en: "Please reload the app to continue.", ar: "أعد تحميل التطبيق علشان تكمّل." },

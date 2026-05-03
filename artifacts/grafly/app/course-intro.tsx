@@ -9,7 +9,8 @@ import { router, useLocalSearchParams } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useColors } from "@/hooks/useColors";
 import { useGame } from "@/context/GameContext";
-import { COURSES } from "@/constants/lessons";
+import { COURSES as RAW_COURSES } from "@/constants/lessons";
+import { localizeCourse } from "@/lib/lessonsAr";
 import { GraflyMascot } from "@/components/GraflyMascot";
 import { PressScale } from "@/components/PressScale";
 import { BrandSquiggle } from "@/components/BrandSquiggle";
@@ -26,7 +27,11 @@ export default function CourseIntroScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
   const { state } = useGame();
-  const { t, isRTL } = useT();
+  const { t, isRTL, lang } = useT();
+  const COURSES = useMemo(
+    () => (lang === "en" ? RAW_COURSES : RAW_COURSES.map((c) => localizeCourse(c, lang))),
+    [lang],
+  );
   const params = useLocalSearchParams<{ courseId?: string }>();
 
   const COURSE_HIGHLIGHTS: Record<string, CourseHighlight[]> = {
@@ -46,7 +51,10 @@ export default function CourseIntroScreen() {
   const course = useMemo(() => {
     const id = params.courseId ?? "design-principles";
     return COURSES.find((c) => c.id === id) ?? COURSES[0];
-  }, [params.courseId]);
+    // COURSES is itself memoised on `lang`; including it here ensures we
+    // re-resolve to the localised copy when the user toggles language while
+    // sitting on this screen.
+  }, [params.courseId, COURSES]);
 
   const highlights = COURSE_HIGHLIGHTS[course.id] ?? DEFAULT_HIGHLIGHTS;
   const totalLessons = course.nodes.flatMap((n) => n.lessons).length;

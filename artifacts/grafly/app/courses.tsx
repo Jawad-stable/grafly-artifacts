@@ -11,7 +11,8 @@ import { router } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useColors } from "@/hooks/useColors";
 import { useGame } from "@/context/GameContext";
-import { COURSES } from "@/constants/lessons";
+import { COURSES as RAW_COURSES } from "@/constants/lessons";
+import { localizeCourse } from "@/lib/lessonsAr";
 import { GraflyMascot } from "@/components/GraflyMascot";
 import { PressScale } from "@/components/PressScale";
 import { CourseCardMotion } from "@/components/CourseCardMotion";
@@ -22,7 +23,12 @@ export default function CoursesScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
   const { state } = useGame();
-  const { t, isRTL } = useT();
+  const { t, isRTL, lang } = useT();
+  // Localise lesson/module/course strings for Arabic mode. English short-circuits.
+  const COURSES = React.useMemo(
+    () => (lang === "en" ? RAW_COURSES : RAW_COURSES.map((c) => localizeCourse(c, lang))),
+    [lang],
+  );
 
   const paddingTop = insets.top + (Platform.OS === "web" ? 67 : 0);
   const paddingBottom = insets.bottom + (Platform.OS === "web" ? 34 : 24);

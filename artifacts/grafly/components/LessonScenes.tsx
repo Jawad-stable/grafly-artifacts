@@ -24,6 +24,7 @@ import type {
 } from "@/constants/lessons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useColors } from "@/hooks/useColors";
+import { useT } from "@/hooks/useT";
 import { PressScale } from "@/components/PressScale";
 import { Icon } from "@/components/Icon";
 
@@ -286,6 +287,7 @@ export function LessonIntroCard({
   onContinue: () => void;
 }) {
   const colors = useColors();
+  const { t } = useT();
   const insets = useSafeAreaInsets();
   const accent = accentColor ?? colors.primary;
 
@@ -315,7 +317,7 @@ export function LessonIntroCard({
                 letterSpacing: 1,
               }}
             >
-              LESSON · {lessonTitle.toUpperCase()}
+              {t("scenes.lessonEyebrow", { title: lessonTitle.toUpperCase() })}
             </Text>
           </View>
           <Text
@@ -349,7 +351,7 @@ export function LessonIntroCard({
                 <View style={{ flexDirection: "row", alignItems: "center", gap: 6, marginBottom: 8 }}>
                   <Icon name="checkmark-circle" size={18} color={colors.success} weight="fill" />
                   <Text style={{ fontSize: 12, fontFamily: "Nunito_800ExtraBold", color: colors.success, letterSpacing: 0.5 }}>
-                    GOOD
+                    {t("scenes.good")}
                   </Text>
                 </View>
                 <RenderScreen screen={intro.scene.good} />
@@ -361,7 +363,7 @@ export function LessonIntroCard({
                 <View style={{ flexDirection: "row", alignItems: "center", gap: 6, marginBottom: 8 }}>
                   <Icon name="close-circle" size={18} color={colors.destructive} weight="fill" />
                   <Text style={{ fontSize: 12, fontFamily: "Nunito_800ExtraBold", color: colors.destructive, letterSpacing: 0.5 }}>
-                    BAD
+                    {t("scenes.bad")}
                   </Text>
                 </View>
                 <RenderScreen screen={intro.scene.bad} />
@@ -399,7 +401,7 @@ export function LessonIntroCard({
           }}
         >
           <Text style={{ fontSize: 16, fontFamily: "Nunito_800ExtraBold", color: colors.background }}>
-            Let's go
+            {t("scenes.letsGo")}
           </Text>
           <Icon name="arrow-forward" size={18} color={colors.background} />
         </PressScale>
@@ -420,6 +422,7 @@ interface MiniGameProps {
 
 export function SpotBadDesignRenderer({ question, answered, onAnswer }: MiniGameProps) {
   const colors = useColors();
+  const { t } = useT();
   const [tappedId, setTappedId] = useState<string | null>(null);
   if (!question.scene || question.scene.kind !== "spot_bad") return null;
   const { screen, prompt, targetTapId } = question.scene;
@@ -444,12 +447,12 @@ export function SpotBadDesignRenderer({ question, answered, onAnswer }: MiniGame
       />
       {!answered && (
         <Text style={{ marginTop: 12, fontSize: 12, fontFamily: "Nunito_600SemiBold", color: colors.mutedForeground, textAlign: "center" }}>
-          Tap any element to lock in your guess
+          {t("scenes.tapAnyElement")}
         </Text>
       )}
       {answered && tappedId && tappedId !== targetTapId && (
         <Text style={{ marginTop: 10, fontSize: 12, fontFamily: "Nunito_800ExtraBold", color: colors.destructive, textAlign: "center" }}>
-          You tapped the wrong spot — the correct one is highlighted in green.
+          {t("scenes.wrongSpot")}
         </Text>
       )}
     </Animated.View>
@@ -458,6 +461,7 @@ export function SpotBadDesignRenderer({ question, answered, onAnswer }: MiniGame
 
 export function ChooseBetterDesignRenderer({ question, answered, onAnswer }: MiniGameProps) {
   const colors = useColors();
+  const { t } = useT();
   const [picked, setPicked] = useState<0 | 1 | null>(null);
   if (!question.scene || question.scene.kind !== "ab_compare") return null;
   const { left, right, correctIndex, prompt, leftLabel, rightLabel } = question.scene;
@@ -511,14 +515,15 @@ export function ChooseBetterDesignRenderer({ question, answered, onAnswer }: Min
           {prompt}
         </Text>
       ) : null}
-      <Card idx={0} screen={left} label={leftLabel ?? "Option A"} />
-      <Card idx={1} screen={right} label={rightLabel ?? "Option B"} />
+      <Card idx={0} screen={left} label={leftLabel ?? t("scenes.optionA")} />
+      <Card idx={1} screen={right} label={rightLabel ?? t("scenes.optionB")} />
     </Animated.View>
   );
 }
 
 export function DragDropLayoutRenderer({ question, answered, onAnswer }: MiniGameProps) {
   const colors = useColors();
+  const { t } = useT();
   const scene = question.scene;
   const initialOrder = useMemo(() => {
     if (!scene || scene.kind !== "drag_layout") return [];
@@ -662,7 +667,7 @@ export function DragDropLayoutRenderer({ question, answered, onAnswer }: MiniGam
           }}
         >
           <Text style={{ fontSize: 15, fontFamily: "Nunito_800ExtraBold", color: colors.background }}>
-            Lock in this order
+            {t("scenes.lockInOrder")}
           </Text>
         </PressScale>
       )}
@@ -722,6 +727,7 @@ function DraggableCard({
 
 export function FiveSecondTestRenderer({ question, answered, onAnswer }: MiniGameProps) {
   const colors = useColors();
+  const { t } = useT();
   const scene = question.scene;
   const [phase, setPhase] = useState<"preview" | "question">("preview");
   const [picked, setPicked] = useState<number | null>(null);
@@ -753,7 +759,7 @@ export function FiveSecondTestRenderer({ question, answered, onAnswer }: MiniGam
         <View style={{ alignItems: "center", marginBottom: 16 }}>
           <CountdownRing remainingMs={totalMs} totalMs={totalMs} progress={progress} />
           <Text style={{ marginTop: 6, fontSize: 12, fontFamily: "Nunito_800ExtraBold", color: colors.mutedForeground, letterSpacing: 1 }}>
-            GLANCE — DON'T MEMORIZE
+            {t("scenes.glance")}
           </Text>
         </View>
         <RenderScreen screen={screen} />
@@ -768,7 +774,7 @@ export function FiveSecondTestRenderer({ question, answered, onAnswer }: MiniGam
           }}
         >
           <Text style={{ fontSize: 13, fontFamily: "Nunito_800ExtraBold", color: colors.foreground }}>
-            Skip ahead
+            {t("scenes.skipAhead")}
           </Text>
         </PressScale>
       </Animated.View>
@@ -842,7 +848,7 @@ export function FiveSecondTestRenderer({ question, answered, onAnswer }: MiniGam
         >
           <Icon name="arrow-back" size={16} color={colors.foreground} />
           <Text style={{ fontSize: 13, fontFamily: "Nunito_800ExtraBold", color: colors.foreground }}>
-            Show me the screen again
+            {t("scenes.showAgain")}
           </Text>
         </PressScale>
       )}
@@ -924,6 +930,7 @@ function AnimatedRingArc({
 
 export function FindTheCTARenderer({ question, answered, onAnswer }: MiniGameProps) {
   const colors = useColors();
+  const { t } = useT();
   const [tappedId, setTappedId] = useState<string | null>(null);
   if (!question.scene || question.scene.kind !== "find_cta") return null;
   const { screen, prompt, correctTapId } = question.scene;
@@ -948,12 +955,12 @@ export function FindTheCTARenderer({ question, answered, onAnswer }: MiniGamePro
       />
       {!answered && (
         <Text style={{ marginTop: 12, fontSize: 12, fontFamily: "Nunito_600SemiBold", color: colors.mutedForeground, textAlign: "center" }}>
-          Tap the element you'd press first
+          {t("scenes.tapPrimaryFirst")}
         </Text>
       )}
       {answered && tappedId && tappedId !== correctTapId && (
         <Text style={{ marginTop: 10, fontSize: 12, fontFamily: "Nunito_800ExtraBold", color: colors.destructive, textAlign: "center" }}>
-          Not quite — the primary CTA is highlighted in green.
+          {t("scenes.notQuiteCTA")}
         </Text>
       )}
     </Animated.View>
@@ -975,6 +982,7 @@ export function ModuleCompleteCelebration({
   accentColor?: string;
 }) {
   const colors = useColors();
+  const { t } = useT();
   const accent = accentColor ?? colors.accent;
   const pulse = useSharedValue(1);
 
@@ -1026,7 +1034,7 @@ export function ModuleCompleteCelebration({
       </View>
       <View style={{ flex: 1 }}>
         <Text style={{ fontSize: 11, fontFamily: "Nunito_800ExtraBold", color: accent, letterSpacing: 1 }}>
-          MODULE COMPLETE · {moduleTitle.toUpperCase()}
+          {t("scenes.moduleComplete", { title: moduleTitle.toUpperCase() })}
         </Text>
         <Text style={{ marginTop: 4, fontSize: 14, fontFamily: "Nunito_800ExtraBold", color: colors.foreground, lineHeight: 19 }}>
           {message}

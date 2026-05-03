@@ -16,7 +16,21 @@ import Svg, { Path, Defs, LinearGradient, Stop, Circle } from "react-native-svg"
 import { useColors } from "@/hooks/useColors";
 import { useT } from "@/hooks/useT";
 import { useGame } from "@/context/GameContext";
-import { COURSES, getCurrentPosition, type SkillNode, type Course } from "@/constants/lessons";
+import { COURSES as RAW_COURSES, getCurrentPosition, type SkillNode, type Course } from "@/constants/lessons";
+import { localizeCourse } from "@/lib/lessonsAr";
+import type { Language } from "@/lib/i18n";
+
+// Lang-aware wrapper around COURSES. Memoised per language so consumers
+// can call `getCourses(lang)` without paying the deep-clone cost on every
+// render. English short-circuits to the raw array.
+const _coursesCache: Partial<Record<Language, Course[]>> = {};
+function getCourses(lang: Language): Course[] {
+  if (lang === "en") return RAW_COURSES;
+  if (!_coursesCache[lang]) {
+    _coursesCache[lang] = RAW_COURSES.map((c) => localizeCourse(c, lang));
+  }
+  return _coursesCache[lang]!;
+}
 import { PressScale } from "@/components/PressScale";
 import { onBrand } from "@/constants/contrast";
 import { TreeBackdrop } from "@/components/TreeBackdrop";
@@ -84,6 +98,8 @@ function CoursesButton({ onPress }: { onPress: () => void }) {
   );
 }
 
+// (Component below uses `lang` from useT() so its course list updates
+// when the user toggles between English and Arabic.)
 function CoursePickerModal({
   visible,
   onClose,
@@ -98,7 +114,8 @@ function CoursePickerModal({
   completedLessons: string[];
 }) {
   const colors = useColors();
-  const { t } = useT();
+  const { t, lang } = useT();
+  const COURSES = getCourses(lang);
   const insets = useSafeAreaInsets();
 
   return (
@@ -366,6 +383,8 @@ function NodeItem({
   );
 }
 
+// (NodeSheet receives `node` and `course` already-localised from the parent
+// TreeScreen, so it does not need its own getCourses() lookup.)
 function NodeSheet({ node, course, isCompleted, isLocked, visible, onClose, completedLessons }: {
   node: SkillNode | null; course: Course | null;
   isCompleted: boolean; isLocked: boolean;
@@ -602,7 +621,8 @@ function NodeSheet({ node, course, isCompleted, isLocked, visible, onClose, comp
 
 export default function TreeScreen() {
   const colors = useColors();
-  const { t } = useT();
+  const { t, lang } = useT();
+  const COURSES = getCourses(lang);
   const insets = useSafeAreaInsets();
   const { state } = useGame();
   const params = useLocalSearchParams<{ courseId?: string; nodeId?: string }>();

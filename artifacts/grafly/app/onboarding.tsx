@@ -26,6 +26,7 @@ import { useAuth } from "@/context/AuthContext";
 import type { PlacementLevel } from "@/context/GameContext";
 import { shuffleOptions } from "@/utils/adaptive";
 import { PLACEMENT_QUESTIONS } from "@/constants/lessons";
+import { localizeQuestion } from "@/lib/lessonsAr";
 import { GraflyMascot } from "@/components/GraflyMascot";
 import { LOGO } from "@/constants/assets";
 import type { MascotState } from "@/constants/assets";
@@ -202,9 +203,14 @@ export default function OnboardingScreen() {
     }
   }, [currentQ, step]);
 
+  // Localise the placement question to Arabic when the user picked Arabic
+  // during the onboarding language step. The shuffle still operates on the
+  // (now localised) options so the correctIndex stays consistent.
   const placementQ = useMemo(
-    () => shuffleOptions(PLACEMENT_QUESTIONS[currentQ]),
-    [currentQ],
+    () => shuffleOptions(
+      localizeQuestion(PLACEMENT_QUESTIONS[currentQ], profileState.language),
+    ),
+    [currentQ, profileState.language],
   );
 
   const placementProgressStyle = useAnimatedStyle(() => ({
@@ -215,7 +221,10 @@ export default function OnboardingScreen() {
     if (showFeedback) return;
     setAnswerSelected(answer);
     setShowFeedback(true);
-    const q = PLACEMENT_QUESTIONS[currentQ];
+    // Validate against the *rendered* question. shuffleOptions remaps
+    // `correctIndex` to match the visible option order, so reading from
+    // raw PLACEMENT_QUESTIONS would mark visually-correct answers wrong.
+    const q = placementQ;
     const correct = q.type === "true_false" ? answer === q.correctBool : answer === q.correctIndex;
     setLastWasCorrect(correct);
     if (correct) {

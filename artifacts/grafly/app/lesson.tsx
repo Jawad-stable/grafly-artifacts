@@ -26,6 +26,7 @@ import { useT } from "@/hooks/useT";
 import { useGame } from "@/context/GameContext";
 import { voiceService } from "@/services/voiceService";
 import { COURSES, findNodeById, type Question, type Lesson } from "@/constants/lessons";
+import { localizeLesson, localizeNode, localizeCourse, localizeQuestion } from "@/lib/lessonsAr";
 import { adaptiveQuestions } from "@/utils/adaptive";
 import { GraflyMascot } from "@/components/GraflyMascot";
 import { PressScale } from "@/components/PressScale";
@@ -492,13 +493,24 @@ function QuestionRenderer({
 
 export default function LessonScreen() {
   const colors = useColors();
-  const { t } = useT();
+  const { t, lang } = useT();
   const insets = useSafeAreaInsets();
   const { nodeId } = useLocalSearchParams<{ nodeId: string }>();
   const { state, loseHeart, completeLesson, dispatch } = useGame();
 
-  const node = nodeId ? findNodeById(nodeId) : null;
-  const course = node ? COURSES.find((c) => c.id === node.courseId) : null;
+  // Raw (English) refs are kept for stable IDs / voice service keys, while
+  // `node` / `course` / `allLessons` exposed below are localised when the
+  // user is in Arabic mode (via lib/lessonsAr.ts deep-clones).
+  const rawNode = nodeId ? findNodeById(nodeId) : null;
+  const rawCourse = rawNode ? COURSES.find((c) => c.id === rawNode.courseId) : null;
+  const node = useMemo(
+    () => (rawNode ? localizeNode(rawNode, lang) : null),
+    [rawNode, lang],
+  );
+  const course = useMemo(
+    () => (rawCourse ? localizeCourse(rawCourse, lang) : null),
+    [rawCourse, lang],
+  );
   const allLessons: Lesson[] = node?.lessons ?? [];
 
   // Resume at the first lesson the user has not yet finished in this
@@ -706,7 +718,10 @@ export default function LessonScreen() {
 
       // Voice feedback on summary appearance — module-complete takes precedence.
       if (moduleDone && node) {
-        voiceService.playModuleComplete(node.title);
+        // Voice always speaks English (template literal in voiceService).
+        // Pass the canonical English title so the spoken sentence stays
+        // grammatical even when the UI is rendered in Arabic.
+        voiceService.playModuleComplete(rawNode?.title ?? node.title);
       } else if (heartsLost === 0) {
         voiceService.playPerfectLesson();
       } else {
