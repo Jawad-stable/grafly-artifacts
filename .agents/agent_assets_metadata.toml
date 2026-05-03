@@ -65,3 +65,9 @@ id = "MlVK-F_L6MhiUj9P5VKdT"
 uri = "file://.local/outputs/Game-Learn-Design.pdf"
 type = "pdf"
 title = "Game Learn Design.pdf"
+
+[[outputs]]
+id = "2osGc6s5pxp7gwDnXR20-"
+uri = "file://grafly-upload.zip"
+type = "unspecified"
+title = "Grafly upload (public/ assets + screenshots)"
