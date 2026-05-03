@@ -103,3 +103,41 @@ export async function loadCourses(): Promise<Course[]> {
   }
   return COURSES;
 }
+
+/**
+ * Mint a short-lived signed URL for an image in the private `course-assets`
+ * bucket. Use this whenever a remote course references an image (e.g. a
+ * critique design that lives only in Supabase). The URL is cached in memory
+ * until just before it expires so we don't sign the same key repeatedly.
+ *
+ * Example:
+ *   const uri = await getCourseAssetUrl("designs/social_coffee.webp");
+ *   <Image source={{ uri }} />
+ */
+const SIGNED_TTL_SEC = 60 * 60; // 1 hour
+const REFRESH_BEFORE_MS = 60 * 1000; // re-sign 1 min before expiry
+
+interface SignedEntry {
+  url: string;
+  expiresAt: number;
+}
+const signedCache = new Map<string, SignedEntry>();
+
+export async function getCourseAssetUrl(path: string): Promise<string | null> {
+  const now = Date.now();
+  const hit = signedCache.get(path);
+  if (hit && hit.expiresAt - REFRESH_BEFORE_MS > now) return hit.url;
+  try {
+    const { data, error } = await supabase.storage
+      .from("course-assets")
+      .createSignedUrl(path, SIGNED_TTL_SEC);
+    if (error || !data?.signedUrl) return null;
+    signedCache.set(path, {
+      url: data.signedUrl,
+      expiresAt: now + SIGNED_TTL_SEC * 1000,
+    });
+    return data.signedUrl;
+  } catch {
+    return null;
+  }
+}
