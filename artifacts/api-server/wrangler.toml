@@ -1,0 +1,22 @@
+name = "graflyapisec"
+main = "src/worker.ts"
+compatibility_date = "2025-01-01"
+compatibility_flags = ["nodejs_compat"]
+
+# Static design images are served by Cloudflare Assets at
+# /api/critique/design-images/* — requests for those paths never
+# reach the Worker. All /api/* routes go to the Worker.
+[assets]
+directory = "./public"
+not_found_handling = "none"
+
+# Environment variables — add these as secrets via:
+#   wrangler secret put NVIDIA_API_KEY
+#   wrangler secret put ELEVENLABS_API_KEY
+#   wrangler secret put EXPO_PUBLIC_ELEVENLABS_VOICE_ID
+#   wrangler secret put EXPO_PUBLIC_SUPABASE_URL
+#   wrangler secret put EXPO_PUBLIC_SUPABASE_ANON_KEY
+#   wrangler secret put SUPABASE_SERVICE_ROLE_KEY
+#   wrangler secret put ADMIN_PASSWORD
+#
+# For local dev, copy .dev.vars.example to .dev.vars and fill in values.

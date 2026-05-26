@@ -1,11 +1,8 @@
-import { Router, type IRouter } from "express";
-import { HealthCheckResponse } from "@workspace/api-zod";
+import { Hono } from "hono";
+import type { Env } from "../types";
 
-const router: IRouter = Router();
+const health = new Hono<{ Bindings: Env }>();
 
-router.get("/healthz", (_req, res) => {
-  const data = HealthCheckResponse.parse({ status: "ok" });
-  res.json(data);
-});
+health.get("/healthz", (c) => c.json({ status: "ok" }));
 
-export default router;
+export default health;

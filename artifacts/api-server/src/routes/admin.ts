@@ -1,172 +1,158 @@
-import { Router, type Request, type Response, type NextFunction } from "express";
-import { supabaseAdmin } from "../lib/supabaseAdmin";
+import { Hono } from "hono";
+import type { MiddlewareHandler } from "hono";
+import { getSupabaseAdmin } from "../lib/supabaseAdmin";
+import type { Env } from "../types";
 
-const router = Router();
+const admin = new Hono<{ Bindings: Env }>();
 
-const ADMIN_PASSWORD = process.env["ADMIN_PASSWORD"] ?? "";
+const requireAdmin: MiddlewareHandler<{ Bindings: Env }> = async (c, next) => {
+  const adminPassword = c.env.ADMIN_PASSWORD;
+  if (!adminPassword) {
+    return c.json({ error: "ADMIN_PASSWORD not configured on server" }, 500);
+  }
+  const header = c.req.header("x-admin-password") ?? "";
+  if (header !== adminPassword) {
+    return c.json({ error: "Unauthorized" }, 401);
+  }
+  return next();
+};
 
-function requireAdmin(req: Request, res: Response, next: NextFunction): void {
-  if (!ADMIN_PASSWORD) {
-    res.status(500).json({ error: "ADMIN_PASSWORD not configured on server" });
-    return;
+admin.post("/admin/login", async (c) => {
+  const adminPassword = c.env.ADMIN_PASSWORD;
+  if (!adminPassword) {
+    return c.json({ error: "ADMIN_PASSWORD not configured on server" }, 500);
   }
-  const header = req.header("x-admin-password") ?? "";
-  if (header !== ADMIN_PASSWORD) {
-    res.status(401).json({ error: "Unauthorized" });
-    return;
+  const body = await c.req.json<{ password?: string }>().catch(() => ({} as { password?: string }));
+  if (typeof body.password !== "string" || body.password !== adminPassword) {
+    return c.json({ error: "Invalid password" }, 401);
   }
-  next();
-}
-
-router.post("/admin/login", (req, res) => {
-  if (!ADMIN_PASSWORD) {
-    res.status(500).json({ error: "ADMIN_PASSWORD not configured on server" });
-    return;
-  }
-  const body = (req.body ?? {}) as { password?: string };
-  if (typeof body.password !== "string" || body.password !== ADMIN_PASSWORD) {
-    res.status(401).json({ error: "Invalid password" });
-    return;
-  }
-  res.json({ ok: true });
+  return c.json({ ok: true });
 });
 
-router.get("/admin/courses", requireAdmin, async (req, res) => {
+admin.get("/admin/courses", requireAdmin, async (c) => {
+  const supabaseAdmin = getSupabaseAdmin(c.env);
   if (!supabaseAdmin) {
-    res.status(500).json({ error: "Supabase admin client not configured" });
-    return;
+    return c.json({ error: "Supabase admin client not configured" }, 500);
   }
   const { data, error } = await supabaseAdmin
     .from("app_courses")
     .select("id, order_idx, enabled, data")
     .order("order_idx", { ascending: true });
   if (error) {
-    req.log?.error({ err: error }, "list courses failed");
-    res.status(500).json({ error: error.message });
-    return;
+    console.error("list courses failed", error);
+    return c.json({ error: error.message }, 500);
   }
-  res.json({ courses: data ?? [] });
+  return c.json({ courses: data ?? [] });
 });
 
-router.get("/admin/courses/:id", requireAdmin, async (req, res) => {
+admin.get("/admin/courses/:id", requireAdmin, async (c) => {
+  const supabaseAdmin = getSupabaseAdmin(c.env);
   if (!supabaseAdmin) {
-    res.status(500).json({ error: "Supabase admin client not configured" });
-    return;
+    return c.json({ error: "Supabase admin client not configured" }, 500);
   }
   const { data, error } = await supabaseAdmin
     .from("app_courses")
     .select("id, order_idx, enabled, data")
-    .eq("id", req.params.id)
+    .eq("id", c.req.param("id"))
     .maybeSingle();
   if (error) {
-    res.status(500).json({ error: error.message });
-    return;
+    return c.json({ error: error.message }, 500);
   }
   if (!data) {
-    res.status(404).json({ error: "Not found" });
-    return;
+    return c.json({ error: "Not found" }, 404);
   }
-  res.json({ course: data });
+  return c.json({ course: data });
 });
 
-router.put("/admin/courses/:id", requireAdmin, async (req, res) => {
+admin.put("/admin/courses/:id", requireAdmin, async (c) => {
+  const supabaseAdmin = getSupabaseAdmin(c.env);
   if (!supabaseAdmin) {
-    res.status(500).json({ error: "Supabase admin client not configured" });
-    return;
+    return c.json({ error: "Supabase admin client not configured" }, 500);
   }
-  const body = (req.body ?? {}) as {
-    order_idx?: number;
-    enabled?: boolean;
-    data?: unknown;
-  };
+  const body = await c.req
+    .json<{ order_idx?: number; enabled?: boolean; data?: unknown }>()
+    .catch(() => ({} as { order_idx?: number; enabled?: boolean; data?: unknown }));
+
   const update: Record<string, unknown> = {};
   if (typeof body.order_idx === "number") update["order_idx"] = body.order_idx;
   if (typeof body.enabled === "boolean") update["enabled"] = body.enabled;
   if (body.data !== undefined) {
     if (typeof body.data !== "object" || body.data === null) {
-      res.status(400).json({ error: "data must be a JSON object" });
-      return;
+      return c.json({ error: "data must be a JSON object" }, 400);
     }
     update["data"] = body.data;
   }
   if (Object.keys(update).length === 0) {
-    res.status(400).json({ error: "No fields to update" });
-    return;
+    return c.json({ error: "No fields to update" }, 400);
   }
+
   const { data, error } = await supabaseAdmin
     .from("app_courses")
     .update(update)
-    .eq("id", req.params.id)
+    .eq("id", c.req.param("id"))
     .select("id, order_idx, enabled, data")
     .maybeSingle();
   if (error) {
-    req.log?.error({ err: error }, "update course failed");
-    res.status(500).json({ error: error.message });
-    return;
+    console.error("update course failed", error);
+    return c.json({ error: error.message }, 500);
   }
   if (!data) {
-    res.status(404).json({ error: "Not found" });
-    return;
+    return c.json({ error: "Not found" }, 404);
   }
-  res.json({ course: data });
+  return c.json({ course: data });
 });
 
-router.post("/admin/courses", requireAdmin, async (req, res) => {
+admin.post("/admin/courses", requireAdmin, async (c) => {
+  const supabaseAdmin = getSupabaseAdmin(c.env);
   if (!supabaseAdmin) {
-    res.status(500).json({ error: "Supabase admin client not configured" });
-    return;
+    return c.json({ error: "Supabase admin client not configured" }, 500);
   }
-  const body = (req.body ?? {}) as {
-    id?: string;
-    order_idx?: number;
-    enabled?: boolean;
-    data?: unknown;
-  };
+  const body = await c.req
+    .json<{ id?: string; order_idx?: number; enabled?: boolean; data?: unknown }>()
+    .catch(() => ({} as { id?: string; order_idx?: number; enabled?: boolean; data?: unknown }));
+
   if (typeof body.id !== "string" || !body.id.trim()) {
-    res.status(400).json({ error: "id is required" });
-    return;
+    return c.json({ error: "id is required" }, 400);
   }
   if (typeof body.order_idx !== "number") {
-    res.status(400).json({ error: "order_idx is required" });
-    return;
+    return c.json({ error: "order_idx is required" }, 400);
   }
   if (typeof body.data !== "object" || body.data === null) {
-    res.status(400).json({ error: "data must be a JSON object" });
-    return;
+    return c.json({ error: "data must be a JSON object" }, 400);
   }
+
   const row = {
     id: body.id.trim(),
     order_idx: body.order_idx,
     enabled: typeof body.enabled === "boolean" ? body.enabled : true,
     data: body.data,
   };
+
   const { data, error } = await supabaseAdmin
     .from("app_courses")
     .insert(row)
     .select("id, order_idx, enabled, data")
     .maybeSingle();
   if (error) {
-    req.log?.error({ err: error }, "create course failed");
-    res.status(500).json({ error: error.message });
-    return;
+    console.error("create course failed", error);
+    return c.json({ error: error.message }, 500);
   }
-  res.status(201).json({ course: data });
+  return c.json({ course: data }, 201);
 });
 
-router.delete("/admin/courses/:id", requireAdmin, async (req, res) => {
+admin.delete("/admin/courses/:id", requireAdmin, async (c) => {
+  const supabaseAdmin = getSupabaseAdmin(c.env);
   if (!supabaseAdmin) {
-    res.status(500).json({ error: "Supabase admin client not configured" });
-    return;
+    return c.json({ error: "Supabase admin client not configured" }, 500);
   }
   const { error } = await supabaseAdmin
     .from("app_courses")
     .delete()
-    .eq("id", req.params.id);
+    .eq("id", c.req.param("id"));
   if (error) {
-    res.status(500).json({ error: error.message });
-    return;
+    return c.json({ error: error.message }, 500);
   }
-  res.json({ ok: true });
+  return c.json({ ok: true });
 });
 
-export default router;
+export default admin;

@@ -1,47 +1,18 @@
-import express, { type Express } from "express";
-import cors from "cors";
-import path from "node:path";
-import pinoHttp from "pino-http";
-import router from "./routes";
-import { logger } from "./lib/logger";
+import { Hono } from "hono";
+import { cors } from "hono/cors";
+import type { Env } from "./types";
+import healthRouter from "./routes/health";
+import critiqueRouter from "./routes/critique";
+import ttsRouter from "./routes/tts";
+import adminRouter from "./routes/admin";
 
-const app: Express = express();
+const app = new Hono<{ Bindings: Env }>();
 
-app.use(
-  pinoHttp({
-    logger,
-    serializers: {
-      req(req) {
-        return {
-          id: req.id,
-          method: req.method,
-          url: req.url?.split("?")[0],
-        };
-      },
-      res(res) {
-        return {
-          statusCode: res.statusCode,
-        };
-      },
-    },
-  }),
-);
-app.use(cors());
-app.use(express.json({ limit: "1mb" }));
-app.use(express.urlencoded({ extended: true }));
+app.use("*", cors());
 
-// Serve the bundled critique design images (e.g. social_sneaker.png) over a
-// public URL so the multimodal LLM (NVIDIA NIM Maverick) can fetch them.
-// At runtime, __dirname is `dist/` (set by the esbuild banner) and
-// `build.mjs` copies `assets/` → `dist/assets/` so this path resolves.
-app.use(
-  "/api/critique/design-images",
-  express.static(path.join(__dirname, "assets/designs"), {
-    immutable: true,
-    maxAge: "30d",
-  }),
-);
-
-app.use("/api", router);
+app.route("/api", healthRouter);
+app.route("/api", critiqueRouter);
+app.route("/api", ttsRouter);
+app.route("/api", adminRouter);
 
 export default app;

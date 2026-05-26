@@ -60,3 +60,7 @@ Thumbs.db
 
 # User-uploaded reference assets (kept in .local/reference_uploads/ if needed)
 attached_assets/
+
+# Cloudflare Wrangler local cache
+.wrangler/
+**/.wrangler/

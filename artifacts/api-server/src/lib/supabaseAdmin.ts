@@ -1,13 +1,11 @@
-import { createClient, type SupabaseClient } from "@supabase/supabase-js";
+import { createClient } from "@supabase/supabase-js";
+import type { Env } from "../types";
 
-const url = process.env["EXPO_PUBLIC_SUPABASE_URL"] ?? "";
-const serviceKey = process.env["SUPABASE_SERVICE_ROLE_KEY"] ?? "";
-
-let client: SupabaseClient | null = null;
-if (url && serviceKey) {
-  client = createClient(url, serviceKey, {
+export function getSupabaseAdmin(env: Env) {
+  if (!env.EXPO_PUBLIC_SUPABASE_URL || !env.SUPABASE_SERVICE_ROLE_KEY) {
+    return null;
+  }
+  return createClient(env.EXPO_PUBLIC_SUPABASE_URL, env.SUPABASE_SERVICE_ROLE_KEY, {
     auth: { persistSession: false, autoRefreshToken: false },
   });
 }
-
-export const supabaseAdmin = client;

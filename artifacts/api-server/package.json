@@ -4,27 +4,16 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "export NODE_ENV=development && pnpm run build && pnpm run start",
-    "build": "node ./build.mjs",
-    "build:prod": "NODE_ENV=production API_SERVER_SOURCEMAP=0 node ./build.mjs",
-    "start": "node --enable-source-maps ./dist/index.mjs",
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.103.3",
-    "@workspace/api-zod": "workspace:*",
-    "cors": "^2",
-    "express": "^5",
-    "pino": "^9",
-    "pino-http": "^10"
+    "hono": "^4.6.0"
   },
   "devDependencies": {
-    "@types/cors": "^2.8.19",
-    "@types/express": "^5.0.6",
-    "@types/node": "catalog:",
-    "esbuild": "^0.27.3",
-    "esbuild-plugin-pino": "^2.3.3",
-    "pino-pretty": "^13",
-    "thread-stream": "3.1.0"
+    "@cloudflare/workers-types": "^4.20241230.0",
+    "wrangler": "^3.100.0"
   }
 }

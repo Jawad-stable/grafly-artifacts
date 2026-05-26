@@ -1,8 +1,9 @@
-import { Router } from "express";
+import { Hono } from "hono";
 import { logger } from "../lib/logger";
-import { supabase } from "../lib/supabase";
+import { getSupabase } from "../lib/supabase";
+import type { Env } from "../types";
 
-const router = Router();
+const critique = new Hono<{ Bindings: Env }>();
 
 const SYSTEM_PROMPT = `You are Grafly — a warm, patient design mentor sitting next to a student inside a mobile design education app. You sound like a friend who happens to be a senior designer: curious, grounded, never preachy.
 
@@ -240,7 +241,8 @@ const FALLBACK_DESIGNS = [
   },
 ];
 
-async function loadDesignsFromSupabase() {
+async function loadDesignsFromSupabase(env: Env) {
+  const supabase = getSupabase(env);
   if (!supabase) return null;
   try {
     const { data, error } = await supabase
@@ -259,16 +261,16 @@ async function loadDesignsFromSupabase() {
   }
 }
 
-router.get("/critique/designs/random", async (_req, res) => {
-  const fromDb = await loadDesignsFromSupabase();
+critique.get("/critique/designs/random", async (c) => {
+  const fromDb = await loadDesignsFromSupabase(c.env);
   const pool = fromDb && fromDb.length > 0 ? fromDb : FALLBACK_DESIGNS;
   const pick = pool[Math.floor(Math.random() * pool.length)];
-  res.json(pick);
+  return c.json(pick);
 });
 
-router.get("/critique/designs", async (_req, res) => {
-  const fromDb = await loadDesignsFromSupabase();
-  res.json(fromDb && fromDb.length > 0 ? fromDb : FALLBACK_DESIGNS);
+critique.get("/critique/designs", async (c) => {
+  const fromDb = await loadDesignsFromSupabase(c.env);
+  return c.json(fromDb && fromDb.length > 0 ? fromDb : FALLBACK_DESIGNS);
 });
 
 interface ChatMessage {
@@ -276,23 +278,41 @@ interface ChatMessage {
   content: string;
 }
 
-router.post("/critique/chat", async (req, res) => {
-  const { designTitle, designDescription, designImageUrl, messages } = req.body as {
-    designTitle?: string;
-    designDescription?: string;
-    designImageUrl?: string;
-    messages?: ChatMessage[];
-  };
+type ChatRequest = {
+  designTitle?: string;
+  designDescription?: string;
+  designImageUrl?: string;
+  messages?: ChatMessage[];
+};
+
+type OutgoingMessage =
+  | { role: "system" | "assistant"; content: string }
+  | {
+      role: "user";
+      content:
+        | string
+        | Array<
+            | { type: "text"; text: string }
+            | { type: "image_url"; image_url: { url: string } }
+          >;
+    };
+
+function sanitizeReply(raw: string) {
+  return raw
+    .trim()
+    .replace(/\*\*(.+?)\*\*/g, "$1")
+    .replace(/(^|\W)\*(?!\s)([^*\n]+?)\*(?!\w)/g, "$1$2")
+    .replace(/(^|\W)_(?!\s)([^_\n]+?)_(?!\w)/g, "$1$2")
+    .replace(/^\s*[#>\-*]+\s+/gm, "")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
+}
+
+function buildChatPayload(body: ChatRequest): { messages: OutgoingMessage[] } | { error: string; status: number } {
+  const { designTitle, designDescription, designImageUrl, messages } = body;
 
   if (!designTitle || !messages || !Array.isArray(messages) || messages.length === 0) {
-    res.status(400).json({ error: "designTitle and messages are required" });
-    return;
-  }
-
-  const apiKey = process.env["NVIDIA_API_KEY"];
-  if (!apiKey) {
-    res.status(500).json({ error: "AI service not configured" });
-    return;
+    return { error: "designTitle and messages are required", status: 400 };
   }
 
   const system = SYSTEM_PROMPT
@@ -303,9 +323,6 @@ router.post("/critique/chat", async (req, res) => {
   // user/assistant/user/... The frontend may include an opening assistant
   // message (the design prompt) — drop any leading assistant turns and
   // collapse consecutive same-role messages so the API never 400s.
-  // (This was originally needed for Gemma; we keep the constraint in
-  // place because it's also a common requirement for instruct models on
-  // the NIM API and never hurts.)
   let cleaned: ChatMessage[] = [];
   for (const m of messages) {
     if (cleaned.length === 0 && m.role !== "user") continue;
@@ -318,8 +335,7 @@ router.post("/critique/chat", async (req, res) => {
   }
 
   if (cleaned.length === 0) {
-    res.status(400).json({ error: "Conversation must include at least one user message." });
-    return;
+    return { error: "Conversation must include at least one user message.", status: 400 };
   }
 
   const trimmed = cleaned.slice(-12);
@@ -334,18 +350,7 @@ router.post("/critique/chat", async (req, res) => {
   // historical user turn — Maverick charges ~1000 tokens per image, and the
   // model only needs the picture in scope for the CURRENT question. The
   // text-only history of earlier turns is plenty of context for continuity.
-  const outgoing: Array<
-    | { role: "system" | "assistant"; content: string }
-    | {
-        role: "user";
-        content:
-          | string
-          | Array<
-              | { type: "text"; text: string }
-              | { type: "image_url"; image_url: { url: string } }
-            >;
-      }
-  > = [{ role: "system", content: system }];
+  const outgoing: OutgoingMessage[] = [{ role: "system", content: system }];
 
   for (let i = 0; i < trimmed.length; i++) {
     const m = trimmed[i];
@@ -363,90 +368,167 @@ router.post("/critique/chat", async (req, res) => {
     }
   }
 
+  return { messages: outgoing };
+}
+
+function buildNvidiaRequest(apiKey: string, messages: OutgoingMessage[], stream: boolean) {
+  return {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      model: "meta/llama-4-maverick-17b-128e-instruct",
+      messages,
+      temperature: 0.7,
+      max_tokens: 220,
+      top_p: 0.9,
+      stream,
+    }),
+  };
+}
+
+function encodeSse(event: string, data: unknown) {
+  return new TextEncoder().encode(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`);
+}
+
+function extractDelta(line: string) {
+  const payload = line.replace(/^data:\s*/, "").trim();
+  if (!payload || payload === "[DONE]") return null;
+  try {
+    const parsed = JSON.parse(payload) as {
+      choices?: Array<{ delta?: { content?: string }; text?: string }>;
+    };
+    return parsed.choices?.[0]?.delta?.content ?? parsed.choices?.[0]?.text ?? "";
+  } catch {
+    return "";
+  }
+}
+
+critique.post("/critique/chat", async (c) => {
+  const body = await c.req.json<ChatRequest>().catch(() => ({} as ChatRequest));
+  const payload = buildChatPayload(body);
+  if ("error" in payload) {
+    return c.json({ error: payload.error }, payload.status as 400);
+  }
+
+  const apiKey = c.env.NVIDIA_API_KEY;
+  if (!apiKey) {
+    return c.json({ error: "AI service not configured" }, 500);
+  }
+
   try {
     const response = await fetch(
       "https://integrate.api.nvidia.com/v1/chat/completions",
-      {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${apiKey}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          // Llama 4 Maverick 17B/128E on NVIDIA NIM. Multimodal Llama 4 MoE
-          // (17B activated of ~400B), natively trained on text + images, so
-          // it can actually SEE the design we're critiquing — which is the
-          // whole point of the Grafly mentor. Inherits the warm Llama
-          // Instruct chat tone, fast inference thanks to MoE routing.
-          // Model history on this project: started on `google/gemma-3-27b-it`
-          // (NVIDIA marked DEGRADED) → `meta/llama-3.3-70b-instruct` →
-          // `deepseek-ai/deepseek-v4-pro` (text-only, slower) → upgraded to
-          // Maverick to give the mentor real vision.
-          model: "meta/llama-4-maverick-17b-128e-instruct",
-          messages: outgoing,
-          temperature: 0.7,
-          // Hard cap that backstops the "keep replies short" rule in the
-          // system prompt. ~220 tokens is roughly 3 short paragraphs or
-          // 4 bullets — enough room for a substantive Socratic prompt
-          // without enabling the model to slide into an essay.
-          max_tokens: 220,
-          top_p: 0.9,
-        }),
-      }
+      buildNvidiaRequest(apiKey, payload.messages, false)
     );
 
     if (!response.ok) {
       const errText = await response.text();
       logger.error({ status: response.status, body: errText }, "NVIDIA API error");
-      res.status(502).json({ error: "Could not reach the AI mentor right now." });
-      return;
+      return c.json({ error: "Could not reach the AI mentor right now." }, 502);
     }
 
     const data = (await response.json()) as {
       choices: Array<{ message: { content: string } }>;
     };
-    const raw = (data.choices?.[0]?.message?.content ?? "").trim();
-    // Belt-and-braces: strip markdown the model sometimes leaks through
-    // (bold/italic asterisks, underscores, leading bullet/heading symbols).
-    const reply = raw
-      .replace(/\*\*(.+?)\*\*/g, "$1")
-      .replace(/(^|\W)\*(?!\s)([^*\n]+?)\*(?!\w)/g, "$1$2")
-      .replace(/(^|\W)_(?!\s)([^_\n]+?)_(?!\w)/g, "$1$2")
-      .replace(/^\s*[#>\-*]+\s+/gm, "")
-      .replace(/\n{3,}/g, "\n\n")
-      .trim();
-    res.json({ reply });
+    const reply = sanitizeReply(data.choices?.[0]?.message?.content ?? "");
+    return c.json({ reply });
   } catch (err) {
     logger.error({ err }, "Critique chat route error");
-    res.status(500).json({ error: "Internal server error" });
+    return c.json({ error: "Internal server error" }, 500);
+  }
+});
+
+critique.post("/critique/chat/stream", async (c) => {
+  const body = await c.req.json<ChatRequest>().catch(() => ({} as ChatRequest));
+  const payload = buildChatPayload(body);
+  if ("error" in payload) {
+    return c.json({ error: payload.error }, payload.status as 400);
+  }
+
+  const apiKey = c.env.NVIDIA_API_KEY;
+  if (!apiKey) {
+    return c.json({ error: "AI service not configured" }, 500);
+  }
+
+  try {
+    const response = await fetch(
+      "https://integrate.api.nvidia.com/v1/chat/completions",
+      buildNvidiaRequest(apiKey, payload.messages, true)
+    );
+
+    if (!response.ok || !response.body) {
+      const errText = await response.text();
+      logger.error({ status: response.status, body: errText }, "NVIDIA streaming API error");
+      return c.json({ error: "Could not reach the AI mentor right now." }, 502);
+    }
+
+    const upstream = response.body.getReader();
+    const decoder = new TextDecoder();
+    const stream = new ReadableStream({
+      async start(controller) {
+        let buffer = "";
+        let fullReply = "";
+        try {
+          while (true) {
+            const { done, value } = await upstream.read();
+            if (done) break;
+
+            buffer += decoder.decode(value, { stream: true });
+            const lines = buffer.split(/\r?\n/);
+            buffer = lines.pop() ?? "";
+
+            for (const line of lines) {
+              if (!line.startsWith("data:")) continue;
+              const delta = extractDelta(line);
+              if (!delta) continue;
+              fullReply += delta;
+              controller.enqueue(encodeSse("delta", { text: delta }));
+            }
+          }
+
+          const tail = decoder.decode();
+          if (tail) {
+            buffer += tail;
+          }
+          for (const line of buffer.split(/\r?\n/)) {
+            if (!line.startsWith("data:")) continue;
+            const delta = extractDelta(line);
+            if (!delta) continue;
+            fullReply += delta;
+            controller.enqueue(encodeSse("delta", { text: delta }));
+          }
+
+          controller.enqueue(encodeSse("done", { reply: sanitizeReply(fullReply) }));
+        } catch (err) {
+          logger.error({ err }, "Critique chat stream error");
+          controller.enqueue(encodeSse("error", { error: "Internal server error" }));
+        } finally {
+          upstream.releaseLock();
+          controller.close();
+        }
+      },
+    });
+
+    return new Response(stream, {
+      headers: {
+        "Content-Type": "text/event-stream; charset=utf-8",
+        "Cache-Control": "no-cache, no-transform",
+        Connection: "keep-alive",
+        "X-Accel-Buffering": "no",
+      },
+    });
+  } catch (err) {
+    logger.error({ err }, "Critique chat stream route error");
+    return c.json({ error: "Internal server error" }, 500);
   }
 });
 
 // Legacy single-shot endpoint kept for backward compatibility
-router.post("/critique", async (req, res) => {
-  const { prompt, userCritique } = req.body as {
-    prompt?: string;
-    userCritique?: string;
-  };
-
-  if (!prompt || !userCritique) {
-    res.status(400).json({ error: "prompt and userCritique are required" });
-    return;
-  }
-
-  const wordCount = userCritique.trim().split(/\s+/).length;
-  if (wordCount < 20) {
-    res.status(400).json({ error: "Please write at least 20 words so the AI can give meaningful feedback." });
-    return;
-  }
-
-  const apiKey = process.env["NVIDIA_API_KEY"];
-  if (!apiKey) {
-    res.status(500).json({ error: "AI service not configured" });
-    return;
-  }
-
-  res.status(410).json({ error: "This endpoint is deprecated. Use /api/critique/chat." });
+critique.post("/critique", async (_c) => {
+  return _c.json({ error: "This endpoint is deprecated. Use /api/critique/chat." }, 410);
 });
 
-export default router;
+export default critique;

@@ -7,9 +7,12 @@ export type CourseRow = {
   data: Record<string, unknown>;
 };
 
+const API_BASE = (import.meta.env.VITE_API_BASE_URL ?? "").replace(/\/+$/, "");
+
 function apiUrl(path: string): string {
-  // BASE_URL is "/admin/" — but the API lives at "/api". Go absolute from origin.
-  return path;
+  // VITE_API_BASE_URL points at the Worker when the admin is hosted on a
+  // separate origin (e.g. Cloudflare Pages). Unset => same-origin relative.
+  return `${API_BASE}${path}`;
 }
 
 export function getStoredPassword(): string | null {

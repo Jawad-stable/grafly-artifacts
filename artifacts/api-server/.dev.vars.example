@@ -1,0 +1,9 @@
+# Copy this file to .dev.vars and fill in your actual values for local Wrangler dev.
+# .dev.vars is gitignored — never commit it.
+NVIDIA_API_KEY=
+ELEVENLABS_API_KEY=
+EXPO_PUBLIC_ELEVENLABS_VOICE_ID=MFZUKuGQUsGJPQjTS4wC
+EXPO_PUBLIC_SUPABASE_URL=
+EXPO_PUBLIC_SUPABASE_ANON_KEY=
+SUPABASE_SERVICE_ROLE_KEY=
+ADMIN_PASSWORD=

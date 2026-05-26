@@ -1,20 +1,13 @@
-import pino from "pino";
+type LogObj = Record<string, unknown> | unknown;
 
-const isProduction = process.env.NODE_ENV === "production";
-
-export const logger = pino({
-  level: process.env.LOG_LEVEL ?? "info",
-  redact: [
-    "req.headers.authorization",
-    "req.headers.cookie",
-    "res.headers['set-cookie']",
-  ],
-  ...(isProduction
-    ? {}
-    : {
-        transport: {
-          target: "pino-pretty",
-          options: { colorize: true },
-        },
-      }),
-});
+export const logger = {
+  info(obj: LogObj, msg?: string) {
+    console.log(msg ?? "", obj);
+  },
+  warn(obj: LogObj, msg?: string) {
+    console.warn(msg ?? "", obj);
+  },
+  error(obj: LogObj, msg?: string) {
+    console.error(msg ?? "", obj);
+  },
+};

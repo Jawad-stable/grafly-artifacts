@@ -1,23 +1,22 @@
-import { Router } from "express";
+import { Hono } from "hono";
 import { logger } from "../lib/logger";
+import type { Env } from "../types";
 
-const router = Router();
+const tts = new Hono<{ Bindings: Env }>();
 
-router.post("/tts", async (req, res) => {
-  const { text } = req.body as { text?: string };
+tts.post("/tts", async (c) => {
+  const body = await c.req.json<{ text?: string }>().catch(() => ({} as { text?: string }));
+  const { text } = body;
 
   if (!text || typeof text !== "string" || text.trim().length === 0) {
-    res.status(400).json({ error: "text is required" });
-    return;
+    return c.json({ error: "text is required" }, 400);
   }
 
-  const apiKey = process.env["ELEVENLABS_API_KEY"];
-  const voiceId =
-    process.env["EXPO_PUBLIC_ELEVENLABS_VOICE_ID"] ?? "MFZUKuGQUsGJPQjTS4wC";
+  const apiKey = c.env.ELEVENLABS_API_KEY;
+  const voiceId = c.env.EXPO_PUBLIC_ELEVENLABS_VOICE_ID ?? "MFZUKuGQUsGJPQjTS4wC";
 
   if (!apiKey) {
-    res.status(500).json({ error: "Voice service not configured" });
-    return;
+    return c.json({ error: "Voice service not configured" }, 500);
   }
 
   try {
@@ -43,17 +42,23 @@ router.post("/tts", async (req, res) => {
 
     if (!response.ok) {
       logger.error({ status: response.status }, "ElevenLabs API error");
-      res.status(502).json({ error: "Voice service error" });
-      return;
+      return c.json({ error: "Voice service error" }, 502);
     }
 
     const buffer = await response.arrayBuffer();
-    const base64 = Buffer.from(buffer).toString("base64");
-    res.json({ audio: base64 });
+    // Convert to base64 in chunks to avoid stack overflow on large audio
+    const bytes = new Uint8Array(buffer);
+    let binary = "";
+    const chunkSize = 8192;
+    for (let i = 0; i < bytes.length; i += chunkSize) {
+      binary += String.fromCharCode(...bytes.subarray(i, i + chunkSize));
+    }
+    const base64 = btoa(binary);
+    return c.json({ audio: base64 });
   } catch (err) {
     logger.error({ err }, "TTS route error");
-    res.status(500).json({ error: "Internal server error" });
+    return c.json({ error: "Internal server error" }, 500);
   }
 });
 
-export default router;
+export default tts;

@@ -1,0 +1,9 @@
+export type Env = {
+  NVIDIA_API_KEY: string;
+  ELEVENLABS_API_KEY: string;
+  EXPO_PUBLIC_ELEVENLABS_VOICE_ID?: string;
+  EXPO_PUBLIC_SUPABASE_URL?: string;
+  EXPO_PUBLIC_SUPABASE_ANON_KEY?: string;
+  SUPABASE_SERVICE_ROLE_KEY?: string;
+  ADMIN_PASSWORD: string;
+};
