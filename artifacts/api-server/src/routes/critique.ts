@@ -239,36 +239,13 @@ const FALLBACK_DESIGNS = [
   { id: "social_travel",  image_url: `${BASE}/social_travel.png` },
 ];
 
-async function loadDesignsFromSupabase(env: Env) {
-  const supabase = getSupabase(env);
-  if (!supabase) return null;
-  try {
-    const { data, error } = await supabase
-      .from("critique_designs")
-      .select("id, title, description, image_url, difficulty")
-      .eq("active", true);
-    if (error) {
-      logger.warn({ err: error.message }, "Supabase designs fetch failed");
-      return null;
-    }
-    if (!data || data.length === 0) return null;
-    return data;
-  } catch (err) {
-    logger.warn({ err }, "Supabase designs fetch threw");
-    return null;
-  }
-}
-
-critique.get("/critique/designs/random", async (c) => {
-  const fromDb = await loadDesignsFromSupabase(c.env);
-  const pool = fromDb && fromDb.length > 0 ? fromDb : FALLBACK_DESIGNS;
-  const pick = pool[Math.floor(Math.random() * pool.length)];
+critique.get("/critique/designs/random", (c) => {
+  const pick = FALLBACK_DESIGNS[Math.floor(Math.random() * FALLBACK_DESIGNS.length)];
   return c.json(pick);
 });
 
-critique.get("/critique/designs", async (c) => {
-  const fromDb = await loadDesignsFromSupabase(c.env);
-  return c.json(fromDb && fromDb.length > 0 ? fromDb : FALLBACK_DESIGNS);
+critique.get("/critique/designs", (c) => {
+  return c.json(FALLBACK_DESIGNS);
 });
 
 interface ChatMessage {
