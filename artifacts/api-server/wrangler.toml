@@ -11,7 +11,7 @@ directory = "./public"
 not_found_handling = "none"
 
 # Environment variables — add these as secrets via:
-#   wrangler secret put NVIDIA_API_KEY
+#   wrangler secret put GROQ_API_KEY
 #   wrangler secret put ELEVENLABS_API_KEY
 #   wrangler secret put EXPO_PUBLIC_ELEVENLABS_VOICE_ID
 #   wrangler secret put EXPO_PUBLIC_SUPABASE_URL

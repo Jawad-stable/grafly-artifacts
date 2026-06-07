@@ -371,7 +371,7 @@ function buildChatPayload(body: ChatRequest): { messages: OutgoingMessage[] } | 
   return { messages: outgoing };
 }
 
-function buildNvidiaRequest(apiKey: string, messages: OutgoingMessage[], stream: boolean) {
+function buildGroqRequest(apiKey: string, messages: OutgoingMessage[], stream: boolean) {
   return {
     method: "POST",
     headers: {
@@ -379,7 +379,7 @@ function buildNvidiaRequest(apiKey: string, messages: OutgoingMessage[], stream:
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      model: "meta/llama-4-maverick-17b-128e-instruct",
+      model: "meta-llama/llama-4-scout-17b-16e-instruct",
       messages,
       temperature: 0.7,
       max_tokens: 220,
@@ -413,20 +413,20 @@ critique.post("/critique/chat", async (c) => {
     return c.json({ error: payload.error }, payload.status as 400);
   }
 
-  const apiKey = c.env.NVIDIA_API_KEY;
+  const apiKey = c.env.GROQ_API_KEY;
   if (!apiKey) {
     return c.json({ error: "AI service not configured" }, 500);
   }
 
   try {
     const response = await fetch(
-      "https://integrate.api.nvidia.com/v1/chat/completions",
-      buildNvidiaRequest(apiKey, payload.messages, false)
+      "https://api.groq.com/openai/v1/chat/completions",
+      buildGroqRequest(apiKey, payload.messages, false)
     );
 
     if (!response.ok) {
       const errText = await response.text();
-      logger.error({ status: response.status, body: errText }, "NVIDIA API error");
+      logger.error({ status: response.status, body: errText }, "Groq API error");
       return c.json({ error: "Could not reach the AI mentor right now." }, 502);
     }
 
@@ -448,20 +448,20 @@ critique.post("/critique/chat/stream", async (c) => {
     return c.json({ error: payload.error }, payload.status as 400);
   }
 
-  const apiKey = c.env.NVIDIA_API_KEY;
+  const apiKey = c.env.GROQ_API_KEY;
   if (!apiKey) {
     return c.json({ error: "AI service not configured" }, 500);
   }
 
   try {
     const response = await fetch(
-      "https://integrate.api.nvidia.com/v1/chat/completions",
-      buildNvidiaRequest(apiKey, payload.messages, true)
+      "https://api.groq.com/openai/v1/chat/completions",
+      buildGroqRequest(apiKey, payload.messages, true)
     );
 
     if (!response.ok || !response.body) {
       const errText = await response.text();
-      logger.error({ status: response.status, body: errText }, "NVIDIA streaming API error");
+      logger.error({ status: response.status, body: errText }, "Groq streaming API error");
       return c.json({ error: "Could not reach the AI mentor right now." }, 502);
     }
 
