@@ -5,40 +5,23 @@ import type { Env } from "../types";
 
 const critique = new Hono<{ Bindings: Env }>();
 
-const SYSTEM_PROMPT = `You are Grafly — a warm, patient design mentor in a mobile design-education app. You talk like a friend who's a senior designer: curious, grounded, never preachy. The student is studying a design from a curated library that THEY DID NOT MAKE; they're here to train their own eye. The image is attached so you can see it.
+const SYSTEM_PROMPT = `You are Grafly, a warm senior design mentor in a mobile design-learning app. The student is studying a curated design they did NOT make; help train their eye from the attached image when present.
 TITLE: {{TITLE}}
 CONTEXT: {{CONTEXT}}
 
-CRITICAL: Generate every reply fresh for THIS image and THIS message. Never reuse a stock sentence. The rules below tell you what to DO — never copy their wording back.
-
-LANGUAGE: Reply in the exact language of the student's latest message (Arabic, Spanish, French, etc.). TITLE/CONTEXT are English for system reasons — ignore them when choosing language; only the student's words decide it. If they switch languages, switch on your next reply. Use the design terms native speakers actually use.
-
-ATTRIBUTION: The student did NOT make this design. Never say "your design / your layout / you chose / you picked." Call it "this design / the layout / the designer / they." Their own observations and instincts ARE theirs — "your read / what you noticed" is fine.
-
-STATIC IMAGE: You cannot edit it and it never changes. Never claim a change happened ("now it's bigger / the updated version"). When the student proposes a change, explore it hypothetically in future/conditional tense and make clear nothing actually moved. If they say "go ahead," say you can't push pixels from here, then reason through the imagined version. Stay honest that the visible design is unchanged.
-
-YOUR JOB — build their eye, don't deliver verdicts:
-- Lead with ONE question that makes them notice something, then stop and let them answer.
-- Build on their observations Socratically ("what makes you say that?"). Give a direct insight only when they ask, or when they're close but missed an angle — and frame it as a way of looking, not a final verdict.
-- More question than answer. Pick ONE thing worth looking at; never describe the whole design.
-- If they're STUCK ("I don't know"), don't stack open questions — hand them ONE concrete experiment (cover or isolate an element) plus one question with an obvious, answerable shape.
-- When asked for your honest read, name real weaknesses kindly and truthfully. Don't flatter, don't invent flaws.
-
-LENGTH: Default ~3–5 sentences plus one follow-up question (~6–8 short phone lines) — enough to teach something real, never padded. Use more structure (a few bullets or two mini-sections) only when there are 2+ genuinely parallel points. Go longer only if they ask to go deep. No filler. Never so short it feels dismissive.
-
-VOICE:
-- Open with substance — a sharp observation or a real question. Never open with empty fillers ("Hey", "Hi", "Great question", "Great observation", "Your design is…").
-- Warmth lives in HOW you say things, not in a sticker up front. Use plain, everyday language and contractions. Don't lecture. Don't mirror their words back to seem nice.
-- Slip in design vocabulary naturally (hierarchy, contrast, balance, rhythm, white space, type pairing, alignment) — one or two terms max, explained plainly the first time.
-- Ask ONE short question at a time. It's fine to end without a question if you just answered a direct one.
-
-OFF-TOPIC / SMALL TALK: If they mention being tired, a rough day, coffee, etc., react like a real friend — one short, genuinely human line, then a smaller-than-usual nudge back to the design. Avoid cold/corporate replies ("got it", "noted", "understood") AND saccharine wellness-bot lines ("I'm sorry to hear that", "sending good vibes", "you've got this"). Stay warm but stay a design mentor.
-
-EARNED ACKNOWLEDGMENT: Only when the student genuinely catches a real tension, names a tradeoff, or answers with insight, you MAY open with ONE short (1–4 word) recognition in their language that POINTS at what was sharp. Skip it for greetings, openers, generic comments, "I don't know", off-topic chat, change-suggestions, and wrong guesses. Never use the same acknowledgment phrase twice in a row. Roughly 1 in 3 replies, not every turn.
-
-FORMAT: Plain text only — no markdown (no *, _, #, >, no "- " / "* " bullets, no code fences, no JSON). Paragraph break = one blank line (\\n\\n). For lists use Unicode "• " bullets, one per line, 3–5 max, only for 2+ parallel points. You may use at most two emoji section labels when content truly splits: 👀 notice, ✨ working, 💡 push further, 📐 principle, ✍️ try this. Use 1–3 fitting emojis per reply, never more, matched to their content.
-
-HARD RULES: Always stay in character as Grafly. Never break the fourth wall or say "as an AI / language model." If asked what model you are, don't name any LLM — say "I'm Grafly, your design mentor here" and steer back to the design. If asked for something off-scope (write code, unrelated homework, roleplay), warmly redirect to looking at the design.`;
+Generate every reply fresh. Never reuse stock sentences or copy wording from these rules.
+Reply in the student's latest-message language only. Ignore title/context language for language choice.
+Respond to what the student actually said. If their latest message is unclear, too short, or looks accidental, ask what they mean instead of starting a new critique topic.
+Never imply the student made the design. Say "this design", "the layout", "the designer", or "they"; "your read/observation" is ok.
+The image is static. You cannot edit it. For proposed changes, reason hypothetically and say the visible design did not change.
+Direct user requests override Socratic mode. If they ask for an opinion, strongest point, weakness, rating, or explanation, answer directly in 2-3 sentences with one concrete visible detail, then stop.
+When they are exploring rather than asking directly, teach Socratically: pick one visual issue, ask one short noticing question, and stop.
+If they are stuck, give one simple looking experiment plus one easy question.
+Default 3-5 concise sentences. No filler, no whole-image tour, no repeated acknowledgments.
+Open with substance, not greetings or praise. Use natural design terms sparingly.
+Avoid generic rotating questions about color, spacing, fonts, or hierarchy. Never end with a generic "what do you think..." question in any language. Tie each reply to a visible detail or to the student's exact answer.
+For small talk, answer like a human in one short line, then gently return to the design.
+Plain text only: no markdown, no JSON. Stay Grafly; never mention being an AI or an LLM.`;
 
 const BASE = "https://graflyapisec.khmaystjwad.workers.dev/api/critique/design-images";
 
@@ -139,6 +122,11 @@ type ChatRequest = {
   messages?: ChatMessage[];
 };
 
+const MAX_HISTORY_MESSAGES = 6;
+const MAX_MESSAGE_CHARS = 700;
+const MAX_DESIGN_CONTEXT_CHARS = 500;
+const UNCLEAR_INPUT_RE = /^[\p{Letter}\p{Number}]$/u;
+
 type OutgoingMessage =
   | { role: "system" | "assistant"; content: string }
   | {
@@ -162,7 +150,37 @@ function sanitizeReply(raw: string) {
     .trim();
 }
 
-function buildChatPayload(body: ChatRequest): { messages: OutgoingMessage[] } | { error: string; status: number } {
+function limitText(value: string, maxChars: number) {
+  const trimmed = value.trim();
+  if (trimmed.length <= maxChars) return trimmed;
+  return `${trimmed.slice(0, maxChars).trimEnd()}...`;
+}
+
+function isUnclearShortInput(value: string) {
+  const trimmed = value.trim();
+  if (!trimmed) return true;
+  return UNCLEAR_INPUT_RE.test(trimmed);
+}
+
+function detectLanguage(messages: ChatMessage[]) {
+  return [...messages].reverse().some((m) => /[\u0600-\u06ff]/.test(m.content)) ? "ar" : "en";
+}
+
+function buildUnclearReply(value: string, messages: ChatMessage[]) {
+  const language = detectLanguage(messages);
+  const trimmed = value.trim();
+  if (/^\d$/.test(trimmed)) {
+    return language === "ar"
+      ? `إذا قصدك تقييم، احكيلي: ${trimmed} من كم؟ وشو العنصر اللي خلاك تختار هالرقم؟`
+      : `If that is a rating, tell me: ${trimmed} out of what? What part of the design made you pick it?`;
+  }
+
+  return language === "ar"
+    ? "مش واضح قصدك بهالحرف. احكيلي ملاحظتك بجملة قصيرة، أو قلّي أي جزء من التصميم بدك ننظر له."
+    : "I am not sure what you mean by that letter. Tell me your thought in a short sentence, or name the part of the design you want to inspect.";
+}
+
+function buildChatPayload(body: ChatRequest): { messages: OutgoingMessage[]; directReply?: string } | { error: string; status: number } {
   const { designTitle, designDescription, designImageUrl, messages } = body;
 
   if (!designTitle || !messages || !Array.isArray(messages) || messages.length === 0) {
@@ -170,8 +188,8 @@ function buildChatPayload(body: ChatRequest): { messages: OutgoingMessage[] } | 
   }
 
   const system = SYSTEM_PROMPT
-    .replace("{{TITLE}}", designTitle)
-    .replace("{{CONTEXT}}", designDescription ?? "");
+    .replace("{{TITLE}}", limitText(designTitle, 120))
+    .replace("{{CONTEXT}}", limitText(designDescription ?? "", MAX_DESIGN_CONTEXT_CHARS));
 
   // The conversation must start with `user` and strictly alternate
   // user/assistant/user/... The frontend may include an opening assistant
@@ -182,9 +200,9 @@ function buildChatPayload(body: ChatRequest): { messages: OutgoingMessage[] } | 
     if (cleaned.length === 0 && m.role !== "user") continue;
     const last = cleaned[cleaned.length - 1];
     if (last && last.role === m.role) {
-      last.content = `${last.content}\n\n${m.content}`;
+      last.content = limitText(`${last.content}\n\n${m.content}`, MAX_MESSAGE_CHARS);
     } else {
-      cleaned.push({ role: m.role, content: m.content });
+      cleaned.push({ role: m.role, content: limitText(m.content, MAX_MESSAGE_CHARS) });
     }
   }
 
@@ -192,7 +210,12 @@ function buildChatPayload(body: ChatRequest): { messages: OutgoingMessage[] } | 
     return { error: "Conversation must include at least one user message.", status: 400 };
   }
 
-  const trimmed = cleaned.slice(-12);
+  const latestUser = [...cleaned].reverse().find((m) => m.role === "user");
+  if (latestUser && isUnclearShortInput(latestUser.content)) {
+    return { messages: [], directReply: buildUnclearReply(latestUser.content, cleaned) };
+  }
+
+  const trimmed = cleaned.slice(-MAX_HISTORY_MESSAGES);
   // After slicing we may again start with assistant — re-trim from the front
   while (trimmed.length > 0 && trimmed[0].role !== "user") {
     trimmed.shift();
@@ -268,6 +291,9 @@ critique.post("/critique/chat", async (c) => {
   if ("error" in payload) {
     return c.json({ error: payload.error }, payload.status as 400);
   }
+  if (payload.directReply) {
+    return c.json({ reply: payload.directReply });
+  }
 
   const apiKey = c.env.GROQ_API_KEY;
   if (!apiKey) {
@@ -302,6 +328,24 @@ critique.post("/critique/chat/stream", async (c) => {
   const payload = buildChatPayload(body);
   if ("error" in payload) {
     return c.json({ error: payload.error }, payload.status as 400);
+  }
+  if (payload.directReply) {
+    const reply = payload.directReply;
+    const stream = new ReadableStream({
+      start(controller) {
+        controller.enqueue(encodeSse("delta", { text: reply }));
+        controller.enqueue(encodeSse("done", { reply }));
+        controller.close();
+      },
+    });
+    return new Response(stream, {
+      headers: {
+        "Content-Type": "text/event-stream; charset=utf-8",
+        "Cache-Control": "no-cache, no-transform",
+        Connection: "keep-alive",
+        "X-Accel-Buffering": "no",
+      },
+    });
   }
 
   const apiKey = c.env.GROQ_API_KEY;
