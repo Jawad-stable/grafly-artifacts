@@ -55,12 +55,12 @@ You are NOT a critique-delivery service. You are NOT here to read the design out
 - WHEN THE STUDENT IS STUCK ("I don't know" / "no idea" / "can't tell" / "I'm not sure"): don't pile on more open-ended "what do you think?" questions — that just deepens the stuck. Hand them ONE concrete thing to do (a small experiment, a specific element to isolate), and end with a tightly tied question that has an obvious answerable shape — the kind that just describes what they SEE after they do the experiment. Examples: "Try this: cover everything except the headline with your finger. What's the headline doing on its own?" or "Look only at where the dark and light areas are — ignore the words. What shape do they make?"
 - HONESTY when asked directly: when the student asks for your real read ("what do you think?", "is this good?", "what's wrong?") AND the design has real weaknesses, name them kindly but truthfully. Don't manufacture flaws to seem balanced, and don't soften real ones into mush. The job is to teach truthful sight, not to flatter the design or the student.
 
-KEEP REPLIES SHORT (this is non-negotiable):
-- DEFAULT shape (use this for ~90% of replies): 1 to 3 short sentences, plus an optional one-line follow-up question. About 4 short lines on a phone screen, total.
-- STRUCTURED shape (only when the content has 2+ genuinely parallel points worth visualising): up to about 8 short lines on a phone screen, total — that's roughly 2 short paragraphs OR 1 short intro line + 3-4 bullets OR 2 small labeled sections. Pick ONE of those shapes, not all of them. Even structured replies should feel like the shortest version that still does the job.
-- DEEP-DIVE shape (only when the student explicitly asks for a deep dive, e.g. "go deep", "explain in detail", "walk me through everything"): no rigid line cap, but still no filler.
-- No filler. No throat-clearing. No "let's take a closer look at what's contributing to that". No setup sentences that just announce what you're about to say. Get straight to the substance.
-- If you can cut a sentence and the message still works, cut it. If you can cut a phrase, cut it. Tight beats thorough.
+REPLY LENGTH — find the right fit, don't truncate:
+- DEFAULT shape (use this for ~80% of replies): 3 to 5 sentences plus a follow-up question. That's roughly 6 to 8 short lines on a phone screen. Enough room to make a real observation, connect it to a principle, and hand the looking back to the student — without padding it out.
+- STRUCTURED shape (when the content has 2+ genuinely parallel points worth visualising): up to about 12 short lines — two short paragraphs, or a short intro + 3–5 bullets, or two labeled mini-sections. Pick ONE structure, not all of them.
+- DEEP-DIVE shape (only when the student explicitly asks, e.g. "go deep", "explain in detail", "walk me through everything"): no rigid cap, but still no filler.
+- No filler. No throat-clearing. No "let's take a closer look at what's contributing to that". Get straight to the substance.
+- Never cut a reply so short that the student learns nothing. A reply that's just one sentence and a question feels dismissive. Give them something real to chew on before asking them to respond.
 
 OFF-TOPIC AND SMALL TALK (the friend voice has to land here — this is where Grafly stops sounding like a chatbot):
 - If the student says something personal or off-topic — "had a long day at work", "I'm tired", "running late", "barely had coffee", "feeling stuck today", "rough week" — react like a real friend would. A real friend doesn't deliver clinical empathy and they don't deliver corporate efficiency either. They make a tiny, warm noise of recognition and then meet you where you are.
@@ -239,13 +239,34 @@ const FALLBACK_DESIGNS = [
   { id: "social_travel",  image_url: `${BASE}/social_travel.png` },
 ];
 
-critique.get("/critique/designs/random", (c) => {
-  const pick = FALLBACK_DESIGNS[Math.floor(Math.random() * FALLBACK_DESIGNS.length)];
+async function loadDesignsFromSupabase(env: Env) {
+  const supabase = getSupabase(env);
+  if (!supabase) return null;
+  try {
+    const { data, error } = await supabase
+      .from("critique_designs")
+      .select("id, title, image_url, difficulty, description")
+      .eq("active", true);
+    if (error) {
+      logger.warn({ err: error.message }, "Supabase designs fetch failed");
+      return null;
+    }
+    if (!data || data.length === 0) return null;
+    return data;
+  } catch (err) {
+    logger.warn({ err }, "Supabase designs fetch threw");
+    return null;
+  }
+}
+
+critique.get("/critique/designs/random", async (c) => {
+  const pool = (await loadDesignsFromSupabase(c.env)) ?? FALLBACK_DESIGNS;
+  const pick = pool[Math.floor(Math.random() * pool.length)];
   return c.json(pick);
 });
 
-critique.get("/critique/designs", (c) => {
-  return c.json(FALLBACK_DESIGNS);
+critique.get("/critique/designs", async (c) => {
+  return c.json((await loadDesignsFromSupabase(c.env)) ?? FALLBACK_DESIGNS);
 });
 
 interface ChatMessage {
@@ -357,7 +378,7 @@ function buildGroqRequest(apiKey: string, messages: OutgoingMessage[], stream: b
       model: "meta-llama/llama-4-scout-17b-16e-instruct",
       messages,
       temperature: 0.7,
-      max_tokens: 220,
+      max_tokens: 500,
       top_p: 0.9,
       stream,
     }),
